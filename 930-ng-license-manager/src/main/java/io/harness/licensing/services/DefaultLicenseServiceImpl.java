@@ -99,6 +99,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DefaultLicenseServiceImpl implements LicenseService {
   private final ModuleLicenseRepository moduleLicenseRepository;
+  private final ModuleLicenseHelper moduleLicenseHelper;
   private final LicenseObjectConverter licenseObjectConverter;
   private final ModuleLicenseInterface licenseInterface;
   private final TelemetryReporter telemetryReporter;
@@ -123,12 +124,14 @@ public class DefaultLicenseServiceImpl implements LicenseService {
 
   @Inject
   public DefaultLicenseServiceImpl(ModuleLicenseRepository moduleLicenseRepository,
-      LicenseObjectConverter licenseObjectConverter, ModuleLicenseInterface licenseInterface,
-      AccountService accountService, TelemetryReporter telemetryReporter, CeLicenseClient ceLicenseClient,
-      LicenseComplianceResolver licenseComplianceResolver, @Named(LICENSE_CACHE_NAMESPACE) Cache<String, List> cache,
-      LicenseGenerator licenseGenerator, LicenseValidator licenseValidator, SMPLicenseMapper smpLicenseMapper,
+      ModuleLicenseHelper moduleLicenseHelper, LicenseObjectConverter licenseObjectConverter,
+      ModuleLicenseInterface licenseInterface, AccountService accountService, TelemetryReporter telemetryReporter,
+      CeLicenseClient ceLicenseClient, LicenseComplianceResolver licenseComplianceResolver,
+      @Named(LICENSE_CACHE_NAMESPACE) Cache<String, List> cache, LicenseGenerator licenseGenerator,
+      LicenseValidator licenseValidator, SMPLicenseMapper smpLicenseMapper,
       @Named(MODULE_LICENSE) Producer eventProducer, OutboxService outboxService) {
     this.moduleLicenseRepository = moduleLicenseRepository;
+    this.moduleLicenseHelper = moduleLicenseHelper;
     this.licenseObjectConverter = licenseObjectConverter;
     this.licenseInterface = licenseInterface;
     this.accountService = accountService;
@@ -214,6 +217,9 @@ public class DefaultLicenseServiceImpl implements LicenseService {
     }
 
     ModuleLicense moduleLicense = existingEntityOptional.get();
+    if (moduleLicenseHelper.isDeveloperLicensingFeatureEnabled(moduleLicense.getAccountIdentifier())) {
+      validateDeleteModuleLicense(moduleLicense);
+    }
     moduleLicenseRepository.deleteById(id);
     evictCache(moduleLicense.getAccountIdentifier(), moduleLicense.getModuleType());
     publishLicenseEvent(moduleLicense, DELETE_ACTION);
@@ -232,14 +238,17 @@ public class DefaultLicenseServiceImpl implements LicenseService {
   public ModuleLicense createModuleLicense(ModuleLicense moduleLicense) {
     verifyAccountExistence(moduleLicense.getAccountIdentifier());
     // validate license existence
-    List<ModuleLicense> existingLicenses = moduleLicenseRepository.findByAccountIdentifierAndModuleType(
-        moduleLicense.getAccountIdentifier(), moduleLicense.getModuleType());
-    if (existingLicenses.size() != 0) {
-      throw new InvalidRequestException(
-          String.format("ModuleLicense with accountIdentifier [%s] and moduleType [%s] already exists",
-              moduleLicense.getAccountIdentifier(), moduleLicense.getModuleType()));
+    if (!moduleLicenseHelper.isDeveloperLicensingFeatureEnabled(moduleLicense.getAccountIdentifier())) {
+      List<ModuleLicense> existingLicenses = moduleLicenseRepository.findByAccountIdentifierAndModuleType(
+          moduleLicense.getAccountIdentifier(), moduleLicense.getModuleType());
+      if (!existingLicenses.isEmpty()) {
+        throw new InvalidRequestException(
+            String.format("ModuleLicense with accountIdentifier [%s] and moduleType [%s] already exists",
+                moduleLicense.getAccountIdentifier(), moduleLicense.getModuleType()));
+      }
+    } else {
+      validateExistingModuleLicense(moduleLicense);
     }
-
     // Validate entity
     moduleLicense.setCreatedBy(EmbeddedUser.builder().email(getEmailFromPrincipal()).build());
     ModuleLicense savedEntity = saveLicense(moduleLicense);
@@ -258,6 +267,9 @@ public class DefaultLicenseServiceImpl implements LicenseService {
     Optional<ModuleLicense> existingEntityOptional = moduleLicenseRepository.findById(moduleLicense.getId());
     if (!existingEntityOptional.isPresent()) {
       throw new NotFoundException(String.format("ModuleLicense with identifier [%s] not found", moduleLicense.getId()));
+    }
+    if (moduleLicenseHelper.isDeveloperLicensingFeatureEnabled(existingEntityOptional.get().getAccountIdentifier())) {
+      validateUpdateModuleLicense(moduleLicense);
     }
 
     ModuleLicense existingModuleLicense = existingEntityOptional.get();
@@ -785,6 +797,73 @@ public class DefaultLicenseServiceImpl implements LicenseService {
               .build());
     } catch (Exception ex) {
       log.error("Audit trails for ModuleLicense delete event failed with exception: ", ex);
+    }
+  }
+
+  private void validateExistingModuleLicense(ModuleLicense moduleLicense) {
+    List<ModuleLicense> existingLicenses = moduleLicenseRepository.findByAccountIdentifierAndModuleType(
+        moduleLicense.getAccountIdentifier(), moduleLicense.getModuleType());
+
+    if (!moduleLicense.isAddOn()) {
+      if (!existingLicenses.isEmpty()) {
+        throw new InvalidRequestException(
+            String.format("ModuleLicense with accountIdentifier [%s] and moduleType [%s] already exists",
+                moduleLicense.getAccountIdentifier(), moduleLicense.getModuleType()));
+      }
+    } else {
+      checkForFreeAndTeamModuleLicense(moduleLicense);
+
+      Optional<ModuleLicense> maybeBaseModuleLicense =
+          existingLicenses.stream().filter(license -> !license.isAddOn()).findFirst();
+      if (maybeBaseModuleLicense.isPresent()) {
+        validateAddOnLicenseExpiry(maybeBaseModuleLicense.get(), moduleLicense);
+      } else {
+        moduleLicense.setAddOn(false);
+      }
+    }
+  }
+
+  private void checkForFreeAndTeamModuleLicense(ModuleLicense moduleLicense) {
+    boolean isFreeOrTeamLicense =
+        Edition.FREE.equals(moduleLicense.getEdition()) || Edition.TEAM.equals(moduleLicense.getEdition());
+    if (isFreeOrTeamLicense) {
+      throw new InvalidRequestException("FREE/TEAM license cannot have add-on license");
+    }
+  }
+
+  private void validateUpdateModuleLicense(ModuleLicense moduleLicense) {
+    if (moduleLicense.isAddOn()) {
+      List<ModuleLicense> existingLicenses = moduleLicenseRepository.findByAccountIdentifierAndModuleType(
+          moduleLicense.getAccountIdentifier(), moduleLicense.getModuleType());
+      Optional<ModuleLicense> maybeBaseModuleLicense =
+          existingLicenses.stream().filter(license -> !license.isAddOn()).findFirst();
+
+      if (maybeBaseModuleLicense.isPresent()) {
+        validateAddOnLicenseExpiry(maybeBaseModuleLicense.get(), moduleLicense);
+      } else {
+        throw new InvalidRequestException(String.format(
+            "No base license exists for an add-on license with accountIdentifier: [%s], moduleType: [%s] and id: [%s]",
+            moduleLicense.getAccountIdentifier(), moduleLicense.getModuleType(), moduleLicense.getId()));
+      }
+    }
+  }
+
+  private void validateAddOnLicenseExpiry(ModuleLicense baseModuleLicense, ModuleLicense moduleLicense) {
+    if (moduleLicense.getExpiryTime() > baseModuleLicense.getExpiryTime()) {
+      throw new InvalidRequestException("Expiry time of an add-on license cannot be more than that of a base license");
+    }
+  }
+
+  private void validateDeleteModuleLicense(ModuleLicense moduleLicense) {
+    if (!moduleLicense.isAddOn()) {
+      List<ModuleLicense> existingLicenses = moduleLicenseRepository.findByAccountIdentifierAndModuleType(
+          moduleLicense.getAccountIdentifier(), moduleLicense.getModuleType());
+      Optional<ModuleLicense> maybeAddOnModuleLicense =
+          existingLicenses.stream().filter(ModuleLicense::isAddOn).findFirst();
+
+      if (maybeAddOnModuleLicense.isPresent()) {
+        throw new InvalidRequestException("Deletion of base license is not allowed as add-on license exists");
+      }
     }
   }
 }

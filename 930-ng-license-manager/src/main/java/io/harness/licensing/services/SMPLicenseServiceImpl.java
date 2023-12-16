@@ -20,6 +20,7 @@ import io.harness.licensing.beans.modules.SMPEncLicenseDTO;
 import io.harness.licensing.beans.modules.SMPLicenseRequestDTO;
 import io.harness.licensing.beans.modules.SMPValidationResultDTO;
 import io.harness.licensing.checks.LicenseComplianceResolver;
+import io.harness.licensing.helpers.ModuleLicenseHelper;
 import io.harness.licensing.interfaces.ModuleLicenseInterface;
 import io.harness.licensing.jobs.SMPLicenseValidationJob;
 import io.harness.licensing.mappers.LicenseObjectConverter;
@@ -57,7 +58,7 @@ public class SMPLicenseServiceImpl extends DefaultLicenseServiceImpl {
   private final PersistentLocker persistentLocker;
 
   @Inject
-  public SMPLicenseServiceImpl(ModuleLicenseRepository moduleLicenseRepository,
+  public SMPLicenseServiceImpl(ModuleLicenseRepository moduleLicenseRepository, ModuleLicenseHelper moduleLicenseHelper,
       LicenseObjectConverter licenseObjectConverter, ModuleLicenseInterface licenseInterface,
       AccountService accountService, TelemetryReporter telemetryReporter, CeLicenseClient ceLicenseClient,
       LicenseComplianceResolver licenseComplianceResolver, @Named(LICENSE_CACHE_NAMESPACE) Cache<String, List> cache,
@@ -65,9 +66,9 @@ public class SMPLicenseServiceImpl extends DefaultLicenseServiceImpl {
       SMPLicenseValidationJob licenseValidationJob,
       @Named(EventsFrameworkConstants.MODULE_LICENSE) Producer eventProducer, PersistentLocker persistentLocker,
       OutboxService outboxService) {
-    super(moduleLicenseRepository, licenseObjectConverter, licenseInterface, accountService, telemetryReporter,
-        ceLicenseClient, licenseComplianceResolver, cache, licenseGenerator, licenseValidator, smpLicenseMapper,
-        eventProducer, outboxService);
+    super(moduleLicenseRepository, moduleLicenseHelper, licenseObjectConverter, licenseInterface, accountService,
+        telemetryReporter, ceLicenseClient, licenseComplianceResolver, cache, licenseGenerator, licenseValidator,
+        smpLicenseMapper, eventProducer, outboxService);
     this.licenseValidationJob = licenseValidationJob;
     this.persistentLocker = persistentLocker;
   }

@@ -72,6 +72,7 @@ import io.harness.licensing.entities.modules.CIModuleLicense;
 import io.harness.licensing.entities.modules.ModuleLicense;
 import io.harness.licensing.event.ModuleLicenseCreateEvent;
 import io.harness.licensing.event.ModuleLicenseUpdateEvent;
+import io.harness.licensing.helpers.ModuleLicenseHelper;
 import io.harness.licensing.interfaces.ModuleLicenseInterface;
 import io.harness.licensing.mappers.LicenseObjectConverter;
 import io.harness.licensing.mappers.SMPLicenseMapper;
@@ -108,6 +109,7 @@ import org.mockito.Mockito;
 
 public class DefaultLicenseServiceImplTest extends CategoryTest {
   @Mock ModuleLicenseRepository moduleLicenseRepository;
+  @Mock ModuleLicenseHelper moduleLicenseHelper;
   @Mock ModuleLicenseInterface moduleLicenseInterface;
   @Mock LicenseObjectConverter licenseObjectConverter;
   @Mock AccountService accountService;
@@ -134,6 +136,7 @@ public class DefaultLicenseServiceImplTest extends CategoryTest {
     startTrialRequestDTO = StartTrialDTO.builder().moduleType(DEFAULT_MODULE_TYPE).edition(Edition.ENTERPRISE).build();
     when(licenseObjectConverter.toDTO(DEFAULT_CI_MODULE_LICENSE)).thenReturn(DEFAULT_CI_MODULE_LICENSE_DTO);
     when(licenseObjectConverter.toEntity(DEFAULT_CI_MODULE_LICENSE_DTO)).thenReturn(DEFAULT_CI_MODULE_LICENSE);
+    when(moduleLicenseHelper.isDeveloperLicensingFeatureEnabled(any())).thenReturn(false);
 
     defaultAccountLicensesDTO =
         AccountLicenseDTO.builder()
