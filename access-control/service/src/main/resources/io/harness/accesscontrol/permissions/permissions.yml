@@ -1,6 +1,6 @@
 # Any edit in this file should accompany an increment in version.
 name: permissionsConfiguration
-version: 67
+version: 68
 permissions:
   - identifier: core_project_delete
     name: Delete Project
@@ -1899,6 +1899,30 @@ permissions:
   - identifier: core_notification_delete
     name: Delete notification rules and channels
     status: STAGING
+    includeInAllRoles: false
+    allowedScopeLevels:
+      - account
+      - organization
+      - project
+  - identifier: ssca_remediationtracker_edit
+    name: Create and Update remediation tracker
+    status: ACTIVE
+    includeInAllRoles: false
+    allowedScopeLevels:
+      - account
+      - organization
+      - project
+  - identifier: ssca_remediationtracker_view
+    name: View remediation tracker
+    status: ACTIVE
+    includeInAllRoles: false
+    allowedScopeLevels:
+      - account
+      - organization
+      - project
+  - identifier: ssca_remediationtracker_close
+    name: Close remediation tracker
+    status: ACTIVE
     includeInAllRoles: false
     allowedScopeLevels:
       - account
