@@ -26,6 +26,7 @@ import io.harness.cistatus.service.azurerepo.AzureRepoService;
 import io.harness.cistatus.service.bitbucket.BitbucketService;
 import io.harness.cistatus.service.gitlab.GitlabService;
 import io.harness.code.CodeResourceClient;
+import io.harness.code.HarnessCodePayload;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
@@ -65,6 +66,7 @@ import io.harness.rule.Owner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -324,70 +326,98 @@ public class GitStatusCheckHelperTest extends CategoryTest {
 
     when(gitTokenRetriever.retrieveAuthToken(GitSCMType.HARNESS, connectorDetails)).thenReturn(TOKEN);
     Call<StatusCreationResponse> call = mock(Call.class);
-    doReturn(call).when(codeResourceClient).sendStatus(any(), any(), any(), any(), any(), any());
+    ArgumentCaptor<HarnessCodePayload> argumentCaptor = ArgumentCaptor.forClass(HarnessCodePayload.class);
+    doReturn(call).when(codeResourceClient).sendStatus(any(), any(), any(), any(), any(), argumentCaptor.capture());
     mockStatic(NGRestUtils.class);
     when(NGRestUtils.getGeneralResponse(call)).thenReturn(StatusCreationResponse.builder().build());
     // Gitness repo is expected to be either "git/account/org/project/repo" or "account/org/project/repo"
     // depending on subdomain we use.
-    boolean actual = gitStatusCheckHelper.sendStatus(GitStatusCheckParams.builder()
-                                                         .sha(SHA)
-                                                         .identifier(IDENTIFIER)
-                                                         .buildNumber(BUILD_NUMBER)
-                                                         .gitSCMType(GitSCMType.HARNESS)
-                                                         .owner(OWNER)
-                                                         .repo("ACCOUNT/ORG/PROJECT/" + REPO)
-                                                         .state(STATE)
-                                                         .title(TITLE)
-                                                         .target_url(TARGET_URL)
-                                                         .desc(DESC)
-                                                         .connectorDetails(connectorDetails)
-                                                         .build());
-
+    boolean actual = gitStatusCheckHelper.sendStatus(
+        GitStatusCheckParams.builder()
+            .sha(SHA)
+            .identifier(IDENTIFIER)
+            .buildNumber(BUILD_NUMBER)
+            .gitSCMType(GitSCMType.HARNESS)
+            .owner(OWNER)
+            .repo("ACCOUNT/ORG/PROJECT/" + REPO)
+            .state(STATE)
+            .title(TITLE)
+            .target_url(TARGET_URL)
+            .desc(DESC)
+            .planExecutionId("inkPh62RTTKZksxwE0WVaQ")
+            .connectorDetails(connectorDetails)
+            .stageSetupId("407qlC7DRXWlpafdd-QHtg")
+            .stageExecutionId("KAgWOo6uRSW2XuAjDpAkvA")
+            .detailsUrl(
+                "https://app.harness.io/ng/account/vpCkHKsDSxK9_KYfjCTMKA/module/ci/orgs/HarnessHCRInternalUAT/projects/Harness_Code/pipelines/stocoreprchecks/executions/inkPh62RTTKZksxwE0WVaQ/pipeline?stage=407qlC7DRXWlpafdd-QHtg&stageExecId=KAgWOo6uRSW2XuAjDpAkvA")
+            .build());
     assertThat(actual).isTrue();
 
-    boolean actual_1 = gitStatusCheckHelper.sendStatus(GitStatusCheckParams.builder()
-                                                           .sha(SHA)
-                                                           .identifier(IDENTIFIER)
-                                                           .buildNumber(BUILD_NUMBER)
-                                                           .gitSCMType(GitSCMType.HARNESS)
-                                                           .owner(OWNER)
-                                                           .repo("ACCOUNT/ORG/PROJECT/" + REPO)
-                                                           .state(STATE)
-                                                           .title(TITLE)
-                                                           .target_url(TARGET_URL)
-                                                           .desc(DESC)
-                                                           .connectorDetails(connectorDetails)
-                                                           .build());
+    HarnessCodePayload.HarnessStagePayloadData harnessStagePayloadData =
+        HarnessCodePayload.HarnessStagePayloadData.builder()
+            .stage_id("407qlC7DRXWlpafdd-QHtg")
+            .stage_execution_id("KAgWOo6uRSW2XuAjDpAkvA")
+            .account_id("ACCOUNT")
+            .execution_id("inkPh62RTTKZksxwE0WVaQ")
+            .org_identifier("ORG")
+            .project_identifier("PROJECT")
+            .build();
+    assertThat(argumentCaptor.getValue().getPayload().getData()).isEqualTo(harnessStagePayloadData);
+
+    boolean actual_1 = gitStatusCheckHelper.sendStatus(
+        GitStatusCheckParams.builder()
+            .sha(SHA)
+            .identifier(IDENTIFIER)
+            .buildNumber(BUILD_NUMBER)
+            .gitSCMType(GitSCMType.HARNESS)
+            .owner(OWNER)
+            .repo("ACCOUNT/ORG/PROJECT/" + REPO)
+            .state(STATE)
+            .title(TITLE)
+            .target_url(TARGET_URL)
+            .desc(DESC)
+            .connectorDetails(connectorDetails)
+            .detailsUrl(
+                "https://app.harness.io/ng/account/vpCkHKsDSxK9_KYfjCTMKA/module/ci/orgs/HarnessHCRInternalUAT/projects/Harness_Code/pipelines/stocoreprchecks/executions/inkPh62RTTKZksxwE0WVaQ/pipeline?stage=407qlC7DRXWlpafdd-QHtg&stageExecId=KAgWOo6uRSW2XuAjDpAkvA")
+
+            .build());
     assertThat(actual_1).isTrue();
 
-    boolean actual_2 = gitStatusCheckHelper.sendStatus(GitStatusCheckParams.builder()
-                                                           .sha(SHA)
-                                                           .identifier(IDENTIFIER)
-                                                           .buildNumber(BUILD_NUMBER)
-                                                           .gitSCMType(GitSCMType.HARNESS)
-                                                           .owner(OWNER)
-                                                           .repo("git/ACCOUNT/ORG/PROJECT/" + REPO)
-                                                           .state(STATE)
-                                                           .title(TITLE)
-                                                           .target_url(TARGET_URL)
-                                                           .desc(DESC)
-                                                           .connectorDetails(connectorDetails)
-                                                           .build());
+    boolean actual_2 = gitStatusCheckHelper.sendStatus(
+        GitStatusCheckParams.builder()
+            .sha(SHA)
+            .identifier(IDENTIFIER)
+            .buildNumber(BUILD_NUMBER)
+            .gitSCMType(GitSCMType.HARNESS)
+            .owner(OWNER)
+            .repo("git/ACCOUNT/ORG/PROJECT/" + REPO)
+            .state(STATE)
+            .title(TITLE)
+            .target_url(TARGET_URL)
+            .desc(DESC)
+            .connectorDetails(connectorDetails)
+            .detailsUrl(
+                "https://app.harness.io/ng/account/vpCkHKsDSxK9_KYfjCTMKA/module/ci/orgs/HarnessHCRInternalUAT/projects/Harness_Code/pipelines/stocoreprchecks/executions/inkPh62RTTKZksxwE0WVaQ/pipeline?stage=407qlC7DRXWlpafdd-QHtg&stageExecId=KAgWOo6uRSW2XuAjDpAkvA")
+
+            .build());
     assertThat(actual_2).isTrue();
 
-    boolean actual_3 = gitStatusCheckHelper.sendStatus(GitStatusCheckParams.builder()
-                                                           .sha(SHA)
-                                                           .identifier(IDENTIFIER)
-                                                           .buildNumber(BUILD_NUMBER)
-                                                           .gitSCMType(GitSCMType.HARNESS)
-                                                           .owner(OWNER)
-                                                           .repo("random/git/ACCOUNT/ORG/PROJECT/" + REPO)
-                                                           .state(STATE)
-                                                           .title(TITLE)
-                                                           .target_url(TARGET_URL)
-                                                           .desc(DESC)
-                                                           .connectorDetails(connectorDetails)
-                                                           .build());
+    boolean actual_3 = gitStatusCheckHelper.sendStatus(
+        GitStatusCheckParams.builder()
+            .sha(SHA)
+            .identifier(IDENTIFIER)
+            .buildNumber(BUILD_NUMBER)
+            .gitSCMType(GitSCMType.HARNESS)
+            .owner(OWNER)
+            .repo("random/git/ACCOUNT/ORG/PROJECT/" + REPO)
+            .state(STATE)
+            .title(TITLE)
+            .target_url(TARGET_URL)
+            .desc(DESC)
+            .connectorDetails(connectorDetails)
+            .detailsUrl(
+                "https://app.harness.io/ng/account/vpCkHKsDSxK9_KYfjCTMKA/module/ci/orgs/HarnessHCRInternalUAT/projects/Harness_Code/pipelines/stocoreprchecks/executions/inkPh62RTTKZksxwE0WVaQ/pipeline?stage=407qlC7DRXWlpafdd-QHtg&stageExecId=KAgWOo6uRSW2XuAjDpAkvA")
+            .build());
     assertThat(actual_3).isFalse();
   }
 }

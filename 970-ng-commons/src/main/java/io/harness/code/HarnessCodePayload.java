@@ -12,7 +12,6 @@ import io.harness.exception.InvalidRequestException;
 import java.util.Arrays;
 import lombok.Builder;
 import lombok.Value;
-import org.json.JSONObject;
 
 @Value
 @Builder
@@ -28,10 +27,25 @@ public class HarnessCodePayload {
   public static class Payload {
     String version;
     CheckPayloadKind kind;
-    JSONObject data;
+    HarnessPayloadData data;
   }
 
-  public enum CheckPayloadKind { raw, markdown }
+  public interface HarnessPayloadData {}
+
+  @Value
+  @Builder
+  public static class HarnessStagePayloadData implements HarnessPayloadData {
+    String account_id;
+    String org_identifier;
+    String project_identifier;
+    String pipeline_identifier;
+    String stage_identifier;
+    String execution_id;
+    String stage_id;
+    String stage_execution_id;
+  }
+
+  public enum CheckPayloadKind { raw, markdown, harness_stage }
 
   public enum CheckStatus {
     pending,

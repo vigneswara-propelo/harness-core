@@ -65,6 +65,11 @@ public class CIBuildStatusPushTask extends AbstractDelegateRunnableTask {
         .userName(params.getUserName())
         .connectorDetails(params.getConnectorDetails())
         .gitSCMType(params.getGitSCMType())
+        .pipelineIdentifier(params.getPipelineIdentifier())
+        .stageIdentifier(params.getStageIdentifier())
+        .planExecutionId(params.getPlanExecutionId())
+        .stageExecutionId(params.getStageExecutionId())
+        .stageSetupId(params.getStageSetupId())
         .build();
   }
 

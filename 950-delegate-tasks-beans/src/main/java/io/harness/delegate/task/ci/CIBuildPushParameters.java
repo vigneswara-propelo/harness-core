@@ -34,6 +34,7 @@ public abstract class CIBuildPushParameters implements TaskParameters, Execution
   private String owner;
   private String sha;
   private String prNumber;
+  // this is the identifier which will be used to report to git provider
   private String identifier;
   private String target_url;
   private String key; // TODO it will come via github app connector with encrypted details
@@ -44,11 +45,20 @@ public abstract class CIBuildPushParameters implements TaskParameters, Execution
   private ConnectorDetails connectorDetails; // Use connectorDetails to retrieve all information
   private GitSCMType gitSCMType;
   @NotEmpty CIBuildPushTaskType commandType;
+
   public enum CIBuildPushTaskType { STATUS, CHECKS }
+
+  private String pipelineIdentifier;
+  private String stageIdentifier;
+  private String planExecutionId;
+  private String stageSetupId;
+  private String stageExecutionId;
 
   public CIBuildPushParameters(String buildNumber, String detailsUrl, String repo, String owner, String sha,
       String prNumber, String identifier, String target_url, String key, String installId, String appId, String token,
-      String userName, GitSCMType gitSCMType, ConnectorDetails connectorDetails) {
+      String userName, io.harness.delegate.task.ci.GitSCMType gitSCMType, ConnectorDetails connectorDetails,
+      String pipelineIdentifier, String stageIdentifier, String planExecutionId, String stageSetupId,
+      String stageExecutionId) {
     this.buildNumber = buildNumber;
     this.detailsUrl = detailsUrl;
     this.repo = repo;
@@ -64,6 +74,11 @@ public abstract class CIBuildPushParameters implements TaskParameters, Execution
     this.token = token;
     this.userName = userName;
     this.connectorDetails = connectorDetails;
+    this.pipelineIdentifier = pipelineIdentifier;
+    this.stageIdentifier = stageIdentifier;
+    this.planExecutionId = planExecutionId;
+    this.stageSetupId = stageSetupId;
+    this.stageExecutionId = stageExecutionId;
   }
   @Override
   public List<ExecutionCapability> fetchRequiredExecutionCapabilities(ExpressionEvaluator maskingEvaluator) {

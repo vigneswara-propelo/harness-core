@@ -23,6 +23,7 @@ import io.harness.cistatus.service.gitlab.GitlabService;
 import io.harness.cistatus.service.gitlab.GitlabServiceImpl;
 import io.harness.code.CodeResourceClient;
 import io.harness.code.HarnessCodePayload;
+import io.harness.code.HarnessCodePayload.HarnessStagePayloadData;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
 import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoConnectionTypeDTO;
 import io.harness.delegate.beans.connector.scm.azurerepo.AzureRepoConnectorDTO;
@@ -287,14 +288,6 @@ public class GitStatusCheckHelper {
 
   private boolean sendBuildStatusToHarnessCode(GitStatusCheckParams gitStatusCheckParams) {
     String checkUid = gitStatusCheckParams.getIdentifier().replaceAll("/", "_").replaceAll("\\s", "");
-    HarnessCodePayload harnessCodePayload =
-        HarnessCodePayload.builder()
-            .status(HarnessCodePayload.CheckStatus.fromString(gitStatusCheckParams.getState()))
-            .link(gitStatusCheckParams.getDetailsUrl())
-            .summary(gitStatusCheckParams.getDesc())
-            .payload(HarnessCodePayload.Payload.builder().kind(HarnessCodePayload.CheckPayloadKind.raw).build())
-            .check_uid(checkUid)
-            .build();
     String[] repoSplit = gitStatusCheckParams.getRepo().split("/");
     int len = repoSplit.length;
     if (len < 3 || len > 5) {
@@ -313,6 +306,31 @@ public class GitStatusCheckHelper {
     if (len > 3) {
       accountId = repoSplit[len - 4];
     }
+
+    HarnessStagePayloadData payloadData = HarnessStagePayloadData.builder()
+                                              .execution_id(gitStatusCheckParams.getPlanExecutionId())
+                                              .pipeline_identifier(gitStatusCheckParams.getPipelineIdentifier())
+                                              .stage_identifier(gitStatusCheckParams.getStageIdentifier())
+                                              .stage_id(gitStatusCheckParams.getStageSetupId())
+                                              .stage_execution_id(gitStatusCheckParams.getStageExecutionId())
+                                              .account_id(accountId)
+                                              .org_identifier(orgId)
+                                              .project_identifier(projectId)
+                                              .build();
+
+    HarnessCodePayload harnessCodePayload =
+        HarnessCodePayload.builder()
+            .status(HarnessCodePayload.CheckStatus.fromString(gitStatusCheckParams.getState()))
+            .link(gitStatusCheckParams.getDetailsUrl())
+            .summary(gitStatusCheckParams.getDesc())
+            .payload(HarnessCodePayload.Payload.builder()
+                         .version("1.0.0")
+                         .kind(HarnessCodePayload.CheckPayloadKind.harness_stage)
+                         .data(payloadData)
+                         .build())
+            .check_uid(checkUid)
+            .build();
+
     log.info("Sending status {} for sha {} and repo {} and owner {} and checkUid {}", harnessCodePayload.getStatus(),
         gitStatusCheckParams.getSha(), gitStatusCheckParams.getRepo(), gitStatusCheckParams.getOwner(), checkUid);
     return NGRestUtils.getGeneralResponse(codeResourceClient.sendStatus(

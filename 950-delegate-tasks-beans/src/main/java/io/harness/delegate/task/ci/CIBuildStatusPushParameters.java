@@ -23,10 +23,12 @@ public class CIBuildStatusPushParameters extends CIBuildPushParameters {
   @Builder
   public CIBuildStatusPushParameters(String buildNumber, String detailsUrl, String repo, String owner, String sha,
       String prNumber, String identifier, String target_url, String key, String installId, String appId, String title,
-      String desc, String state, String token, String userName, GitSCMType gitSCMType,
-      ConnectorDetails connectorDetails) {
+      String desc, String state, String token, String userName, io.harness.delegate.task.ci.GitSCMType gitSCMType,
+      ConnectorDetails connectorDetails, String pipelineIdentifier, String stageIdentifier, String planExecutionId,
+      String stageSetupId, String stageExecutionId) {
     super(buildNumber, detailsUrl, repo, owner, sha, prNumber, identifier, target_url, key, installId, appId, token,
-        userName, gitSCMType, connectorDetails);
+        userName, gitSCMType, connectorDetails, pipelineIdentifier, stageIdentifier, planExecutionId, stageSetupId,
+        stageExecutionId);
     this.title = title;
     this.desc = desc;
     this.state = state;

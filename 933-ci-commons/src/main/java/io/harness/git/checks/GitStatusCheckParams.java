@@ -30,4 +30,9 @@ public class GitStatusCheckParams {
   String userName;
   ConnectorDetails connectorDetails; // Use connectorDetails to retrieve all information
   GitSCMType gitSCMType;
+  String pipelineIdentifier;
+  String stageIdentifier;
+  String planExecutionId;
+  String stageSetupId;
+  String stageExecutionId;
 }

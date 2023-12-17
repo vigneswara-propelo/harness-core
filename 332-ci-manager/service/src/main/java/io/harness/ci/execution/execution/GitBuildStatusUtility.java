@@ -239,6 +239,11 @@ public class GitBuildStatusUtility {
         .userName(params.getUserName())
         .connectorDetails(params.getConnectorDetails())
         .gitSCMType(params.getGitSCMType())
+        .stageIdentifier(params.getStageIdentifier())
+        .planExecutionId(params.getPlanExecutionId())
+        .pipelineIdentifier(params.getPipelineIdentifier())
+        .stageSetupId(params.getStageSetupId())
+        .stageExecutionId(params.getStageExecutionId())
         .build();
   }
 
@@ -308,6 +313,11 @@ public class GitBuildStatusUtility {
         .identifier(generateIdentifier(ngAccess.getAccountIdentifier(), url,
             ambiance.getMetadata().getPipelineIdentifier(), buildStatusUpdateParameter.getIdentifier()))
         .state(retrieveBuildStatusState(gitSCMType, status))
+        .pipelineIdentifier(ambiance.getMetadata().getPipelineIdentifier())
+        .stageIdentifier(buildStatusUpdateParameter.getIdentifier())
+        .planExecutionId(ambiance.getPlanExecutionId())
+        .stageSetupId(AmbianceUtils.getStageSetupIdAmbiance(ambiance))
+        .stageExecutionId(ambiance.getStageExecutionId())
         .build();
   }
 
