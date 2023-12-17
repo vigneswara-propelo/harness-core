@@ -6,6 +6,7 @@
  */
 
 package io.harness.service.instance;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
@@ -111,7 +112,7 @@ public interface InstanceService {
       EnvironmentType environmentType, String infraId, String clusterIdentifier, String displayName,
       String chartVersion, boolean filterByChartVersion);
 
-  AggregationResults<CountByServiceIdAndEnvType> getActiveServiceInstanceCountBreakdown(String accountIdentifier,
+  List<CountByServiceIdAndEnvType> getActiveServiceInstanceCountBreakdown(String accountIdentifier,
       String orgIdentifier, String projectIdentifier, List<String> serviceId, long timestampInMs);
 
   void updateInfrastructureMapping(List<String> instanceIds, String id);

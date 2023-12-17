@@ -373,7 +373,6 @@ public class InstanceDashboardServiceImpl implements InstanceDashboardService {
     instanceService
         .getActiveServiceInstanceCountBreakdown(
             accountIdentifier, orgIdentifier, projectIdentifier, serviceRefs, timestampInMs)
-        .getMappedResults()
         .forEach(countByEnvType -> {
           final String currentServiceId = countByEnvType.getServiceIdentifier();
           serviceIdToEnvTypeVsInstanceCountMap.putIfAbsent(currentServiceId, new HashMap<>());

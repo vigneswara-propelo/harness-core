@@ -6,6 +6,7 @@
  */
 
 package io.harness.repositories.instance;
+
 import static io.harness.entities.Instance.InstanceKeysAdditional;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
@@ -42,7 +43,14 @@ import com.mongodb.client.result.UpdateResult;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.FindAndReplaceOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -634,26 +642,63 @@ public class InstanceRepositoryCustomImpl implements InstanceRepositoryCustom {
     projectIdentifier, orgIdentifier and serviceId
   */
   @Override
-  public AggregationResults<CountByServiceIdAndEnvType> getActiveServiceInstanceCountBreakdown(String accountIdentifier,
+  public List<CountByServiceIdAndEnvType> getActiveServiceInstanceCountBreakdown(String accountIdentifier,
       String orgIdentifier, String projectIdentifier, List<String> serviceId, long timestampInMs) {
-    Criteria criteria =
-        getCriteriaForActiveInstances(accountIdentifier, orgIdentifier, projectIdentifier, timestampInMs)
-            .and(InstanceKeys.serviceIdentifier)
-            .in(serviceId);
+    final MutuallyExclusiveCriteriaSet criteriaSet =
+        getCriteriaSetForActiveInstances(accountIdentifier, orgIdentifier, projectIdentifier, timestampInMs);
 
-    MatchOperation matchStage = Aggregation.match(criteria);
-    GroupOperation groupEnvId =
-        group(InstanceKeys.serviceIdentifier, InstanceKeys.envType).count().as(InstanceSyncConstants.COUNT);
+    final Criteria criteria1 = criteriaSet.getCriteria1().and(InstanceKeys.serviceIdentifier).in(serviceId);
+    final Criteria criteria2 = criteriaSet.getCriteria2().and(InstanceKeys.serviceIdentifier).in(serviceId);
 
-    return secondaryMongoTemplate.aggregate(
-        newAggregation(matchStage, groupEnvId, CountByServiceIdAndEnvType.getProjection()), Instance.class,
-        CountByServiceIdAndEnvType.class);
+    final Function<Criteria, List<CountByServiceIdAndEnvType>> aggregateFunc = criteria -> {
+      MatchOperation matchStage = Aggregation.match(criteria);
+      GroupOperation groupEnvId =
+          group(InstanceKeys.serviceIdentifier, InstanceKeys.envType).count().as(InstanceSyncConstants.COUNT);
+      return secondaryMongoTemplate
+          .aggregate(newAggregation(matchStage, groupEnvId, CountByServiceIdAndEnvType.getProjection()), Instance.class,
+              CountByServiceIdAndEnvType.class)
+          .getMappedResults();
+    };
+
+    final List<CountByServiceIdAndEnvType> aggregate1 = aggregateFunc.apply(criteria1);
+    final List<CountByServiceIdAndEnvType> aggregate2 = aggregateFunc.apply(criteria2);
+
+    Map<serviceIdentifierEnvTypeRecord, List<CountByServiceIdAndEnvType>> collect =
+        Stream.concat(aggregate1.stream(), aggregate2.stream())
+            .collect(Collectors.groupingBy(
+                c -> new serviceIdentifierEnvTypeRecord(c.getServiceIdentifier(), c.getEnvType())));
+
+    final List<CountByServiceIdAndEnvType> result = new ArrayList<>();
+    collect.forEach((k, v)
+                        -> result.add(new CountByServiceIdAndEnvType(k.serviceIdentifier(), k.envType(),
+                            v.stream().map(CountByServiceIdAndEnvType::getCount).reduce(0, Integer::sum))));
+
+    return result;
   }
+
+  public record serviceIdentifierEnvTypeRecord(String serviceIdentifier, EnvironmentType envType) {}
 
   /*
     Create criteria to query for all active service instances for given accountIdentifier, orgIdentifier,
     projectIdentifier
   */
+  private MutuallyExclusiveCriteriaSet getCriteriaSetForActiveInstances(
+      String accountIdentifier, String orgIdentifier, String projectIdentifier, long timestampInMs) {
+    Criteria filterNotDeleted =
+        getCriteriaForActiveInstancesV2(accountIdentifier, orgIdentifier, projectIdentifier, null);
+    filterNotDeleted.and(InstanceKeys.createdAt).lte(timestampInMs);
+    Criteria filterDeletedAfter = getCriteriaForDeletedInstances(accountIdentifier, orgIdentifier, projectIdentifier);
+    filterDeletedAfter.and(InstanceKeys.createdAt).lte(timestampInMs).and(InstanceKeys.deletedAt).gte(timestampInMs);
+    return new MutuallyExclusiveCriteriaSet(filterNotDeleted, filterDeletedAfter);
+  }
+
+  @Data
+  @AllArgsConstructor
+  static class MutuallyExclusiveCriteriaSet {
+    @NotNull Criteria criteria1;
+    @NotNull Criteria criteria2;
+  }
+
   private Criteria getCriteriaForActiveInstances(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, long timestampInMs) {
     Criteria filterNotDeleted =

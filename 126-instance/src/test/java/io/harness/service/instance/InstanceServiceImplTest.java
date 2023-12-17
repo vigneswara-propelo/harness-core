@@ -390,17 +390,17 @@ public class InstanceServiceImplTest extends InstancesTestBase {
     long timestamp = 123L;
     String projectIdentifier = "pro";
     String serviceId = "serviceId";
-    List<String> serviceIdsList = Arrays.asList(serviceId);
+    List<String> serviceIdsList = List.of(serviceId);
     CountByServiceIdAndEnvType countByServiceIdAndEnvType =
         new CountByServiceIdAndEnvType(serviceId, EnvironmentType.Production, 1);
     AggregationResults<CountByServiceIdAndEnvType> idAggregationResults =
-        new AggregationResults<>(Arrays.asList(countByServiceIdAndEnvType), new Document());
+        new AggregationResults<>(List.of(countByServiceIdAndEnvType), new Document());
     when(instanceRepository.getActiveServiceInstanceCountBreakdown(
              accountIdentifier, orgIdentifier, projectIdentifier, serviceIdsList, timestamp))
-        .thenReturn(idAggregationResults);
+        .thenReturn(idAggregationResults.getMappedResults());
     assertThat(instanceService.getActiveServiceInstanceCountBreakdown(
                    accountIdentifier, orgIdentifier, projectIdentifier, serviceIdsList, timestamp))
-        .isEqualTo(idAggregationResults);
+        .isEqualTo(idAggregationResults.getMappedResults());
   }
 
   @Test

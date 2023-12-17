@@ -516,7 +516,7 @@ public class InstanceDashboardServiceImplTest extends InstancesTestBase {
         new AggregationResults<>(Arrays.asList(countByServiceIdAndEnvType), new Document());
     when(instanceService.getActiveServiceInstanceCountBreakdown(
              ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, Arrays.asList(SERVICE_IDENTIFIER), 10))
-        .thenReturn(countByServiceIdAndEnvTypeAggregationResults);
+        .thenReturn(countByServiceIdAndEnvTypeAggregationResults.getMappedResults());
     Map<EnvironmentType, Integer> envTypeVsInstanceCountMap = new HashMap<>();
     envTypeVsInstanceCountMap.put(EnvironmentType.Production, 2);
     Map<String, InstanceCountDetailsByEnvTypeBase> instanceCountDetailsByEnvTypeBaseMap = new HashMap<>();

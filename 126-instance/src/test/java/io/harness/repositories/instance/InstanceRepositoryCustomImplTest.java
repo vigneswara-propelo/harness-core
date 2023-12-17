@@ -12,9 +12,11 @@ import static io.harness.rule.OwnerRule.MEENA;
 import static io.harness.rule.OwnerRule.PIYUSH_BHUWALKA;
 import static io.harness.rule.OwnerRule.VIKYATH_HAREKAL;
 
+import static java.util.Comparator.comparingInt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -336,16 +338,30 @@ public class InstanceRepositoryCustomImplTest extends InstancesTestBase {
   @Owner(developers = PIYUSH_BHUWALKA)
   @Category(UnitTests.class)
   public void getActiveServiceInstanceCountBreakdownTest() {
-    CountByServiceIdAndEnvType countByServiceIdAndEnvType =
-        new CountByServiceIdAndEnvType(SERVICE_ID, EnvironmentType.Production, COUNT);
-    AggregationResults<CountByServiceIdAndEnvType> aggregationResults =
-        new AggregationResults<>(Arrays.asList(countByServiceIdAndEnvType), new Document());
     when(secondaryMongoTemplate.aggregate(
              any(Aggregation.class), eq(Instance.class), eq(CountByServiceIdAndEnvType.class)))
-        .thenReturn(aggregationResults);
-    assertThat(instanceRepositoryCustom.getActiveServiceInstanceCountBreakdown(
-                   ACCOUNT_ID, ORGANIZATION_ID, PROJECT_ID, Arrays.asList(SERVICE_ID), TIMESTAMP))
-        .isEqualTo(aggregationResults);
+        .thenReturn(new AggregationResults<>(
+            List.of(new CountByServiceIdAndEnvType(SERVICE_ID, EnvironmentType.Production, COUNT)), new Document()))
+        .thenReturn(new AggregationResults<>(
+            List.of(new CountByServiceIdAndEnvType(SERVICE_ID, EnvironmentType.PreProduction, COUNT + 3)),
+            new Document()));
+
+    List<CountByServiceIdAndEnvType> result = instanceRepositoryCustom.getActiveServiceInstanceCountBreakdown(
+        ACCOUNT_ID, ORGANIZATION_ID, PROJECT_ID, List.of(SERVICE_ID), TIMESTAMP);
+    // guarantee list order
+    result.sort(comparingInt(CountByServiceIdAndEnvType::getCount));
+
+    assertThat(result).hasSize(2);
+    assertThat(result.get(0).getCount()).isEqualTo(COUNT);
+    assertThat(result.get(0).getServiceIdentifier()).isEqualTo(SERVICE_ID);
+    assertThat(result.get(0).getEnvType()).isEqualTo(EnvironmentType.Production);
+
+    assertThat(result.get(1).getCount()).isEqualTo(COUNT + 3);
+    assertThat(result.get(1).getServiceIdentifier()).isEqualTo(SERVICE_ID);
+    assertThat(result.get(1).getEnvType()).isEqualTo(EnvironmentType.PreProduction);
+
+    verify(secondaryMongoTemplate, times(2))
+        .aggregate(any(Aggregation.class), eq(Instance.class), eq(CountByServiceIdAndEnvType.class));
   }
 
   @Test
