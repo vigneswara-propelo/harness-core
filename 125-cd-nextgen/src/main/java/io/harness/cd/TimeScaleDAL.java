@@ -7,7 +7,6 @@
 
 package io.harness.cd;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
-import static io.harness.beans.FeatureName.CDS_NG_ACC_ORG_LEVEL_SERVICE_LICENSING_FIX;
 import static io.harness.beans.FeatureName.CDS_REMOVE_TIME_BUCKET_GAPFILL_QUERY;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.timescaledb.Tables.ENVIRONMENTS;
@@ -81,35 +80,23 @@ public class TimeScaleDAL {
   public List<ServiceInfraInfo> getDistinctServiceWithExecutionInTimeRange(
       @NotNull final String accountId, Long startIntervalInMillis, Long endIntervalInMillis) {
     try {
-      if (featureFlagHelperService.isEnabled(accountId, CDS_NG_ACC_ORG_LEVEL_SERVICE_LICENSING_FIX)) {
-        return dsl
-            .selectDistinct(case_()
-                                .when(SERVICE_INFRA_INFO.SERVICE_ID.like("account.%"),
-                                    DSL.val(null, SERVICE_INFRA_INFO.ORGIDENTIFIER))
-                                .otherwise(SERVICE_INFRA_INFO.ORGIDENTIFIER)
-                                .as(SERVICE_INFRA_INFO.ORGIDENTIFIER.getName()),
-                case_()
-                    .when(
-                        SERVICE_INFRA_INFO.SERVICE_ID.like("account.%").or(SERVICE_INFRA_INFO.SERVICE_ID.like("org.%")),
-                        DSL.val(null, SERVICE_INFRA_INFO.PROJECTIDENTIFIER))
-                    .otherwise(SERVICE_INFRA_INFO.PROJECTIDENTIFIER)
-                    .as(SERVICE_INFRA_INFO.PROJECTIDENTIFIER.getName()),
-                SERVICE_INFRA_INFO.SERVICE_ID)
-            .from(SERVICE_INFRA_INFO)
-            .where(SERVICE_INFRA_INFO.ACCOUNTID.eq(accountId)
-                       .and(SERVICE_INFRA_INFO.SERVICE_STARTTS.greaterOrEqual(startIntervalInMillis))
-                       .and(SERVICE_INFRA_INFO.SERVICE_STARTTS.lessOrEqual(endIntervalInMillis)))
-            .fetchInto(ServiceInfraInfo.class);
-      } else {
-        return dsl
-            .selectDistinct(
-                SERVICE_INFRA_INFO.ORGIDENTIFIER, SERVICE_INFRA_INFO.PROJECTIDENTIFIER, SERVICE_INFRA_INFO.SERVICE_ID)
-            .from(SERVICE_INFRA_INFO)
-            .where(SERVICE_INFRA_INFO.ACCOUNTID.eq(accountId)
-                       .and(SERVICE_INFRA_INFO.SERVICE_STARTTS.greaterOrEqual(startIntervalInMillis))
-                       .and(SERVICE_INFRA_INFO.SERVICE_STARTTS.lessOrEqual(endIntervalInMillis)))
-            .fetchInto(ServiceInfraInfo.class);
-      }
+      return dsl
+          .selectDistinct(case_()
+                              .when(SERVICE_INFRA_INFO.SERVICE_ID.like("account.%"),
+                                  DSL.val(null, SERVICE_INFRA_INFO.ORGIDENTIFIER))
+                              .otherwise(SERVICE_INFRA_INFO.ORGIDENTIFIER)
+                              .as(SERVICE_INFRA_INFO.ORGIDENTIFIER.getName()),
+              case_()
+                  .when(SERVICE_INFRA_INFO.SERVICE_ID.like("account.%").or(SERVICE_INFRA_INFO.SERVICE_ID.like("org.%")),
+                      DSL.val(null, SERVICE_INFRA_INFO.PROJECTIDENTIFIER))
+                  .otherwise(SERVICE_INFRA_INFO.PROJECTIDENTIFIER)
+                  .as(SERVICE_INFRA_INFO.PROJECTIDENTIFIER.getName()),
+              SERVICE_INFRA_INFO.SERVICE_ID)
+          .from(SERVICE_INFRA_INFO)
+          .where(SERVICE_INFRA_INFO.ACCOUNTID.eq(accountId)
+                     .and(SERVICE_INFRA_INFO.SERVICE_STARTTS.greaterOrEqual(startIntervalInMillis))
+                     .and(SERVICE_INFRA_INFO.SERVICE_STARTTS.lessOrEqual(endIntervalInMillis)))
+          .fetchInto(ServiceInfraInfo.class);
     } catch (Exception e) {
       log.error(
           "Exception while fetching Distinct Services which are present in the executions in the specified time-range for account {}",
