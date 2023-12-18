@@ -243,10 +243,10 @@ public class FetchInstanceScriptStep extends CdTaskExecutable<FetchInstanceScrip
       StepResponse.StepOutcome stepOutcome =
           instanceInfoService.saveDeploymentInfoOutcomeIntoSweepingOutput(ambiance, deploymentInfoOutcome);
       InstancesOutcome instancesOutcome = buildInstancesOutcome(instanceElements);
-      executionSweepingOutputService.consume(
+      executionSweepingOutputService.consumeOptional(
           ambiance, OutputExpressionConstants.INSTANCES, instancesOutcome, StepCategory.STAGE.name());
       Set<String> instances = getInstances(instanceElements);
-      executionSweepingOutputService.consume(ambiance, OutputExpressionConstants.OUTPUT,
+      executionSweepingOutputService.consumeOptional(ambiance, OutputExpressionConstants.OUTPUT,
           HostsOutput.builder().hosts(instances).build(), StepCategory.STAGE.name());
       return builder.stepOutcome(stepOutcome).build();
     } finally {
