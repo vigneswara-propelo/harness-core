@@ -102,6 +102,7 @@ type runTestsTask struct {
 	testSplitStrategy    string
 	parallelizeTests     bool
 	testGlobs            string
+	outputs              []*pb.OutputVariable
 }
 
 func NewRunTestsTask(step *pb.UnitStep, tmpFilePath string, log *zap.SugaredLogger,
@@ -151,11 +152,12 @@ func NewRunTestsTask(step *pb.UnitStep, tmpFilePath string, log *zap.SugaredLogg
 		testSplitStrategy:    testSplitStrategy,
 		parallelizeTests:     r.GetParallelizeTests(),
 		testGlobs:            r.GetTestGlobs(),
+		outputs:              r.GetOutputs(),
 	}
 }
 
 // Run executes commands with timeout
-func (r *runTestsTask) Run(ctx context.Context) (map[string]string, int32, error) {
+func (r *runTestsTask) Run(ctx context.Context) ([]*pb.OutputVariable, int32, error) {
 	cgDirPath := filepath.Join(r.tmpFilePath, cgDir)
 	testSt := time.Now()
 
@@ -579,8 +581,8 @@ func (r *runTestsTask) getCmd(ctx context.Context, agentPath, outputVarFile stri
 
 	// Environment variables
 	outputVarCmd := ""
-	for _, o := range r.envVarOutputs {
-		outputVarCmd += fmt.Sprintf("\necho %s $%s >> %s", o, o, outputVarFile)
+	for _, o := range r.outputs {
+		outputVarCmd += fmt.Sprintf("\necho %s $%s >> %s", o.Key, o.Value, outputVarFile)
 	}
 
 	// Config file
@@ -636,7 +638,7 @@ func (r *runTestsTask) getCmd(ctx context.Context, agentPath, outputVarFile stri
 	return resolvedCmd, nil
 }
 
-func (r *runTestsTask) execute(ctx context.Context) (map[string]string, error) {
+func (r *runTestsTask) execute(ctx context.Context) ([]*pb.OutputVariable, error) {
 	start := time.Now()
 	retryCount := int32(1)
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(r.timeoutSecs))
@@ -688,8 +690,8 @@ func (r *runTestsTask) execute(ctx context.Context) (map[string]string, error) {
 		return nil, err
 	}
 
-	stepOutput := make(map[string]string)
-	if len(r.envVarOutputs) != 0 {
+	stepOutputs := []*pb.OutputVariable{}
+	if len(r.outputs) != 0 {
 		var err error
 		outputVars, err := fetchOutputVariables(outputFile, r.fs, r.log)
 		if err != nil {
@@ -697,16 +699,24 @@ func (r *runTestsTask) execute(ctx context.Context) (map[string]string, error) {
 			return nil, err
 		}
 
-		stepOutput = outputVars
+		for _, output := range r.outputs {
+			if _, ok := outputVars[output.Key]; ok {
+				stepOutput := &pb.OutputVariable{
+					Key:   output.Key,
+					Value: outputVars[output.Key],
+					Type:  output.Type,
+				}
+				stepOutputs = append(stepOutputs, stepOutput)
+			}
+		}
 	}
 
 	r.addonLogger.Infow(
 		"successfully executed run tests step",
 		"arguments", cmdToExecute,
-		"output", stepOutput,
 		"elapsed_time_ms", utils.TimeSince(start),
 	)
-	return stepOutput, nil
+	return stepOutputs, nil
 }
 
 func (r *runTestsTask) getTiRunner(agentPath string) (runner testintelligence.TestRunner, err error) {

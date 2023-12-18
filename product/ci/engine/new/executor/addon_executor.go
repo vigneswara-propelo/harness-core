@@ -71,7 +71,16 @@ func ExecuteStepOnAddon(ctx context.Context, step *pb.UnitStep, tmpFilePath stri
 	log.Infow("Successfully executed step", "step_id", stepID,
 		"elapsed_time_ms", utils.TimeSince(st))
 	stepOutput := &output.StepOutput{}
-	stepOutput.Output.Variables = ret.GetOutput()
+	if ret.GetOutput() != nil && len(ret.GetOutput()) > 0 {
+		stepOutput.Output.Variables = ret.GetOutput()
+	} else if ret.GetOutputs() != nil && len(ret.GetOutputs()) > 0 {
+		stepOutput.Output.OutputVariables = ret.GetOutputs()
+		variables := make(map[string]string)
+		for _, o := range ret.GetOutputs() {
+			variables[o.Key] = o.Value
+		}
+		stepOutput.Output.Variables = variables
+	}
 	artifact := ret.GetArtifact()
 	return stepOutput, artifact, nil
 }

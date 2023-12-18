@@ -35,6 +35,7 @@ import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.yaml.YamlSchemaTypes;
 import io.harness.yaml.core.VariableExpression;
+import io.harness.yaml.core.variables.NGVariable;
 import io.harness.yaml.extended.ci.container.ContainerResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -103,8 +104,8 @@ public class TestStepInfo extends CIAbstractStepInfo {
   @YamlSchemaTypes(value = {runtime})
   @ApiModelProperty(dataType = STRING_LIST_CLASSPATH)
   @VariableExpression(skipVariableExpression = true)
-  ParameterField<List<String>> outputs;
-  public ParameterField<List<String>> getOutputs() {
+  ParameterField<List<NGVariable>> outputs;
+  public ParameterField<List<NGVariable>> getOutputs() {
     if (ParameterField.isNull(this.outputs)) {
       this.outputs.setValue(Collections.emptyList());
     }
@@ -133,9 +134,9 @@ public class TestStepInfo extends CIAbstractStepInfo {
       "user", "pull", "shell", "volumes", "splitting"})
   public TestStepInfo(String uuid, ParameterField<String> image, BuildTool uses, Map<String, JsonNode> with,
       ContainerResource resources, ParameterField<Map<String, ParameterField<String>>> envs,
-      ParameterField<List<String>> outputs, ParameterField<List<Report>> reports, ParameterField<Boolean> privileged,
-      ParameterField<Integer> user, ParameterField<PullPolicy> pull, ParameterField<Shell> shell,
-      ParameterField<List<Volume>> volumes, Splitting splitting) {
+      ParameterField<List<NGVariable>> outputs, ParameterField<List<Report>> reports,
+      ParameterField<Boolean> privileged, ParameterField<Integer> user, ParameterField<PullPolicy> pull,
+      ParameterField<Shell> shell, ParameterField<List<Volume>> volumes, Splitting splitting) {
     this.uuid = uuid;
     this.image = image;
     this.uses = uses;

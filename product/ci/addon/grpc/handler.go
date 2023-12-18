@@ -82,14 +82,14 @@ func (h *handler) ExecuteStep(ctx context.Context, in *pb.ExecuteStepRequest) (*
 			h.log.Infow("closed the stream after Run step execution", "step_id", in.GetStep().GetId())
 		}
 		response := &pb.ExecuteStepResponse{
-			Output:     stepOutput,
+			Outputs:    stepOutput,
 			NumRetries: numRetries,
 		}
 		return response, err
 	case *enginepb.UnitStep_RunTests:
 		stepOutput, numRetries, err := newRunTestsTask(in.GetStep(), in.GetTmpFilePath(), rl.BaseLogger, rl.Writer, false, h.log).Run(ctx)
 		response := &pb.ExecuteStepResponse{
-			Output:     stepOutput,
+			Outputs:    stepOutput,
 			NumRetries: numRetries,
 		}
 		h.log.Infow("closing the stream after RunTests step execution", "step_id", in.GetStep().GetId())

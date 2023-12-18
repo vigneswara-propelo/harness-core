@@ -14,7 +14,7 @@ import io.harness.pms.contracts.plan.YamlExtraProperties;
 import io.harness.pms.contracts.plan.YamlProperties;
 import io.harness.pms.sdk.core.pipeline.variables.GenericStepVariableCreator;
 import io.harness.pms.sdk.core.variables.VariableCreatorHelper;
-import io.harness.yaml.core.variables.OutputNGVariable;
+import io.harness.yaml.core.variables.NGVariable;
 
 import com.google.common.collect.Sets;
 import java.util.HashMap;
@@ -40,8 +40,8 @@ public class RunTestStepVariableCreator extends GenericStepVariableCreator<RunTe
 
     Map<String, String> outputVariablesMap = new HashMap<>();
     if (config.getRunTestsStepInfo().getOutputVariables().getValue() != null) {
-      List<OutputNGVariable> outputNGVariables = config.getRunTestsStepInfo().getOutputVariables().getValue();
-      for (OutputNGVariable outputVariable : outputNGVariables) {
+      List<NGVariable> outputNGVariables = config.getRunTestsStepInfo().getOutputVariables().getValue();
+      for (NGVariable outputVariable : outputNGVariables) {
         outputVariablesMap.put(outputVariable.getName(), "variable");
       }
     }

@@ -36,7 +36,7 @@ const (
 
 // RunTask represents interface to execute a run step
 type RunTask interface {
-	Run(ctx context.Context) (map[string]string, int32, error)
+	Run(ctx context.Context) ([]*pb.OutputVariable, int32, error)
 }
 
 type runTask struct {
@@ -60,6 +60,7 @@ type runTask struct {
 	detach            bool
 	image             string
 	entrypoint        []string
+	outputs           []*pb.OutputVariable
 }
 
 // NewRunTask creates a run step executor
@@ -98,13 +99,14 @@ func NewRunTask(step *pb.UnitStep, prevStepOutputs map[string]*pb.StepOutput, tm
 		detach:            r.GetDetach(),
 		image:             r.GetImage(),
 		entrypoint:        r.GetEntrypoint(),
+		outputs:           r.GetOutputs(),
 	}
 }
 
 // Executes customer provided run step command with retries and timeout handling
-func (r *runTask) Run(ctx context.Context) (map[string]string, int32, error) {
+func (r *runTask) Run(ctx context.Context) ([]*pb.OutputVariable, int32, error) {
 	var err error
-	var o map[string]string
+	var o []*pb.OutputVariable
 	for i := int32(1); i <= r.numRetries; i++ {
 		if o, err = r.execute(ctx, i); err == nil {
 			st := time.Now()
@@ -128,7 +130,7 @@ func (r *runTask) Run(ctx context.Context) (map[string]string, int32, error) {
 	return nil, r.numRetries, err
 }
 
-func (r *runTask) execute(ctx context.Context, retryCount int32) (map[string]string, error) {
+func (r *runTask) execute(ctx context.Context, retryCount int32) ([]*pb.OutputVariable, error) {
 	start := time.Now()
 	ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(r.timeoutSecs))
 	defer cancel()
@@ -170,25 +172,32 @@ func (r *runTask) execute(ctx context.Context, retryCount int32) (map[string]str
 		return nil, err
 	}
 
-	stepOutput := make(map[string]string)
-	if len(r.envVarOutputs) != 0 {
+	stepOutputs := []*pb.OutputVariable{}
+	if len(r.outputs) != 0 {
 		var err error
 		outputVars, err := fetchOutputVariables(outputFile, r.fs, r.log)
 		if err != nil {
 			logCommandExecErr(r.log, "error encountered while fetching output of run step", r.id, cmdToExecute, retryCount, start, err)
 			return nil, err
 		}
-
-		stepOutput = outputVars
+		for _, output := range r.outputs {
+			if _, ok := outputVars[output.Key]; ok {
+				stepOutput := &pb.OutputVariable{
+					Key:   output.Key,
+					Value: outputVars[output.Key],
+					Type:  output.Type,
+				}
+				stepOutputs = append(stepOutputs, stepOutput)
+			}
+		}
 	}
 
 	r.addonLogger.Infow(
 		"Successfully executed run step",
 		"arguments", cmdArgs,
-		"output", stepOutput,
 		"elapsed_time_ms", utils.TimeSince(start),
 	)
-	return stepOutput, nil
+	return stepOutputs, nil
 }
 
 func (r *runTask) getScript(ctx context.Context, outputVarFile string) (string, error) {
@@ -196,7 +205,7 @@ func (r *runTask) getScript(ctx context.Context, outputVarFile string) (string, 
 		return "", nil
 	}
 
-	outputVarCmd := getOutputVarCmd(r.envVarOutputs, outputVarFile, isPowershell(r.shellType), isPython(r.shellType))
+	outputVarCmd := r.getOutputVarCmd(r.outputs, outputVarFile)
 	resolvedCmd, err := resolveExprInCmd(r.command)
 	if err != nil {
 		return "", err
@@ -266,6 +275,30 @@ func (r *runTask) getEarlyExitCommand() (string, error) {
 		return "", nil
 	}
 	return "", fmt.Errorf("Unknown shell type: %s", r.shellType)
+}
+
+func (r *runTask) getOutputVarCmd(outputVars []*pb.OutputVariable, outputFile string) string {
+	isPsh := isPowershell(r.shellType)
+	isPython := isPython(r.shellType)
+
+	cmd := ""
+	if isPsh {
+		cmd += fmt.Sprintf("\nNew-Item %s", outputFile)
+	} else if isPython {
+		cmd += "\nimport os\n"
+	}
+
+	for _, o := range outputVars {
+		if isPsh {
+			cmd += fmt.Sprintf("\n$val = \"%s $Env:%s\" \nAdd-Content -Path %s -Value $val", o.Key, o.Value, outputFile)
+		} else if isPython {
+			cmd += fmt.Sprintf("with open('%s', 'a') as out_file:\n\tout_file.write('%s ' + os.getenv('%s') + '\\n')\n", outputFile, o.Key, o.Value)
+		} else {
+			cmd += fmt.Sprintf("\necho \"%s $%s\" >> %s", o.Key, o.Value, outputFile)
+		}
+	}
+
+	return cmd
 }
 
 func logCommandExecErr(log *zap.SugaredLogger, errMsg, stepID, args string, retryCount int32, startTime time.Time, err error) {

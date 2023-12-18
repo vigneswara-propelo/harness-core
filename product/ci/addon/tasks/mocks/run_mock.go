@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	pb "github.com/harness/harness-core/product/ci/engine/proto"
 )
 
 // MockRunTask is a mock of RunTask interface.
@@ -40,10 +41,10 @@ func (m *MockRunTask) EXPECT() *MockRunTaskMockRecorder {
 }
 
 // Run mocks base method.
-func (m *MockRunTask) Run(ctx context.Context) (map[string]string, int32, error) {
+func (m *MockRunTask) Run(ctx context.Context) ([]*pb.OutputVariable, int32, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Run", ctx)
-	ret0, _ := ret[0].(map[string]string)
+	ret0, _ := ret[0].([]*pb.OutputVariable)
 	ret1, _ := ret[1].(int32)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2

@@ -26,7 +26,6 @@ import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlUtils;
-import io.harness.yaml.core.variables.OutputNGVariable;
 
 import com.google.common.collect.Sets;
 import java.io.IOException;
@@ -103,12 +102,7 @@ public class TestStepPlanCreator extends CIPMSStepPlanCreatorV2<TestStepNode> {
                         .stream()
                         .findFirst()
                         .orElse(null)))
-                .outputVariables(
-                    ParameterField.createValueField(testStepInfo.getOutputs()
-                                                        .getValue()
-                                                        .stream()
-                                                        .map(o -> OutputNGVariable.builder().name(o).build())
-                                                        .collect(Collectors.toList())))
+                .outputVariables(testStepInfo.getOutputs())
                 .build())
         .build();
   }

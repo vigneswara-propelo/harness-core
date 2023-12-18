@@ -21,6 +21,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.CIStepInfo;
 import io.harness.beans.steps.CIStepInfoType;
 import io.harness.beans.steps.TypeInfo;
+import io.harness.beans.steps.stepinfo.serializer.OutputVariableDeserializer;
 import io.harness.beans.yaml.extended.CIShellType;
 import io.harness.beans.yaml.extended.ImagePullPolicy;
 import io.harness.beans.yaml.extended.reports.UnitTestReport;
@@ -33,15 +34,17 @@ import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.yaml.YamlSchemaTypes;
 import io.harness.yaml.core.VariableExpression;
-import io.harness.yaml.core.variables.OutputNGVariable;
+import io.harness.yaml.core.variables.NGVariable;
 import io.harness.yaml.extended.ci.container.ContainerResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModelProperty;
 import java.beans.ConstructorProperties;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +83,8 @@ public class RunStepInfo implements CIStepInfo, WithConnectorRef {
   @YamlSchemaTypes(value = {runtime})
   @ApiModelProperty(dataType = "[Lio.harness.yaml.core.variables.OutputNGVariable;")
   @VariableExpression(skipVariableExpression = true)
-  private ParameterField<List<OutputNGVariable>> outputVariables;
+  @JsonDeserialize(using = OutputVariableDeserializer.class)
+  private ParameterField<List<NGVariable>> outputVariables;
   @YamlSchemaTypes(value = {string})
   @ApiModelProperty(dataType = STRING_MAP_CLASSPATH)
   private ParameterField<Map<String, ParameterField<String>>> envVariables;
@@ -105,7 +109,7 @@ public class RunStepInfo implements CIStepInfo, WithConnectorRef {
   @ConstructorProperties({"identifier", "name", "retry", "command", "outputVariables", "reports", "envVariables",
       "image", "connectorRef", "resources", "privileged", "runAsUser", "shell", "imagePullPolicy"})
   public RunStepInfo(String identifier, String name, Integer retry, ParameterField<String> command,
-      ParameterField<List<OutputNGVariable>> outputVariables, ParameterField<UnitTestReport> reports,
+      ParameterField<List<NGVariable>> outputVariables, ParameterField<UnitTestReport> reports,
       ParameterField<Map<String, ParameterField<String>>> envVariables, ParameterField<String> image,
       ParameterField<String> connectorRef, ContainerResource resources, ParameterField<Boolean> privileged,
       ParameterField<Integer> runAsUser, ParameterField<CIShellType> shell,
@@ -153,5 +157,12 @@ public class RunStepInfo implements CIStepInfo, WithConnectorRef {
   @Override
   public boolean skipUnresolvedExpressionsCheck() {
     return true;
+  }
+
+  public ParameterField<List<NGVariable>> getOutputVariables() {
+    if (ParameterField.isNotNull(this.outputVariables)) {
+      return this.outputVariables;
+    }
+    return ParameterField.createValueField(Collections.emptyList());
   }
 }

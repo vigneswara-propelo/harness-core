@@ -7,11 +7,13 @@
 
 package io.harness.ci.execution.serializer;
 
+import static io.harness.beans.serializer.RunTimeInputHandler.resolveStringParameterV2;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.CI_BUILD_STATUS;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_BUILD_STATUS;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_FAILED_STEPS;
 import static io.harness.ci.commonconstants.BuildEnvironmentConstants.DRONE_STAGE_STATUS;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import static java.lang.String.format;
 
@@ -25,11 +27,17 @@ import io.harness.ci.ff.CIFeatureFlagService;
 import io.harness.common.NGExpressionUtils;
 import io.harness.delegate.beans.ci.CIInitializeTaskParams;
 import io.harness.delegate.task.stepstatus.StepExecutionStatus;
+import io.harness.encryption.SecretRefData;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlUtils;
+import io.harness.product.ci.engine.proto.OutputVariable;
 import io.harness.repositories.CIStepStatusRepository;
+import io.harness.yaml.core.variables.NGVariable;
+import io.harness.yaml.core.variables.NGVariableType;
+import io.harness.yaml.core.variables.SecretNGVariable;
+import io.harness.yaml.core.variables.StringNGVariable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class SerializerUtils {
   @Inject protected CIStepStatusRepository ciStepStatusRepository;
@@ -358,5 +367,61 @@ public class SerializerUtils {
       statusEnvVars.put(CI_BUILD_STATUS, StepExecutionStatus.SUCCESS.name());
     }
     return statusEnvVars;
+  }
+
+  public static List<OutputVariable> getOutputVarFromNGVar(List<NGVariable> ngVariables, String identifier) {
+    if (isNotEmpty(ngVariables)) {
+      List<OutputVariable> outputVariables =
+          ngVariables.stream()
+              .map(outputVariable -> {
+                String val = null;
+                OutputVariable.OutputType outputType = null;
+                if (ParameterField.isNotNull(outputVariable.getCurrentValue())) {
+                  if (outputVariable.getType().equals(NGVariableType.STRING)) {
+                    outputType = OutputVariable.OutputType.STRING;
+                    val = getOutputVarFromStringNGVar(outputVariable, identifier);
+                  } else if (outputVariable.getType().equals(NGVariableType.SECRET)) {
+                    outputType = OutputVariable.OutputType.SECRET;
+                    val = getOutputVarFromSecretNGVar(outputVariable);
+                  }
+                }
+                return OutputVariable.newBuilder()
+                    .setType(outputType)
+                    .setKey(outputVariable.getName())
+                    .setValue(val)
+                    .build();
+              }
+
+                  )
+              .filter(outputVariable -> outputVariable.getType() != null && outputVariable.getValue() != null)
+              .collect(Collectors.toList());
+
+      return outputVariables;
+    }
+    return Collections.emptyList();
+  }
+
+  private static String getOutputVarFromStringNGVar(NGVariable ngVariable, String identifier) {
+    StringNGVariable stringNGVariable = (StringNGVariable) ngVariable;
+    String val = null;
+    if (!ParameterField.isBlank(stringNGVariable.getCurrentValue())) {
+      val = resolveStringParameterV2(
+          "outputVariable", identifier, identifier, (ParameterField<String>) stringNGVariable.getCurrentValue(), false);
+    }
+    return val;
+  }
+
+  private static String getOutputVarFromSecretNGVar(NGVariable ngVariable) {
+    SecretNGVariable secretNGVariable = (SecretNGVariable) ngVariable;
+    String val = null;
+    if (ParameterField.isNotNull(secretNGVariable.getCurrentValue())) {
+      ParameterField<SecretRefData> secretRefDataParameterField =
+          (ParameterField<SecretRefData>) secretNGVariable.getCurrentValue();
+      if (ParameterField.isNotNull(secretRefDataParameterField)) {
+        SecretRefData secretRefData = (SecretRefData) secretRefDataParameterField.fetchFinalValue();
+        val = secretRefData.getIdentifier();
+      }
+    }
+    return val;
   }
 }

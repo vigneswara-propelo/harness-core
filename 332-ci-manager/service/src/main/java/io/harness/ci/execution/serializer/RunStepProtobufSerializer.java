@@ -31,14 +31,16 @@ import io.harness.ng.core.NGAccess;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.product.ci.engine.proto.OutputVariable;
 import io.harness.product.ci.engine.proto.Report;
 import io.harness.product.ci.engine.proto.RunStep;
 import io.harness.product.ci.engine.proto.ShellType;
 import io.harness.product.ci.engine.proto.StepContext;
 import io.harness.product.ci.engine.proto.UnitStep;
+import io.harness.utils.SweepingOutputSecretEvaluator;
 import io.harness.utils.TimeoutUtils;
 import io.harness.yaml.core.timeout.Timeout;
-import io.harness.yaml.core.variables.OutputNGVariable;
+import io.harness.yaml.core.variables.NGVariable;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -55,6 +57,8 @@ public class RunStepProtobufSerializer implements ProtobufStepSerializer<RunStep
   @Inject CIExecutionServiceConfig ciExecutionServiceConfig;
   @Inject private SerializerUtils serializerUtils;
 
+  @Inject private SweepingOutputSecretEvaluator sweepingOutputSecretEvaluator;
+
   public UnitStep serializeStepWithStepParameters(RunStepInfo runStepInfo, Integer port, String callbackId,
       String logKey, String identifier, ParameterField<Timeout> parameterFieldTimeout, String accountId,
       String stepName, Ambiance ambiance, String podName) {
@@ -65,6 +69,8 @@ public class RunStepProtobufSerializer implements ProtobufStepSerializer<RunStep
     if (port == null) {
       throw new CIStageExecutionException("Port can not be null");
     }
+
+    sweepingOutputSecretEvaluator.resolve(runStepInfo);
 
     String gitSafeCMD = SerializerUtils.getSafeGitDirectoryCmd(
         RunTimeInputHandler.resolveShellType(runStepInfo.getShell()), accountId, featureFlagService);
@@ -108,12 +114,13 @@ public class RunStepProtobufSerializer implements ProtobufStepSerializer<RunStep
     }
 
     if (isNotEmpty(runStepInfo.getOutputVariables().getValue())) {
-      List<String> outputVarNames = runStepInfo.getOutputVariables()
-                                        .getValue()
-                                        .stream()
-                                        .map(OutputNGVariable::getName)
-                                        .collect(Collectors.toList());
+      List<String> outputVarNames =
+          runStepInfo.getOutputVariables().getValue().stream().map(NGVariable::getName).collect(Collectors.toList());
       runStepBuilder.addAllEnvVarOutputs(outputVarNames);
+
+      List<OutputVariable> outputVariables =
+          SerializerUtils.getOutputVarFromNGVar(runStepInfo.getOutputVariables().getValue(), identifier);
+      runStepBuilder.addAllOutputs(outputVariables);
     }
 
     long timeout = TimeoutUtils.getTimeoutInSeconds(parameterFieldTimeout, runStepInfo.getDefaultTimeout());

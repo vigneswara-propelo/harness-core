@@ -333,5 +333,17 @@ func getStepStatusPayload(ctx context.Context, stepID, accountID, delegateID, de
 			ArtifactMetadata:       &artifactMetadata,
 		},
 	}
+	if stepOutput != nil {
+		var stepOutputDataV2 []payloads.OutputV2
+		for _, o := range stepOutput.Output.OutputVariables {
+			stepOutput := payloads.OutputV2{
+				Key:   o.Key,
+				Value: o.Value,
+				Type:  o.Type.String(),
+			}
+			stepOutputDataV2 = append(stepOutputDataV2, stepOutput)
+		}
+		stepStatusTaskResponseData.StepStatus.StepOutputV2 = stepOutputDataV2
+	}
 	return stepStatusTaskResponseData
 }

@@ -33,7 +33,7 @@ import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.utils.TimeoutUtils;
 import io.harness.yaml.core.timeout.Timeout;
-import io.harness.yaml.core.variables.OutputNGVariable;
+import io.harness.yaml.core.variables.NGVariable;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -69,7 +69,7 @@ public class VmRunTestStepSerializer {
       outputVarNames = runTestsStepInfo.getOutputVariables()
                            .getValue()
                            .stream()
-                           .map(OutputNGVariable::getName)
+                           .map(NGVariable::getName)
                            .collect(Collectors.toList());
     }
     String image =

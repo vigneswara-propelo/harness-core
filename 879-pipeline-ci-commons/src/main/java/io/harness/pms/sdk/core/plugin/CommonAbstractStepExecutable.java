@@ -41,6 +41,7 @@ import io.harness.beans.yaml.extended.infrastrucutre.OSType;
 import io.harness.ci.executable.CiAsyncExecutable;
 import io.harness.ci.ff.CIFeatureFlagService;
 import io.harness.ci.metrics.ExecutionMetricsService;
+import io.harness.data.encoding.EncodingUtils;
 import io.harness.delegate.TaskSelector;
 import io.harness.delegate.beans.ErrorNotifyResponseData;
 import io.harness.delegate.beans.TaskData;
@@ -51,6 +52,7 @@ import io.harness.delegate.beans.ci.vm.VmTaskExecutionResponse;
 import io.harness.delegate.task.HDelegateTask;
 import io.harness.delegate.task.stepstatus.StepExecutionStatus;
 import io.harness.delegate.task.stepstatus.StepMapOutput;
+import io.harness.delegate.task.stepstatus.StepOutputV2;
 import io.harness.delegate.task.stepstatus.StepStatus;
 import io.harness.delegate.task.stepstatus.StepStatusTaskResponseData;
 import io.harness.delegate.task.stepstatus.artifact.ArtifactMetadata;
@@ -83,12 +85,14 @@ import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.sdk.core.steps.io.StepResponse.StepResponseBuilder;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.product.ci.engine.proto.ExecuteStepRequest;
+import io.harness.product.ci.engine.proto.OutputVariable;
 import io.harness.product.ci.engine.proto.PluginStep;
 import io.harness.product.ci.engine.proto.RunStep;
 import io.harness.product.ci.engine.proto.RunTestsStep;
 import io.harness.product.ci.engine.proto.UnitStep;
 import io.harness.repositories.CILogKeyRepository;
 import io.harness.repositories.CIStageOutputRepository;
+import io.harness.security.SimpleEncryption;
 import io.harness.steps.StepUtils;
 import io.harness.tasks.ResponseData;
 import io.harness.waiter.WaitNotifyEngine;
@@ -98,6 +102,7 @@ import software.wings.beans.SerializationFormat;
 import software.wings.beans.TaskType;
 
 import com.google.inject.Inject;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -111,6 +116,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class CommonAbstractStepExecutable extends CiAsyncExecutable {
   public static final String CI_EXECUTE_STEP = "CI_EXECUTE_STEP";
+  public static final String SWEEPING_OUTPUT_SECRET_OBTAIN_PREFIX = "${sweepingOutputSecrets.obtain(\"";
 
   @Inject private CIDelegateTaskExecutor ciDelegateTaskExecutor;
   @Inject private ExecutionMetricsService executionMetricsService;
@@ -453,13 +459,12 @@ public abstract class CommonAbstractStepExecutable extends CiAsyncExecutable {
       publishArtifact(ambiance, stepParameters, stepIdentifier, stepStatus, stepResponseBuilder);
     }
 
-    if (shouldPublishOutcome(stepStatus) && stepStatus.getOutput() != null) {
-      populateCIStageOutputs(((StepMapOutput) stepStatus.getOutput()).getMap(), AmbianceUtils.getAccountId(ambiance),
-          ambiance.getStageExecutionId());
+    if (shouldPublishOutcome(stepStatus) && (stepStatus.getOutput() != null || stepStatus.getOutputV2() != null)) {
+      Map<String, String> outputVariables = getOutputVariables(stepStatus);
+      populateCIStageOutputs(outputVariables, AmbianceUtils.getAccountId(ambiance), ambiance.getStageExecutionId());
       StepResponse.StepOutcome stepOutcome =
           StepResponse.StepOutcome.builder()
-              .outcome(
-                  CIStepOutcome.builder().outputVariables(((StepMapOutput) stepStatus.getOutput()).getMap()).build())
+              .outcome(CIStepOutcome.builder().outputVariables(outputVariables).build())
               .name("output")
               .build();
       stepResponseBuilder.stepOutcome(stepOutcome);
@@ -603,6 +608,28 @@ public abstract class CommonAbstractStepExecutable extends CiAsyncExecutable {
     } else {
       return errorMessage;
     }
+  }
+
+  private Map<String, String> getOutputVariables(StepStatus stepStatus) {
+    if (stepStatus.getOutputV2() != null) {
+      SimpleEncryption encryption = new SimpleEncryption();
+      Map<String, String> resolvedOutputVariables = new HashMap<>();
+      List<StepOutputV2> outputVariables = stepStatus.getOutputV2();
+      outputVariables.forEach(outputVariable -> {
+        if (OutputVariable.OutputType.SECRET.toString().equals(outputVariable.getType())
+            && isNotEmpty(outputVariable.getValue())) {
+          String encodedValue = EncodingUtils.encodeBase64(
+              encryption.encrypt(outputVariable.getValue().getBytes(StandardCharsets.UTF_8)));
+          String finalValue =
+              SWEEPING_OUTPUT_SECRET_OBTAIN_PREFIX + outputVariable.getKey() + "\",\"" + encodedValue + "\")}";
+          resolvedOutputVariables.put(outputVariable.getKey(), finalValue);
+        } else {
+          resolvedOutputVariables.put(outputVariable.getKey(), outputVariable.getValue());
+        }
+      });
+      return resolvedOutputVariables;
+    }
+    return ((StepMapOutput) stepStatus.getOutput()).getMap();
   }
 
   protected StepArtifacts handleArtifact(

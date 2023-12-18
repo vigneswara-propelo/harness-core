@@ -20,7 +20,7 @@ import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
-import io.harness.yaml.core.variables.OutputNGVariable;
+import io.harness.yaml.core.variables.NGVariable;
 
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
@@ -60,8 +60,8 @@ public class RunStepVariableCreator extends GenericStepVariableCreator<RunStepNo
 
     Map<String, String> outputVariablesMap = new HashMap<>();
     if (config.getRunStepInfo().getOutputVariables().getValue() != null) {
-      List<OutputNGVariable> outputNGVariables = config.getRunStepInfo().getOutputVariables().getValue();
-      for (OutputNGVariable outputVariable : outputNGVariables) {
+      List<NGVariable> outputNGVariables = config.getRunStepInfo().getOutputVariables().getValue();
+      for (NGVariable outputVariable : outputNGVariables) {
         outputVariablesMap.put(outputVariable.getName(), "variable");
       }
     }

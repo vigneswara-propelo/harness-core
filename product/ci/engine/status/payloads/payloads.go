@@ -28,6 +28,13 @@ type (
 		ArtifactMetadata       *ArtifactMetadataConf `json:"artifactMetadata"`
 		StepOutput             *Output               `json:"output"`
 		Error                  string                `json:"error"`
+		StepOutputV2           []OutputV2            `json:"outputV2"`
+	}
+
+	OutputV2 struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+		Type  string `json:"type"`
 	}
 
 	Output struct {

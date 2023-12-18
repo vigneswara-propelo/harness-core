@@ -21,6 +21,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.CIStepInfo;
 import io.harness.beans.steps.CIStepInfoType;
 import io.harness.beans.steps.TypeInfo;
+import io.harness.beans.steps.stepinfo.serializer.OutputVariableDeserializer;
 import io.harness.beans.yaml.extended.CIShellType;
 import io.harness.beans.yaml.extended.ImagePullPolicy;
 import io.harness.beans.yaml.extended.TIBuildTool;
@@ -37,12 +38,13 @@ import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.yaml.YamlSchemaTypes;
 import io.harness.yaml.core.VariableExpression;
-import io.harness.yaml.core.variables.OutputNGVariable;
+import io.harness.yaml.core.variables.NGVariable;
 import io.harness.yaml.extended.ci.container.ContainerResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModelProperty;
 import java.beans.ConstructorProperties;
 import java.util.List;
@@ -116,7 +118,8 @@ public class RunTestsStepInfo implements CIStepInfo {
   @YamlSchemaTypes(value = {runtime})
   @VariableExpression(skipVariableExpression = true)
   @ApiModelProperty(dataType = "[Lio.harness.yaml.core.variables.OutputNGVariable;")
-  private ParameterField<List<OutputNGVariable>> outputVariables;
+  @JsonDeserialize(using = OutputVariableDeserializer.class)
+  private ParameterField<List<NGVariable>> outputVariables;
   @YamlSchemaTypes(value = {string})
   @ApiModelProperty(dataType = STRING_MAP_CLASSPATH)
   private ParameterField<Map<String, ParameterField<String>>> envVariables;
@@ -150,7 +153,7 @@ public class RunTestsStepInfo implements CIStepInfo {
       ParameterField<String> testAnnotations, ParameterField<String> testRoot, ParameterField<String> packages,
       ParameterField<String> namespaces, ParameterField<Boolean> runOnlySelectedTests,
       ParameterField<String> preCommand, ParameterField<String> postCommand,
-      ParameterField<List<OutputNGVariable>> outputVariables,
+      ParameterField<List<NGVariable>> outputVariables,
       ParameterField<Map<String, ParameterField<String>>> envVariables,
       ParameterField<TIDotNetBuildEnvName> buildEnvironment, ParameterField<TIDotNetVersion> frameworkVersion,
       ParameterField<TIPythonVersion> pythonVersion, ParameterField<Boolean> privileged,

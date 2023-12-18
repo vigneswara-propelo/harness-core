@@ -32,6 +32,7 @@ import io.harness.pms.execution.OrchestrationFacilitatorType;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.yaml.YamlSchemaTypes;
 import io.harness.yaml.core.VariableExpression;
+import io.harness.yaml.core.variables.NGVariable;
 import io.harness.yaml.extended.ci.container.ContainerResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -63,8 +64,8 @@ public class ScriptStepInfo extends CIAbstractStepInfo implements WithConnectorR
   @YamlSchemaTypes(value = {runtime})
   @ApiModelProperty(dataType = STRING_LIST_CLASSPATH)
   @VariableExpression(skipVariableExpression = true)
-  ParameterField<List<String>> outputs;
-  public ParameterField<List<String>> getOutputs() {
+  ParameterField<List<NGVariable>> outputs;
+  public ParameterField<List<NGVariable>> getOutputs() {
     if (ParameterField.isNull(this.outputs)) {
       this.outputs.setValue(Collections.emptyList());
     }
@@ -102,7 +103,7 @@ public class ScriptStepInfo extends CIAbstractStepInfo implements WithConnectorR
   @Builder
   @ConstructorProperties({"uuid", "run", "outputs", "envs", "reports", "image", "resources", "privileged", "user",
       "shell", "pull", "volumes"})
-  public ScriptStepInfo(String uuid, ParameterField<String> run, ParameterField<List<String>> outputs,
+  public ScriptStepInfo(String uuid, ParameterField<String> run, ParameterField<List<NGVariable>> outputs,
       ParameterField<Map<String, ParameterField<String>>> envs, ParameterField<List<Report>> reports,
       ParameterField<String> image, ContainerResource resources, ParameterField<Boolean> privileged,
       ParameterField<Integer> user, ParameterField<Shell> shell, ParameterField<PullPolicy> pull,

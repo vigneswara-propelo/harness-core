@@ -29,13 +29,15 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.yaml.ParameterField;
+import io.harness.product.ci.engine.proto.OutputVariable;
 import io.harness.product.ci.engine.proto.Report;
 import io.harness.product.ci.engine.proto.RunTestsStep;
 import io.harness.product.ci.engine.proto.StepContext;
 import io.harness.product.ci.engine.proto.UnitStep;
+import io.harness.utils.SweepingOutputSecretEvaluator;
 import io.harness.utils.TimeoutUtils;
 import io.harness.yaml.core.timeout.Timeout;
-import io.harness.yaml.core.variables.OutputNGVariable;
+import io.harness.yaml.core.variables.NGVariable;
 
 import com.google.inject.Inject;
 import java.util.List;
@@ -49,6 +51,7 @@ public class RunTestsStepProtobufSerializer implements ProtobufStepSerializer<Ru
   @Inject private Supplier<DelegateCallbackToken> delegateCallbackTokenSupplier;
   @Inject private CIFeatureFlagService featureFlagService;
   @Inject private SerializerUtils serializerUtils;
+  @Inject private SweepingOutputSecretEvaluator sweepingOutputSecretEvaluator;
 
   public UnitStep serializeStepWithStepParameters(RunTestsStepInfo runTestsStepInfo, Integer port, String callbackId,
       String logKey, String identifier, ParameterField<Timeout> parameterFieldTimeout, String accountId,
@@ -60,6 +63,8 @@ public class RunTestsStepProtobufSerializer implements ProtobufStepSerializer<Ru
     if (port == null) {
       throw new CIStageExecutionException("Port can not be null");
     }
+
+    sweepingOutputSecretEvaluator.resolve(runTestsStepInfo);
 
     RunTestsStep.Builder runTestsStepBuilder = RunTestsStep.newBuilder();
     String gitSafeCMD = SerializerUtils.getSafeGitDirectoryCmd(
@@ -102,9 +107,12 @@ public class RunTestsStepProtobufSerializer implements ProtobufStepSerializer<Ru
       List<String> outputVarNames = runTestsStepInfo.getOutputVariables()
                                         .getValue()
                                         .stream()
-                                        .map(OutputNGVariable::getName)
+                                        .map(NGVariable::getName)
                                         .collect(Collectors.toList());
       runTestsStepBuilder.addAllEnvVarOutputs(outputVarNames);
+      List<OutputVariable> outputVariables =
+          SerializerUtils.getOutputVarFromNGVar(runTestsStepInfo.getOutputVariables().getValue(), identifier);
+      runTestsStepBuilder.addAllOutputs(outputVariables);
     }
 
     Map<String, String> envvars =

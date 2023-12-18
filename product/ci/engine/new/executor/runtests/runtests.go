@@ -129,7 +129,16 @@ func (e *runTestsStep) execute(ctx context.Context) (*output.StepOutput, int32, 
 	}
 	e.log.Infow("successfully executed run tests step", "elapsed_time_ms", utils.TimeSince(st))
 	stepOutput := &output.StepOutput{}
-	stepOutput.Output.Variables = ret.GetOutput()
+	if ret.GetOutput() != nil && len(ret.GetOutput()) > 0 {
+		stepOutput.Output.Variables = ret.GetOutput()
+	} else if ret.GetOutputs() != nil && len(ret.GetOutputs()) > 0 {
+		stepOutput.Output.OutputVariables = ret.GetOutputs()
+		variables := make(map[string]string)
+		for _, o := range ret.GetOutputs() {
+			variables[o.Key] = o.Value
+		}
+		stepOutput.Output.Variables = variables
+	}
 	return stepOutput, ret.GetNumRetries(), nil
 }
 

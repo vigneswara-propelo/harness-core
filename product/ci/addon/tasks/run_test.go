@@ -325,7 +325,7 @@ func TestExecuteSuccessWithOutput(t *testing.T) {
 	var buf bytes.Buffer
 	numRetries := int32(1)
 	filePath := "/tmp/idoutput.txt"
-	envVar := "abc"
+	// envVar := "abc"
 	envVal := "xyz"
 
 	fs := filesystem.NewMockFileSystem(ctrl)
@@ -355,6 +355,14 @@ func TestExecuteSuccessWithOutput(t *testing.T) {
 		fs:                fs,
 		cmdContextFactory: cmdFactory,
 		procWriter:        &buf,
+		outputs: []*pb.OutputVariable{
+
+			{
+				Key:   "abc",
+				Value: "xyz",
+				Type:  pb.OutputVariable_STRING,
+			},
+		},
 	}
 
 	cmdFactory.EXPECT().CmdContextWithSleep(gomock.Any(), cmdExitWaitTime, "sh", gomock.Any(), gomock.Any()).Return(cmd)
@@ -369,7 +377,7 @@ func TestExecuteSuccessWithOutput(t *testing.T) {
 
 	o, retries, err := e.Run(ctx)
 	assert.Nil(t, err)
-	assert.Equal(t, o[envVar], envVal)
+	assert.Equal(t, o[0].Value, envVal)
 	assert.Equal(t, retries, numRetries)
 }
 
@@ -407,6 +415,14 @@ func TestExecuteErrorWithOutput(t *testing.T) {
 		fs:                fs,
 		cmdContextFactory: cmdFactory,
 		procWriter:        &buf,
+		outputs: []*pb.OutputVariable{
+
+			{
+				Key:   "abc",
+				Value: "xyz",
+				Type:  pb.OutputVariable_STRING,
+			},
+		},
 	}
 
 	cmdFactory.EXPECT().CmdContextWithSleep(gomock.Any(), cmdExitWaitTime, "sh", gomock.Any(), gomock.Any()).Return(cmd)

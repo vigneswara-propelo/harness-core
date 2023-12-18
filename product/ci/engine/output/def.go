@@ -6,6 +6,10 @@
 // Package output provides the definitions for stage and step outputs
 package output
 
+import (
+	pb "github.com/harness/harness-core/product/ci/engine/proto"
+)
+
 // StageOutput is combination of outputs produced by steps in a stage. It can be referenced
 // by a step using expression values e.g. JEXL. At start of a stage, stage output is empty.
 //
@@ -17,5 +21,6 @@ type StageOutput map[string]*StepOutput
 type StepOutput struct {
 	Output struct {
 		Variables map[string]string `json:"outputVariables"`
+		OutputVariables []*pb.OutputVariable `json:"outputVariablesV2"`
 	} `json:"output"`
 }
