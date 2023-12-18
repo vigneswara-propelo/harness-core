@@ -34,7 +34,6 @@ import org.apache.commons.lang3.StringUtils;
 @OwnedBy(CDC)
 public interface StageMetadataNotificationHelper {
   String STAGE_NODE_TYPE = "STAGE";
-  String CD_MODULE_TYPE = "cd";
   String DEPLOYMENT_STAGE_TYPE = "Deployment";
   String CD_STAGE_METADATA_ROW_FORMAT = "     %s  :  %s";
   String CD_STAGE_HEADER_FORMAT = "%s : ";
@@ -58,8 +57,10 @@ public interface StageMetadataNotificationHelper {
       @NotNull Set<String> formattedUpcomingStages, @NotNull Scope scope, @NotNull String planExecutionId);
 
   static boolean isGraphNodeOfCDDeploymentStageType(@NotNull GraphLayoutNodeDTO node) {
-    return STAGE_NODE_TYPE.equals(node.getNodeGroup()) && DEPLOYMENT_STAGE_TYPE.equals(node.getNodeType())
-        && CD_MODULE_TYPE.equals(node.getModule());
+    // this check is enough to check CD deployment stages, as another module won't have stages with same type
+    // "Deployment" we are not checking module info as in some cases module info is not being populated correctly ex1:
+    // running looping CD stages, multiService cd stages, etc.
+    return STAGE_NODE_TYPE.equals(node.getNodeGroup()) && DEPLOYMENT_STAGE_TYPE.equals(node.getNodeType());
   }
 
   /**

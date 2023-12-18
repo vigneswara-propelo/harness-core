@@ -151,14 +151,14 @@ public class StageMetadataNotificationHelperImpl implements StageMetadataNotific
           "Error occurred while listStageExecutionFormattedSummary with accountId:{}, orgId:{}, projectId:{}, executionIds:[{}] ",
           scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier(),
           cdStageExecutionIdentifiers, ex);
-      log.warn("Defaulting to stage names for these finished CD stages: [{}]", cdStageExecutionIdentifiers);
+      log.warn("Defaulting to stage names for these CD stages: [{}]", cdStageExecutionIdentifiers);
     }
     if (isNull(cdFinishedFormattedSummary)) {
       log.warn(
           "Null response obtained while listStageExecutionFormattedSummary with accountId:{}, orgId:{}, projectId:{}, executionIds:[{}] ",
           scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier(),
           cdStageExecutionIdentifiers);
-      log.warn("Defaulting to stage names for these finished CD stages: [{}]", cdStageExecutionIdentifiers);
+      log.warn("Defaulting to stage names for these CD stages: [{}]", cdStageExecutionIdentifiers);
       cdFinishedFormattedSummary = new HashMap<>();
     }
 
@@ -217,10 +217,35 @@ public class StageMetadataNotificationHelperImpl implements StageMetadataNotific
       return;
     }
     if (isNull(formattedRunningStages) || isNull(scope) || StringUtils.isBlank(planExecutionId)) {
-      throw new InvalidRequestException("Formatted running stages and scope and planExecutionId is required");
+      throw new InvalidRequestException("Formatted running stages and scope and plan id is required");
     }
-    // TODO: optimistically use execution info wherever applicable
-    setFormattedSummaryOfUpcomingStages(runningStages, formattedRunningStages, scope, planExecutionId);
+
+    // IMP: changing the reference, as we will be removing stages from runningStages
+    Set<StageSummary> runningStagesInternal = new LinkedHashSet<>(runningStages);
+    Map<String, String> formattedRunningStagesIdentifierMap = new HashMap<>();
+
+    handleFinishedStagesWithExecutionIdentifierAbsent(runningStagesInternal, formattedRunningStagesIdentifierMap);
+    // now we have stages with stage execution identifiers
+    handleCDFinishedStages(runningStagesInternal, formattedRunningStagesIdentifierMap, scope);
+    handleGenericStages(runningStagesInternal, formattedRunningStagesIdentifierMap);
+
+    if (!runningStagesInternal.isEmpty()) {
+      // this isn't expected
+      log.error(
+          "Unknown error in setFormattedSummaryOfRunningStages: unable to process [{}] stages", runningStagesInternal);
+      throw new IllegalStateException(
+          String.format("Error while formatting running stages, unable to process [%s] stages", runningStagesInternal));
+    }
+    runningStages.forEach(stageSummary -> {
+      Optional<String> optionalFormattedStage =
+          Optional.ofNullable(formattedRunningStagesIdentifierMap.get(stageSummary.getStageIdentifier()));
+
+      formattedRunningStages.add(optionalFormattedStage.orElseThrow(
+          ()
+              -> new IllegalStateException(
+                  String.format("Error while formatting running stages, unable to process %s stage",
+                      stageSummary.getStageIdentifier()))));
+    });
   }
 
   @Override

@@ -840,9 +840,18 @@ public class DeploymentStagePMSPlanCreatorV2Test extends CDNGTestBase {
       latch.countDown();
     });
 
-    verify(executorService, times(2)).submit(any(Runnable.class));
-    assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
-    verify(deploymentStagePlanCreationInfoService, times(1))
+    // test looping case
+    deploymentStageNode.setIdentifier("stageId<+strategy.identifierPostFix>");
+    deploymentStageNode.setName("stage Name<+strategy.identifierPostFix>");
+    executorService.submit(() -> {
+      deploymentStagePMSPlanCreator.saveSingleServiceEnvDeploymentStagePlanCreationSummary(
+          servicePlanCreationResponse, ctx, deploymentStageNode);
+      latch.countDown();
+    });
+
+    verify(executorService, times(4)).submit(any(Runnable.class));
+    assertThat(latch.await(10, TimeUnit.SECONDS)).isTrue();
+    verify(deploymentStagePlanCreationInfoService, times(2))
         .save(DeploymentStagePlanCreationInfo.builder()
                   .planExecutionId("planExeId")
                   .accountIdentifier("accountId")
