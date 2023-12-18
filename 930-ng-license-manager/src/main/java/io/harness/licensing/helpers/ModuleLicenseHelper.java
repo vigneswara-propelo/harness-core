@@ -206,14 +206,6 @@ public class ModuleLicenseHelper {
   }
 
   public static ModuleLicense compareAndUpdate(ModuleLicense current, ModuleLicense update) {
-    if (update.isAddOn() != current.isAddOn()) {
-      if (update.isAddOn()) {
-        throw new InvalidRequestException("Updating base ModuleLicense to add-on ModuleLicense is not allowed");
-      } else {
-        throw new InvalidRequestException("Updating add-on ModuleLicense to base ModuleLicense is not allowed");
-      }
-    }
-
     if (update.getLicenseType() != null && !update.getLicenseType().equals(current.getLicenseType())) {
       current.setLicenseType(update.getLicenseType());
     }

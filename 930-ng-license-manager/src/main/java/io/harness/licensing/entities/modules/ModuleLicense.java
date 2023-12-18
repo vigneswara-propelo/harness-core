@@ -63,7 +63,6 @@ public abstract class ModuleLicense implements PersistentEntity, NGAccountAccess
   @LastModifiedDate protected Long lastUpdatedAt;
   protected Boolean trialExtended;
   protected Integer developerLicenseCount;
-  boolean isAddOn;
 
   public boolean checkExpiry(long currentTime) {
     return currentTime >= expiryTime;
