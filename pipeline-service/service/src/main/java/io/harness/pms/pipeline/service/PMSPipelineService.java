@@ -15,6 +15,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.eventsframework.schemas.entity.EntityDetailProtoDTO;
 import io.harness.git.model.ChangeType;
+import io.harness.ng.core.template.TemplateMergeResponseDTO;
 import io.harness.pms.governance.PipelineSaveResponse;
 import io.harness.pms.pipeline.ClonePipelineDTO;
 import io.harness.pms.pipeline.ExecutionSummaryInfo;
@@ -71,9 +72,10 @@ public interface PMSPipelineService {
   Optional<PipelineEntity> getAndValidatePipeline(
       String accountId, String orgIdentifier, String projectIdentifier, String identifier, boolean deleted);
 
-  PipelineGetResult getAndValidatePipeline(String accountId, String orgIdentifier, String projectIdentifier,
-      String identifier, boolean deleted, boolean getMetadataOnly, boolean loadFromFallbackBranch,
-      boolean loadFromCache, boolean validateAsync);
+  PipelineGetResult validatePipeline(String accountId, String orgIdentifier, String projectIdentifier,
+      String pipelineId, boolean loadFromCache, boolean validateAsync,
+      TemplateMergeResponseDTO templateMergeResponseDTO, PipelineEntity pipelineEntity);
+
   String validatePipeline(String accountId, String orgIdentifier, String projectIdentifier, String identifier,
       boolean loadFromFallbackBranch, boolean loadFromCache, boolean validateAsync, PipelineEntity pipelineEntity);
 

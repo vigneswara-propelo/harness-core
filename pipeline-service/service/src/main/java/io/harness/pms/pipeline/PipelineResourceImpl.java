@@ -249,15 +249,33 @@ public class PipelineResourceImpl implements YamlSchemaResource, PipelineResourc
     log.info(String.format("Retrieving pipeline with identifier %s in project %s, org %s, account %s", pipelineId,
         projectId, orgId, accountId));
 
-    Optional<PipelineEntity> pipelineEntity;
+    Optional<PipelineEntity> pipelineEntity = pmsPipelineService.getPipeline(accountId, orgId, projectId, pipelineId,
+        false, false, loadFromFallbackBranch, GitXCacheMapper.parseLoadFromCacheHeaderParam(loadFromCache));
+    if (pipelineEntity.isEmpty()) {
+      throw new EntityNotFoundException(
+          String.format("Pipeline with the given ID: %s does not exist or has been deleted.", pipelineId));
+    }
+
+    String templateResolvedPipelineYaml = null;
+    TemplateMergeResponseDTO templateMergeResponseDTO = null;
+    if (getTemplatesResolvedPipeline) {
+      try {
+        templateMergeResponseDTO =
+            pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity.get(), loadFromCache);
+        templateResolvedPipelineYaml = templateMergeResponseDTO.getMergedPipelineYaml();
+      } catch (Exception e) {
+        log.info("Cannot get resolved templates pipeline YAML");
+      }
+    }
+
     // if validateAsync is true, then this ID wil be of the event started for the async validation process, which can be
     // queried on using another API to get the result of the async validation. If validateAsync is false, then this ID
     // is not needed and will be null
     String validationUUID;
     try {
-      PipelineGetResult pipelineGetResult = pmsPipelineService.getAndValidatePipeline(accountId, orgId, projectId,
-          pipelineId, false, false, Boolean.TRUE.equals(loadFromFallbackBranch),
-          GitXCacheMapper.parseLoadFromCacheHeaderParam(loadFromCache), validateAsync);
+      PipelineGetResult pipelineGetResult = pmsPipelineService.validatePipeline(accountId, orgId, projectId, pipelineId,
+          GitXCacheMapper.parseLoadFromCacheHeaderParam(loadFromCache), validateAsync, templateMergeResponseDTO,
+          pipelineEntity.get());
       pipelineEntity = pipelineGetResult.getPipelineEntity();
       validationUUID = pipelineGetResult.getAsyncValidationUUID();
     } catch (PolicyEvaluationFailureException pe) {
@@ -292,19 +310,11 @@ public class PipelineResourceImpl implements YamlSchemaResource, PipelineResourc
 
     pipeline.setPublicAccessResponse(getPublicContextResponse(accountId, orgId, projectId, pipelineId));
 
-    if (getTemplatesResolvedPipeline) {
-      try {
-        String templateResolvedPipelineYaml = "";
-        TemplateMergeResponseDTO templateMergeResponseDTO =
-            pipelineTemplateHelper.resolveTemplateRefsInPipeline(pipelineEntity.get(), loadFromCache);
-        templateResolvedPipelineYaml = templateMergeResponseDTO.getMergedPipelineYaml();
-        pipeline.setResolvedTemplatesPipelineYaml(templateResolvedPipelineYaml);
-      } catch (Exception e) {
-        log.info("Cannot get resolved templates pipeline YAML");
-      }
-    }
     if (validateAsync) {
       pipeline.setValidationUuid(validationUUID);
+    }
+    if (getTemplatesResolvedPipeline) {
+      pipeline.setResolvedTemplatesPipelineYaml(templateResolvedPipelineYaml);
     }
     return ResponseDTO.newResponse(version, pipeline);
   }

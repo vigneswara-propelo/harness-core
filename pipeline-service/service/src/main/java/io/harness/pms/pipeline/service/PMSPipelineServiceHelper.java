@@ -267,6 +267,25 @@ public class PMSPipelineServiceHelper {
     }
   }
 
+  public void validatePipelineEntity(
+      PipelineEntity pipelineEntity, boolean loadFromCache, TemplateMergeResponseDTO templateMergeResponseDTO) {
+    long start = System.currentTimeMillis();
+    GovernanceMetadata governanceMetadata = validatePipeline(pipelineEntity, templateMergeResponseDTO, loadFromCache);
+    log.info("[PMS_PipelineService] validating pipeline took {}ms for projectId {}, orgId {}, accountId {}",
+        System.currentTimeMillis() - start, pipelineEntity.getProjectIdentifier(), pipelineEntity.getOrgIdentifier(),
+        pipelineEntity.getAccountIdentifier());
+    if (governanceMetadata.getDeny()) {
+      List<String> denyingRuleSetIds = governanceMetadata.getDetailsList()
+                                           .stream()
+                                           .filter(PolicySetMetadata::getDeny)
+                                           .map(PolicySetMetadata::getIdentifier)
+                                           .collect(Collectors.toList());
+      throw new PolicyEvaluationFailureException(
+          "Pipeline does not follow the Policies in these Policy Sets: " + denyingRuleSetIds.toString(),
+          governanceMetadata, pipelineEntity.getYaml());
+    }
+  }
+
   public PipelineEntity updatePipelineFilters(PipelineEntity pipelineToUpdate, String uuid, Integer yamlHash) {
     return pmsPipelineRepository.updatePipelineFilters(pipelineToUpdate, uuid, yamlHash);
   }
