@@ -17,8 +17,8 @@ import static java.lang.String.format;
 
 import io.harness.cdstage.remote.CDStageConfigClient;
 import io.harness.clients.BackstageResourceClient;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
-import io.harness.idp.backstagebeans.BackstageCatalogEntityTypes;
+import io.harness.idp.backstage.beans.BackstageCatalogEntityTypes;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
 import io.harness.idp.governance.beans.ScorecardExpandedValue;
 import io.harness.idp.governance.beans.ServiceScorecards;
 import io.harness.idp.governance.beans.ServiceScorecardsMapper;

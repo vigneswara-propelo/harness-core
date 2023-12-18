@@ -5,16 +5,18 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.backstagebeans;
+package io.harness.idp.backstage.entities;
 
-import static io.harness.idp.backstagebeans.Constants.ENTITY_UNKNOWN_OWNER;
-import static io.harness.idp.backstagebeans.Constants.PIPE_DELIMITER;
-import static io.harness.idp.backstagebeans.Constants.PROJECT;
+import static io.harness.idp.backstage.Constants.ENTITY_UNKNOWN_OWNER;
+import static io.harness.idp.backstage.Constants.PIPE_DELIMITER;
+import static io.harness.idp.backstage.Constants.PROJECT;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.idp.backstage.beans.BackstageCatalogEntityTypes;
 import io.harness.spec.server.idp.v1.model.HarnessBackstageEntities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
@@ -47,6 +49,7 @@ public class BackstageCatalogSystemEntity extends BackstageCatalogEntity {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
+  @JsonIgnoreProperties(ignoreUnknown = true)
   public static class Spec {
     private String owner;
     private String domain;

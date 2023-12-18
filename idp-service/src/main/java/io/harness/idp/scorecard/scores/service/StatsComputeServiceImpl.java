@@ -13,7 +13,7 @@ import static io.harness.idp.common.DateUtils.yesterdayInMilliseconds;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.clients.BackstageResourceClient;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
 import io.harness.idp.namespace.service.NamespaceService;
 import io.harness.idp.scorecard.checks.entity.CheckStatsEntity;
 import io.harness.idp.scorecard.checks.entity.CheckStatusEntity;

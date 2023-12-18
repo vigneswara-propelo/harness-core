@@ -1,0 +1,18 @@
+// Copyright 2023 Harness Inc. All rights reserved.
+// Use of this source code is governed by the PolyForm Free Trial 1.0.0 license
+// that can be found in the licenses directory at the root of this repository, also available at
+// https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
+
+syntax = "proto3";
+
+package io.harness.eventsframework.schemas.idp;
+
+option java_multiple_files = true;
+option go_package = "953_events_api";
+
+message IdpCatalogEntitiesSyncCaptureEvent {
+  string account_identifier = 1;
+  string entity_uid = 2;
+  string action = 3;
+  string sync_mode = 4;
+}

@@ -14,7 +14,7 @@ import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceL
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
 import io.harness.idp.common.JacksonUtils;
 import io.harness.idp.proxy.services.IdpAuthInterceptor;
 import io.harness.idp.scorecard.datapoints.parser.factory.DataPointParserFactory;

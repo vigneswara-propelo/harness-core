@@ -5,19 +5,14 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.backstagebeans;
+package io.harness.idp.backstage.service;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
-import lombok.experimental.UtilityClass;
-
-@UtilityClass
 @OwnedBy(HarnessTeam.IDP)
-public class Constants {
-  public static final String ENTITY_UNKNOWN_OWNER = "Unknown";
-  public static final String PIPE_DELIMITER = "|";
-  public static final String PROJECT = "Project";
-  public static final String SERVICE = "Service";
-  public static final String ORGANIZATION = "Organization";
+public interface BackstageService {
+  void sync();
+  boolean sync(String accountIdentifier);
+  boolean sync(String accountIdentifier, String entityUid, String action, String syncMode);
 }

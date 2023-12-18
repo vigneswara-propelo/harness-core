@@ -1411,6 +1411,51 @@ paths:
         - x-api-key: []
       tags:
         - PluginInfo
+  /v1/backstage-harness/sync:
+    post:
+      summary: Sync Backstage Entities as Harness Entities for all IDP enabled accounts
+      tags:
+        - BackstageHarness
+      responses:
+        '200':
+          $ref: '#/components/responses/BackstageHarnessSyncEntitiesResponse'
+      operationId: backstage-harness-sync-all-accounts
+      description: Syncs Backstage Entities as Harness Entities for all IDP enabled accounts
+      x-internal: true
+      security:
+        - x-api-key: []
+  /v1/backstage-harness/sync/for-account:
+    post:
+      summary: Sync Backstage Entities as Harness Entities for given account
+      tags:
+        - BackstageHarness
+      responses:
+        '200':
+          $ref: '#/components/responses/BackstageHarnessSyncEntitiesResponse'
+      operationId: backstage-harness-sync-for-account
+      description: Syncs Backstage Entities as Harness Entities for given account
+      x-internal: true
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+  /v1/backstage-harness/sync/for-entity:
+    post:
+      summary: Sync Backstage entity as Harness entity for given account and entity with specified action and sync mode
+      tags:
+        - BackstageHarness
+      requestBody:
+        $ref: '#/components/requestBodies/BackstageHarnessSyncRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/BackstageHarnessSyncEntitiesResponse'
+      operationId: backstage-harness-sync-for-account-entity
+      description: Sync Backstage entity as Harness entity for given account and entity with specified action and sync mode
+      x-internal: true
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
 components:
   schemas:
     BackstageEnvVariable:
@@ -3866,6 +3911,36 @@ components:
           $ref: '#/components/schemas/FileUploadInfo'
       required:
         - info
+    BackstageHarnessSyncRequest:
+      title: BackstageHarnessSyncRequest
+      type: object
+      properties:
+        entity_identifier:
+          type: string
+        action:
+          type: string
+          enum:
+            - create
+            - update
+            - delete
+        sync_mode:
+          type: string
+          enum:
+            - sync
+            - async
+      required:
+        - entity_identifier
+        - action
+        - sync_mode
+    BackstageHarnessSyncEntitiesResponse:
+      title: BackstageHarnessSyncEntitiesResponse
+      type: object
+      description: Response for backstage harness entities sync
+      properties:
+        status:
+          type: string
+      required:
+        - status
   parameters:
     AccountHeader:
       name: Harness-Account
@@ -4222,6 +4297,11 @@ components:
         multipart/form-data:
           schema:
             $ref: '#/components/schemas/FileUpload'
+    BackstageHarnessSyncRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BackstageHarnessSyncRequest'
   responses:
     BackstageEnvVariableResponse:
       description: Example response
@@ -4672,6 +4752,12 @@ components:
         application/yaml:
           schema:
             $ref: '#/components/schemas/FileUploadResponse'
+    BackstageHarnessSyncEntitiesResponse:
+      description: Response for backstage harness entities sync
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BackstageHarnessSyncEntitiesResponse'
   securitySchemes:
     x-api-key:
       name: x-api-key
@@ -4722,3 +4808,5 @@ tags:
     description: Scores Information V2
   - name: StatusInfo
     description: Status Information
+  - name: BackstageHarness
+    description: Backstage Harness

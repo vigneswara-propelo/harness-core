@@ -5,11 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.backstagebeans;
+package io.harness.idp.backstage.entities;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.idp.backstage.beans.BackstageCatalogEntityTypes;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,15 +26,15 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.IDP)
-public class BackstageCatalogTemplateEntity extends BackstageCatalogEntity {
+public class BackstageCatalogResourceEntity extends BackstageCatalogEntity {
   private Spec spec;
 
-  public BackstageCatalogTemplateEntity() {
-    super.setKind(BackstageCatalogEntityTypes.TEMPLATE.kind);
+  public BackstageCatalogResourceEntity() {
+    super.setKind(BackstageCatalogEntityTypes.RESOURCE.kind);
   }
 
-  public BackstageCatalogTemplateEntity(Spec spec) {
-    super.setKind(BackstageCatalogEntityTypes.TEMPLATE.kind);
+  public BackstageCatalogResourceEntity(Spec spec) {
+    super.setKind(BackstageCatalogEntityTypes.RESOURCE.kind);
     this.spec = spec;
   }
 
@@ -40,9 +42,12 @@ public class BackstageCatalogTemplateEntity extends BackstageCatalogEntity {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
+  @JsonIgnoreProperties(ignoreUnknown = true)
   public static class Spec {
     private String type;
     private String owner;
-    // TODO: Add output, parameters, steps
+    private String system;
+    private Object dependsOn;
+    private Object dependencyOf;
   }
 }

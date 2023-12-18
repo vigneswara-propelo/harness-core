@@ -11,8 +11,8 @@ import static io.harness.NGCommonEntityConstants.ACCOUNT_KEY;
 import static io.harness.NGCommonEntityConstants.ORG_KEY;
 import static io.harness.NGCommonEntityConstants.PROJECT_KEY;
 import static io.harness.NGCommonEntityConstants.SERVICE_IDENTIFIER_KEY;
-import static io.harness.idp.backstagebeans.Constants.ENTITY_UNKNOWN_OWNER;
-import static io.harness.idp.backstagebeans.Constants.SERVICE;
+import static io.harness.idp.backstage.Constants.ENTITY_UNKNOWN_OWNER;
+import static io.harness.idp.backstage.Constants.SERVICE;
 import static io.harness.idp.onboarding.utils.Constants.BACKSTAGE_HARNESS_ANNOTATION_CD_SERVICE_ID;
 import static io.harness.idp.onboarding.utils.Constants.BACKSTAGE_HARNESS_ANNOTATION_PROJECT_URL;
 import static io.harness.idp.onboarding.utils.Constants.BACKSTAGE_HARNESS_ANNOTATION_SERVICES;
@@ -23,8 +23,8 @@ import static io.harness.idp.onboarding.utils.Constants.SERVICE_URL;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.backstagebeans.BackstageCatalogComponentEntity;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogComponentEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
 import io.harness.idp.onboarding.config.OnboardingModuleConfig;
 import io.harness.ng.core.service.dto.ServiceResponseDTO;
 

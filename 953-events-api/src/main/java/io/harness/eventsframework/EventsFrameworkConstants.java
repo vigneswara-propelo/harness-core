@@ -260,4 +260,9 @@ public final class EventsFrameworkConstants {
   public static final int IDP_MODULE_LICENSE_USAGE_CAPTURE_EVENT_MAX_TOPIC_SIZE = 100000;
   public static final Duration IDP_MODULE_LICENSE_USAGE_CAPTURE_EVENT_MAX_PROCESSING_TIME = Duration.ofSeconds(10);
   public static final int IDP_MODULE_LICENSE_USAGE_CAPTURE_EVENT_BATCH_SIZE = 1;
+
+  public static final String IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT = "idp_catalog_entities_sync_capture";
+  public static final int IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT_MAX_TOPIC_SIZE = 100000;
+  public static final Duration IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT_MAX_PROCESSING_TIME = Duration.ofSeconds(20);
+  public static final int IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT_BATCH_SIZE = 1;
 }

@@ -5,10 +5,19 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.backstagebeans;
+package io.harness.idp.backstage.beans;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.idp.backstage.entities.BackstageCatalogApiEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogComponentEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogDomainEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogGroupEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogLocationEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogResourceEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogSystemEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogTemplateEntity;
 
 @OwnedBy(HarnessTeam.IDP)
 public enum BackstageCatalogEntityTypes {

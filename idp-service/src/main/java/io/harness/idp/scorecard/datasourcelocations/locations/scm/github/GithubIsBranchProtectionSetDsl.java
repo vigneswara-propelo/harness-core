@@ -12,7 +12,7 @@ import static io.harness.idp.scorecard.datapoints.constants.Inputs.BRANCH_NAME;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
 import io.harness.idp.scorecard.datapoints.entity.DataPointEntity;
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.ScmBaseDslNoLoop;
 import io.harness.spec.server.idp.v1.model.InputValue;

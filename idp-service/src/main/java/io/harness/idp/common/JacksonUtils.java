@@ -36,6 +36,19 @@ public class JacksonUtils {
     }
   }
 
+  public static <T> T readValueForObject(Object object, Class<T> clazz) {
+    if (object == null) {
+      return null;
+    }
+    try {
+      return clazz.cast(mapper.readValue(mapper.writeValueAsString(object), clazz));
+    } catch (Exception ex) {
+      log.error("Error in readValue json object to corresponding clazz pojo. Error = {}", ex.getMessage(), ex);
+      throw new UnexpectedException(
+          "Error in readValue json object to corresponding clazz pojo. Error = " + ex.getMessage());
+    }
+  }
+
   public static <T> List<T> convert(Object entities, Class<?> clazz) {
     return convert(mapper, entities, clazz);
   }

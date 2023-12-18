@@ -5,12 +5,13 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.backstagebeans;
+package io.harness.idp.backstage.entities;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.idp.backstage.beans.BackstageCatalogEntityTypes;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,15 +26,18 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @OwnedBy(HarnessTeam.IDP)
-public class BackstageCatalogUserEntity extends BackstageCatalogEntity {
+public class BackstageCatalogTemplateEntity extends BackstageCatalogEntity {
+  private static final String API_VERSION = "backstage.io/v1beta2";
   private Spec spec;
 
-  public BackstageCatalogUserEntity() {
-    super.setKind(BackstageCatalogEntityTypes.USER.kind);
+  public BackstageCatalogTemplateEntity() {
+    super.setApiVersion(API_VERSION);
+    super.setKind(BackstageCatalogEntityTypes.TEMPLATE.kind);
   }
 
-  public BackstageCatalogUserEntity(Spec spec) {
-    super.setKind(BackstageCatalogEntityTypes.USER.kind);
+  public BackstageCatalogTemplateEntity(Spec spec) {
+    super.setApiVersion(API_VERSION);
+    super.setKind(BackstageCatalogEntityTypes.TEMPLATE.kind);
     this.spec = spec;
   }
 
@@ -41,10 +45,12 @@ public class BackstageCatalogUserEntity extends BackstageCatalogEntity {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
+  @JsonIgnoreProperties(ignoreUnknown = true)
   public static class Spec {
-    private String displayName;
-    private String email;
-    private String picture;
-    private List<String> memberOf;
+    private String type;
+    private String owner;
+    private Object parameters;
+    private Object steps;
+    private Object output;
   }
 }

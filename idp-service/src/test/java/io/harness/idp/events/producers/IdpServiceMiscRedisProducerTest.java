@@ -52,7 +52,7 @@ public class IdpServiceMiscRedisProducerTest extends CategoryTest {
   @Before
   public void setup() {
     MockitoAnnotations.openMocks(this);
-    streamProducer = new IdpServiceMiscRedisProducer(eventProducer);
+    streamProducer = new IdpServiceMiscRedisProducer(eventProducer, eventProducer);
   }
 
   @Test

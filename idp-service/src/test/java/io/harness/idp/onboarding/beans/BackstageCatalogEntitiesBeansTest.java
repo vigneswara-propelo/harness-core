@@ -7,11 +7,11 @@
 
 package io.harness.idp.onboarding.beans;
 
-import static io.harness.idp.backstagebeans.Constants.ENTITY_UNKNOWN_OWNER;
-import static io.harness.idp.backstagebeans.Constants.ORGANIZATION;
-import static io.harness.idp.backstagebeans.Constants.PIPE_DELIMITER;
-import static io.harness.idp.backstagebeans.Constants.PROJECT;
-import static io.harness.idp.backstagebeans.Constants.SERVICE;
+import static io.harness.idp.backstage.Constants.ENTITY_UNKNOWN_OWNER;
+import static io.harness.idp.backstage.Constants.ORGANIZATION;
+import static io.harness.idp.backstage.Constants.PIPE_DELIMITER;
+import static io.harness.idp.backstage.Constants.PROJECT;
+import static io.harness.idp.backstage.Constants.SERVICE;
 import static io.harness.rule.OwnerRule.SATHISH;
 
 import static junit.framework.TestCase.assertEquals;
@@ -20,10 +20,10 @@ import static junit.framework.TestCase.assertNotNull;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.idp.backstagebeans.BackstageCatalogComponentEntity;
-import io.harness.idp.backstagebeans.BackstageCatalogDomainEntity;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
-import io.harness.idp.backstagebeans.BackstageCatalogSystemEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogComponentEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogDomainEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogSystemEntity;
 import io.harness.rule.Owner;
 import io.harness.spec.server.idp.v1.model.HarnessBackstageEntities;
 

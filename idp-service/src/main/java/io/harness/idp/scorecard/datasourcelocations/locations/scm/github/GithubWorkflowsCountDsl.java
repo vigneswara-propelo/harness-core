@@ -9,7 +9,7 @@ package io.harness.idp.scorecard.datasourcelocations.locations.scm.github;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
 import io.harness.idp.scorecard.datapoints.entity.DataPointEntity;
 import io.harness.idp.scorecard.datasourcelocations.locations.scm.ScmBaseDslLoop;
 import io.harness.idp.scorecard.scores.beans.DataFetchDTO;

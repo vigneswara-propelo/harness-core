@@ -30,6 +30,10 @@ public interface BackstageResourceClient {
 
   @GET Call<Object> getCatalogEntities(@Url String url);
 
+  @GET(CATALOG_API + "/entities/by-name/{name}")
+  Call<Object> getCatalogEntityByName(
+      @Path("accountIdentifier") String accountIdentifier, @Path(value = "name", encoded = true) String name);
+
   @GET Call<Object> getCatalogEntityFacets(@Url String url);
 
   @POST(CATALOG_API + "/locations")

@@ -7,7 +7,7 @@
 
 package io.harness.idp.scorecard.scores.service;
 
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
 import io.harness.idp.scorecard.scorecards.beans.ScorecardAndChecks;
 import io.harness.spec.server.idp.v1.model.ScorecardFilter;
 import io.harness.spec.server.idp.v1.model.ScorecardRecalibrateInfo;

@@ -7,7 +7,7 @@
 
 package io.harness.idp.onboarding.service;
 
-import static io.harness.idp.backstagebeans.Constants.SERVICE;
+import static io.harness.idp.backstage.Constants.SERVICE;
 import static io.harness.rule.OwnerRule.SATHISH;
 
 import static junit.framework.TestCase.assertEquals;
@@ -30,10 +30,10 @@ import io.harness.delegate.beans.connector.ConnectorType;
 import io.harness.delegate.beans.connector.scm.GitConnectionType;
 import io.harness.delegate.beans.connector.scm.github.GithubConnectorDTO;
 import io.harness.eventsframework.entity_crud.EntityChangeDTO;
-import io.harness.idp.backstagebeans.BackstageCatalogComponentEntity;
-import io.harness.idp.backstagebeans.BackstageCatalogDomainEntity;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
-import io.harness.idp.backstagebeans.BackstageCatalogSystemEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogComponentEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogDomainEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogSystemEntity;
 import io.harness.idp.common.CommonUtils;
 import io.harness.idp.common.delegateselectors.cache.DelegateSelectorsCache;
 import io.harness.idp.events.producers.IdpEntityCrudStreamProducer;

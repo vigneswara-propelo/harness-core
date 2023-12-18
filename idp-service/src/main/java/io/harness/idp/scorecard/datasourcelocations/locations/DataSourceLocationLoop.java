@@ -9,7 +9,7 @@ package io.harness.idp.scorecard.datasourcelocations.locations;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
 import io.harness.idp.scorecard.common.beans.DataSourceConfig;
 import io.harness.idp.scorecard.common.beans.HttpConfig;
 import io.harness.idp.scorecard.datasourcelocations.beans.ApiRequestDetails;

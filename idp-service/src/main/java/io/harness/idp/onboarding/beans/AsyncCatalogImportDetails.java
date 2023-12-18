@@ -9,7 +9,7 @@ package io.harness.idp.onboarding.beans;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.idp.backstagebeans.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity;
 
 import java.util.List;
 import javax.validation.constraints.NotNull;

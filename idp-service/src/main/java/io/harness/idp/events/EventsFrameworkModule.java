@@ -44,6 +44,10 @@ public class EventsFrameworkModule extends AbstractModule {
           .annotatedWith(Names.named(EventsFrameworkConstants.IDP_MODULE_LICENSE_USAGE_CAPTURE_EVENT))
           .toInstance(
               NoOpConsumer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME, EventsFrameworkConstants.DUMMY_GROUP_NAME));
+      bind(Consumer.class)
+          .annotatedWith(Names.named(EventsFrameworkConstants.IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT))
+          .toInstance(
+              NoOpConsumer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME, EventsFrameworkConstants.DUMMY_GROUP_NAME));
       bind(Producer.class)
           .annotatedWith(Names.named(EventsFrameworkConstants.SETUP_USAGE))
           .toInstance(NoOpProducer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME));
@@ -52,6 +56,9 @@ public class EventsFrameworkModule extends AbstractModule {
           .toInstance(NoOpProducer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME));
       bind(Producer.class)
           .annotatedWith(Names.named(EventsFrameworkConstants.IDP_MODULE_LICENSE_USAGE_CAPTURE_EVENT))
+          .toInstance(NoOpProducer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME));
+      bind(Producer.class)
+          .annotatedWith(Names.named(EventsFrameworkConstants.IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT))
           .toInstance(NoOpProducer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME));
     } else {
       RedissonClient redissonClient = RedissonClientFactory.getClient(redisConfig);
@@ -67,6 +74,13 @@ public class EventsFrameworkModule extends AbstractModule {
               EventsFrameworkConstants.IDP_MODULE_LICENSE_USAGE_CAPTURE_EVENT_MAX_PROCESSING_TIME,
               EventsFrameworkConstants.IDP_MODULE_LICENSE_USAGE_CAPTURE_EVENT_BATCH_SIZE,
               redisConfig.getEnvNamespace()));
+      bind(Consumer.class)
+          .annotatedWith(Names.named(EventsFrameworkConstants.IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT))
+          .toInstance(RedisConsumer.of(EventsFrameworkConstants.IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT,
+              IDP_SERVICE.getServiceId(), redissonClient,
+              EventsFrameworkConstants.IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT_MAX_PROCESSING_TIME,
+              EventsFrameworkConstants.IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT_BATCH_SIZE,
+              redisConfig.getEnvNamespace()));
       bind(Producer.class)
           .annotatedWith(Names.named(EventsFrameworkConstants.SETUP_USAGE))
           .toInstance(RedisProducer.of(EventsFrameworkConstants.SETUP_USAGE, redissonClient,
@@ -81,6 +95,11 @@ public class EventsFrameworkModule extends AbstractModule {
           .annotatedWith(Names.named(EventsFrameworkConstants.IDP_MODULE_LICENSE_USAGE_CAPTURE_EVENT))
           .toInstance(RedisProducer.of(EventsFrameworkConstants.IDP_MODULE_LICENSE_USAGE_CAPTURE_EVENT, redissonClient,
               EventsFrameworkConstants.IDP_MODULE_LICENSE_USAGE_CAPTURE_EVENT_MAX_TOPIC_SIZE,
+              IDP_SERVICE.getServiceId(), redisConfig.getEnvNamespace()));
+      bind(Producer.class)
+          .annotatedWith(Names.named(EventsFrameworkConstants.IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT))
+          .toInstance(RedisProducer.of(EventsFrameworkConstants.IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT, redissonClient,
+              EventsFrameworkConstants.IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT_MAX_TOPIC_SIZE,
               IDP_SERVICE.getServiceId(), redisConfig.getEnvNamespace()));
     }
   }
