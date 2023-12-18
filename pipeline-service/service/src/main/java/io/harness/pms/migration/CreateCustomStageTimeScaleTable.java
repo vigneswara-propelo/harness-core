@@ -11,16 +11,11 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.migration.timescale.NGAbstractTimeScaleMigration;
+import io.harness.migration.timescale.NGNoopTimeScaleMigration;
 
 import lombok.extern.slf4j.Slf4j;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_DASHBOARD})
 @Slf4j
 @OwnedBy(HarnessTeam.CDP)
-public class CreateCustomStageTimeScaleTable extends NGAbstractTimeScaleMigration {
-  @Override
-  public String getFileName() {
-    return "timescale/create_custom_stage_table.sql";
-  }
-}
+public class CreateCustomStageTimeScaleTable extends NGNoopTimeScaleMigration {}
