@@ -374,6 +374,7 @@ public final class STOSettingsUtils {
       AquaSecurityStepInfo stepInfo, String stepType, String identifier) {
     Map<String, String> map = new HashMap<>();
 
+    map.putAll(processSTOAuthFields(stepInfo.getAuth(), stepInfo.getTarget(), stepType, identifier));
     map.putAll(processSTOImageFields(stepInfo.getImage(), stepType, identifier));
 
     return map;

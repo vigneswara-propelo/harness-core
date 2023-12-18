@@ -80,6 +80,7 @@ data:
   ANCHORE_IMAGE: harness/anchore-job-runner:latest
   AWS_ECR_IMAGE: harness/aws-ecr-job-runner:latest
   AWS_SECURITY_HUB_IMAGE: harness/aws-security-hub-job-runner:latest
+  AQUA_SECURITY_IMAGE: harness/aqua-security-job-runner:latest
   AQUA_TRIVY_IMAGE: harness/aqua-trivy-job-runner:latest
   BANDIT_IMAGE: harness/bandit-job-runner:latest
   BLACKDUCK_IMAGE: harness/blackduckhub-job-runner:latest

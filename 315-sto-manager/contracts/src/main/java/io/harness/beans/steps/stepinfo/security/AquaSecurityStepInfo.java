@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.STO;
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.stepinfo.security.shared.STOGenericStepInfo;
+import io.harness.beans.steps.stepinfo.security.shared.STOYamlAuth;
 import io.harness.beans.steps.stepinfo.security.shared.STOYamlImage;
 import io.harness.yaml.sto.variables.STOYamlGenericConfig;
 
@@ -37,6 +38,9 @@ import org.springframework.data.annotation.TypeAlias;
 @RecasterAlias("io.harness.beans.steps.stepinfo.security.AquaSecurityStepInfo")
 public class AquaSecurityStepInfo extends STOGenericStepInfo {
   private static final String PRODUCT_NAME = "aqua_security";
+
+  @JsonProperty protected STOYamlAuth auth;
+
   @NotNull
   @ApiModelProperty(dataType = "io.harness.yaml.sto.variables.STOYamlGenericConfig")
   protected STOYamlGenericConfig config;
