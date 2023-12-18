@@ -6,6 +6,7 @@
  */
 
 package io.harness.pms.pipeline.service;
+
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.steps.plugin.ContainerStepConstants.PLUGIN;
 
@@ -18,10 +19,12 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.enforcement.constants.FeatureRestrictionName;
 import io.harness.exception.InvalidRequestException;
 import io.harness.pms.contracts.steps.StepInfo;
+import io.harness.pms.contracts.steps.YamlVersion;
 import io.harness.pms.pipeline.CommonStepInfo;
 import io.harness.pms.pipeline.StepCategory;
 import io.harness.pms.pipeline.StepData;
 import io.harness.pms.pipeline.StepPalleteInfo;
+import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.utils.PmsFeatureFlagHelper;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -73,13 +76,20 @@ public class PMSPipelineServiceStepHelper {
     }
   }
 
-  public StepCategory calculateStepsForCategory(String module, List<StepInfo> stepInfoList, String accountId) {
+  public StepCategory calculateStepsForCategory(
+      String module, List<StepInfo> stepInfoList, String accountId, String version) {
     StepCategory stepCategory = StepCategory.builder().name(module).build();
-    return addStepsToStepCategory(stepCategory, stepInfoList, accountId);
+    return addStepsToStepCategory(stepCategory, stepInfoList, accountId, version);
   }
 
-  public StepCategory addStepsToStepCategory(StepCategory stepCategory, List<StepInfo> stepInfoList, String accountId) {
+  public StepCategory addStepsToStepCategory(
+      StepCategory stepCategory, List<StepInfo> stepInfoList, String accountId, String version) {
+    // Filter by version
+    stepInfoList = stepInfoList.stream()
+                       .filter(stepInfo -> shouldIncludeStepForVersion(stepInfo, version))
+                       .collect(Collectors.toList());
     List<StepInfo> ffEnabledStepInfoList = filterStepsBasedOnFeatureFlag(stepInfoList, accountId);
+
     Map<FeatureRestrictionName, Boolean> featureRestrictionNameBooleanMap = new HashMap<>();
 
     try {
@@ -96,24 +106,19 @@ public class PMSPipelineServiceStepHelper {
     }
     return stepCategory;
   }
+  private boolean shouldIncludeStepForVersion(StepInfo stepInfo, String version) {
+    return getVersionFromYamlVersionProto(stepInfo.getStepMetaData().getVersion()).equals(version);
+  }
 
-  public StepCategory calculateStepsForModuleBasedOnCategory(
-      String category, List<StepInfo> stepInfoList, String accountId) {
-    List<StepInfo> filteredStepTypes = new ArrayList<>();
-    if (!stepInfoList.isEmpty()) {
-      filteredStepTypes =
-          stepInfoList.stream()
-              .filter(stepInfo
-                  -> EmptyPredicate.isEmpty(category) || stepInfo.getStepMetaData().getCategoryList().contains(category)
-                      || EmptyPredicate.isEmpty(stepInfo.getStepMetaData().getCategoryList()))
-              .collect(Collectors.toList());
+  private String getVersionFromYamlVersionProto(YamlVersion yamlVersion) {
+    if (YamlVersion.V1.equals(yamlVersion)) {
+      return HarnessYamlVersion.V1;
     }
-    filteredStepTypes.addAll(commonStepInfo.getCommonSteps(category));
-    return calculateStepsForCategory(LIBRARY, filteredStepTypes, accountId);
+    return HarnessYamlVersion.V0;
   }
 
   public StepCategory calculateStepsForModuleBasedOnCategoryV2(
-      String module, String category, List<StepInfo> stepInfoList, String accountId) {
+      String module, String category, List<StepInfo> stepInfoList, String accountId, String version) {
     List<StepInfo> filteredStepTypes = new ArrayList<>();
     if (!stepInfoList.isEmpty()) {
       // Todo: This is a hack added for showing only few steps in Container Step V2 from CI. This is to support Aws Sam
@@ -135,7 +140,7 @@ public class PMSPipelineServiceStepHelper {
                                 .collect(Collectors.toList());
       }
     }
-    return calculateStepsForCategory(module, filteredStepTypes, accountId);
+    return calculateStepsForCategory(module, filteredStepTypes, accountId, version);
   }
 
   public void addToTopLevel(StepCategory stepCategory, StepInfo stepInfo,
@@ -171,13 +176,14 @@ public class PMSPipelineServiceStepHelper {
     }
   }
 
-  public StepCategory getAllSteps(String accountId, Map<String, StepPalleteInfo> serviceInstanceNameToSupportedSteps) {
+  public StepCategory getAllSteps(
+      String accountId, Map<String, StepPalleteInfo> serviceInstanceNameToSupportedSteps, String version) {
     StepCategory stepCategory = StepCategory.builder().name(LIBRARY).build();
     for (Map.Entry<String, StepPalleteInfo> entry : serviceInstanceNameToSupportedSteps.entrySet()) {
-      StepCategory moduleCategory =
-          calculateStepsForCategory(entry.getValue().getModuleName(), entry.getValue().getStepTypes(), accountId);
+      StepCategory moduleCategory = calculateStepsForCategory(
+          entry.getValue().getModuleName(), entry.getValue().getStepTypes(), accountId, version);
       stepCategory.addStepCategory(moduleCategory);
-      addStepsToStepCategory(moduleCategory, commonStepInfo.getCommonSteps(""), accountId);
+      addStepsToStepCategory(moduleCategory, commonStepInfo.getCommonSteps(""), accountId, version);
     }
 
     return stepCategory;

@@ -32,6 +32,12 @@ message StepMetaData {
   repeated string category = 1;
   string folderPath = 2;
   repeated string folderPaths = 3;
+  YamlVersion version = 4;
+}
+
+enum YamlVersion {
+  V0 = 0;
+  V1 = 1;
 }
 
 enum StepCategory {

@@ -34,9 +34,8 @@ public class StepsApiImpl implements StepsApi {
   private final PMSPipelineService pmsPipelineService;
   @Override
   public Response getSteps(@Valid StepPalleteFilterRequestBody body, String harnessAccount) {
-    // TODO(BRIJESH): Use the body.version to filter the steps by the version.
-    StepCategory stepCategory =
-        pmsPipelineService.getStepsV2(harnessAccount, StepsApiUtils.mapToStepPalleteFilterWrapperDTO(body));
+    StepCategory stepCategory = pmsPipelineService.getStepsWithVersion(
+        harnessAccount, StepsApiUtils.mapToStepPalleteFilterWrapperDTO(body), body.getVersion());
     return Response.ok().entity(StepsApiUtils.toStepsDataResponseBody(stepCategory)).build();
   }
 }

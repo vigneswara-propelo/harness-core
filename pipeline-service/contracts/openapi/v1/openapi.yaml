@@ -914,7 +914,7 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/PipelineInputsSchemaRequestBody'
       x-internal: true
-  /v1/steps:
+  /v1/step-pallete:
     parameters: []
     post:
       summary: Get steps for the steps-pallete

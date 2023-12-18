@@ -61,7 +61,9 @@ public class StepsApiUtils {
     stepDataResponse.setName(stepData.getName());
     stepDataResponse.setType(stepData.getType());
     stepDataResponse.setDisabled(stepData.isDisabled());
-    stepDataResponse.setFeatureRestrictionName(stepData.getFeatureRestrictionName().name());
+    if (stepData.getFeatureRestrictionName() != null) {
+      stepDataResponse.setFeatureRestrictionName(stepData.getFeatureRestrictionName().name());
+    }
     return stepDataResponse;
   }
 }

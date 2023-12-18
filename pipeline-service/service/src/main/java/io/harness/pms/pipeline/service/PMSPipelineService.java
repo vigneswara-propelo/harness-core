@@ -141,9 +141,9 @@ public interface PMSPipelineService {
 
   Long countAllPipelines(Criteria criteria);
 
-  StepCategory getSteps(String module, String category, String accountId);
-
   StepCategory getStepsV2(String accountId, StepPalleteFilterWrapper stepPalleteFilterWrapper);
+
+  StepCategory getStepsWithVersion(String accountId, StepPalleteFilterWrapper stepPalleteFilterWrapper, String version);
 
   boolean deleteAllPipelinesInAProject(String accountId, String orgId, String projectId);
 

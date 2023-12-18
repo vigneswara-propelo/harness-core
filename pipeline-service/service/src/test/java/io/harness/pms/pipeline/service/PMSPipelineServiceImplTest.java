@@ -14,7 +14,6 @@ import static io.harness.rule.OwnerRule.ADITHYA;
 import static io.harness.rule.OwnerRule.BRIJESH;
 import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
 import static io.harness.rule.OwnerRule.RAGHAV_GUPTA;
-import static io.harness.rule.OwnerRule.SAHIL;
 import static io.harness.rule.OwnerRule.SANDESH_SALUNKHE;
 import static io.harness.rule.OwnerRule.SHIVAM;
 import static io.harness.rule.OwnerRule.SOUMYAJIT;
@@ -68,7 +67,6 @@ import io.harness.ngsettings.client.remote.NGSettingsClient;
 import io.harness.outbox.OutboxEvent;
 import io.harness.outbox.api.impl.OutboxServiceImpl;
 import io.harness.pms.contracts.steps.StepInfo;
-import io.harness.pms.contracts.steps.StepMetaData;
 import io.harness.pms.governance.PipelineSaveResponse;
 import io.harness.pms.helpers.PipelineCloneHelper;
 import io.harness.pms.pipeline.ClonePipelineDTO;
@@ -124,7 +122,6 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -325,96 +322,6 @@ public class PMSPipelineServiceImplTest extends PipelineServiceTestBase {
   }
 
   @Test
-  @Owner(developers = SAHIL)
-  @Category(UnitTests.class)
-  public void testGetSteps() {
-    Map<String, StepPalleteInfo> serviceInstanceNameToSupportedSteps = new HashMap<>();
-    serviceInstanceNameToSupportedSteps.put("cd",
-        StepPalleteInfo.builder()
-            .moduleName("cd")
-            .stepTypes(Collections.singletonList(
-                StepInfo.newBuilder()
-                    .setName("testStepCD")
-                    .setType("testStepCD")
-                    .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Double/Single").build())
-                    .build()))
-            .build());
-    serviceInstanceNameToSupportedSteps.put("cv",
-        StepPalleteInfo.builder()
-            .moduleName("cv")
-            .stepTypes(Collections.singletonList(
-                StepInfo.newBuilder()
-                    .setName("testStepCV")
-                    .setType("testStepCV")
-                    .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Double/Single").build())
-                    .build()))
-            .build());
-
-    Mockito.when(pmsSdkInstanceService.getModuleNameToStepPalleteInfo())
-        .thenReturn(serviceInstanceNameToSupportedSteps);
-    Mockito
-        .when(pmsPipelineServiceStepHelper.calculateStepsForModuleBasedOnCategory(
-            null, serviceInstanceNameToSupportedSteps.get("cd").getStepTypes(), accountId))
-        .thenReturn(library);
-    Mockito
-        .when(pmsPipelineServiceStepHelper.calculateStepsForCategory(
-            "cv", serviceInstanceNameToSupportedSteps.get("cv").getStepTypes(), accountId))
-        .thenReturn(cv);
-    StepCategory stepCategory = pmsPipelineService.getSteps("cd", null, accountId);
-    String expected =
-        "StepCategory(name=Library, stepsData=[], stepCategories=[StepCategory(name=Double, stepsData=[], stepCategories=[StepCategory(name=Single, stepsData=[StepData(name=testStepCD, type=testStepCD, disabled=false, featureRestrictionName=null)], stepCategories=[])]), StepCategory(name=cv, stepsData=[], stepCategories=[StepCategory(name=Double, stepsData=[], stepCategories=[StepCategory(name=Single, stepsData=[StepData(name=testStepCV, type=testStepCV, disabled=false, featureRestrictionName=null)], stepCategories=[])])])])";
-    assertThat(stepCategory.toString()).isEqualTo(expected);
-  }
-
-  @Test
-  @Owner(developers = SAHIL)
-  @Category(UnitTests.class)
-  public void testGetStepsWithCategory() {
-    Map<String, StepPalleteInfo> serviceInstanceNameToSupportedSteps = new HashMap<>();
-    serviceInstanceNameToSupportedSteps.put("cd",
-        StepPalleteInfo.builder()
-            .moduleName("cd")
-            .stepTypes(Collections.singletonList(
-                StepInfo.newBuilder()
-                    .setName("testStepCD")
-                    .setType("testStepCD")
-                    .setStepMetaData(
-                        StepMetaData.newBuilder().addCategory("K8S").addFolderPaths("Double/Single").build())
-                    .build()))
-            .build());
-    serviceInstanceNameToSupportedSteps.put("cv",
-        StepPalleteInfo.builder()
-            .moduleName("cv")
-            .stepTypes(Collections.singletonList(
-                StepInfo.newBuilder()
-                    .setName("testStepCV")
-                    .setType("testStepCV")
-                    .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Double/Single").build())
-                    .build()))
-            .build());
-
-    Mockito.when(pmsSdkInstanceService.getModuleNameToStepPalleteInfo())
-        .thenReturn(serviceInstanceNameToSupportedSteps);
-    Mockito
-        .when(pmsPipelineServiceStepHelper.calculateStepsForModuleBasedOnCategory(
-            "Terraform", serviceInstanceNameToSupportedSteps.get("cd").getStepTypes(), accountId))
-        .thenReturn(StepCategory.builder()
-                        .name("Library")
-                        .stepsData(new ArrayList<>())
-                        .stepCategories(new ArrayList<>())
-                        .build());
-    Mockito
-        .when(pmsPipelineServiceStepHelper.calculateStepsForCategory(
-            "cv", serviceInstanceNameToSupportedSteps.get("cv").getStepTypes(), accountId))
-        .thenReturn(cv);
-
-    StepCategory stepCategory = pmsPipelineService.getSteps("cd", "Terraform", accountId);
-    String expected =
-        "StepCategory(name=Library, stepsData=[], stepCategories=[StepCategory(name=cv, stepsData=[], stepCategories=[StepCategory(name=Double, stepsData=[], stepCategories=[StepCategory(name=Single, stepsData=[StepData(name=testStepCV, type=testStepCV, disabled=false, featureRestrictionName=null)], stepCategories=[])])])])";
-    assertThat(stepCategory.toString()).isEqualTo(expected);
-  }
-
-  @Test
   @Owner(developers = BRIJESH)
   @Category(UnitTests.class)
   public void testDelete() throws IOException {
@@ -551,7 +458,7 @@ public class PMSPipelineServiceImplTest extends PipelineServiceTestBase {
     StepPalleteInfo stepPalleteInfo = StepPalleteInfo.builder().stepTypes(stepInfoList).build();
     serviceInstanceNameToSupportedSteps.put("CI", stepPalleteInfo);
     when(pmsPipelineServiceStepHelper.calculateStepsForModuleBasedOnCategoryV2(
-             "CI", "Approval", stepInfoList, accountId))
+             "CI", "Approval", stepInfoList, accountId, HarnessYamlVersion.V0))
         .thenReturn(null);
     when(pmsSdkInstanceService.getModuleNameToStepPalleteInfo()).thenReturn(serviceInstanceNameToSupportedSteps);
     StepCategory result = pmsPipelineService.getStepsV2(accountId, stepPalleteFilterWrapper);
@@ -573,7 +480,8 @@ public class PMSPipelineServiceImplTest extends PipelineServiceTestBase {
     List<StepInfo> stepInfoList = Collections.singletonList(stepInfo);
     StepPalleteInfo stepPalleteInfo = StepPalleteInfo.builder().stepTypes(stepInfoList).build();
     serviceInstanceNameToSupportedSteps.put("CI", stepPalleteInfo);
-    when(pmsPipelineServiceStepHelper.calculateStepsForModuleBasedOnCategory("CI", stepInfoList, accountId))
+    when(pmsPipelineServiceStepHelper.calculateStepsForModuleBasedOnCategoryV2(
+             "CI", "CI", stepInfoList, accountId, HarnessYamlVersion.V0))
         .thenReturn(null);
     when(pmsSdkInstanceService.getModuleNameToStepPalleteInfo()).thenReturn(serviceInstanceNameToSupportedSteps);
     StepCategory result = pmsPipelineService.getStepsV2(accountId, stepPalleteFilterWrapper);
@@ -589,7 +497,8 @@ public class PMSPipelineServiceImplTest extends PipelineServiceTestBase {
     StepPalleteFilterWrapper stepPalleteFilterWrapper =
         StepPalleteFilterWrapper.builder().stepPalleteModuleInfos(stepPalleteModuleInfos).build();
     Map<String, StepPalleteInfo> serviceInstanceNameToSupportedSteps = new HashMap<>();
-    when(pmsPipelineServiceStepHelper.getAllSteps(accountId, serviceInstanceNameToSupportedSteps))
+    when(
+        pmsPipelineServiceStepHelper.getAllSteps(accountId, serviceInstanceNameToSupportedSteps, HarnessYamlVersion.V0))
         .thenReturn(stepCategory);
     StepCategory result = pmsPipelineService.getStepsV2(accountId, stepPalleteFilterWrapper);
     assertThat(result).isEqualTo(stepCategory);

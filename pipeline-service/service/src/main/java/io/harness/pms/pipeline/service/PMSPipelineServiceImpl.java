@@ -869,28 +869,18 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
   }
 
   @Override
-  public StepCategory getSteps(String module, String category, String accountId) {
-    Map<String, StepPalleteInfo> serviceInstanceNameToSupportedSteps =
-        pmsSdkInstanceService.getModuleNameToStepPalleteInfo();
-    StepCategory stepCategory = pmsPipelineServiceStepHelper.calculateStepsForModuleBasedOnCategory(
-        category, serviceInstanceNameToSupportedSteps.get(module).getStepTypes(), accountId);
-    for (Map.Entry<String, StepPalleteInfo> entry : serviceInstanceNameToSupportedSteps.entrySet()) {
-      if (entry.getKey().equals(module) || EmptyPredicate.isEmpty(entry.getValue().getStepTypes())) {
-        continue;
-      }
-      stepCategory.addStepCategory(pmsPipelineServiceStepHelper.calculateStepsForCategory(
-          entry.getValue().getModuleName(), entry.getValue().getStepTypes(), accountId));
-    }
-    return stepCategory;
+  public StepCategory getStepsV2(String accountId, StepPalleteFilterWrapper stepPalleteFilterWrapper) {
+    return getStepsWithVersion(accountId, stepPalleteFilterWrapper, HarnessYamlVersion.V0);
   }
 
   @Override
-  public StepCategory getStepsV2(String accountId, StepPalleteFilterWrapper stepPalleteFilterWrapper) {
+  public StepCategory getStepsWithVersion(
+      String accountId, StepPalleteFilterWrapper stepPalleteFilterWrapper, String version) {
     Map<String, StepPalleteInfo> serviceInstanceNameToSupportedSteps =
         pmsSdkInstanceService.getModuleNameToStepPalleteInfo();
     if (stepPalleteFilterWrapper.getStepPalleteModuleInfos().isEmpty()) {
       // Return all the steps.
-      return pmsPipelineServiceStepHelper.getAllSteps(accountId, serviceInstanceNameToSupportedSteps);
+      return pmsPipelineServiceStepHelper.getAllSteps(accountId, serviceInstanceNameToSupportedSteps, version);
     }
     StepCategory stepCategory = StepCategory.builder().name(LIBRARY).build();
     for (StepPalleteModuleInfo request : stepPalleteFilterWrapper.getStepPalleteModuleInfos()) {
@@ -909,15 +899,15 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
       StepCategory moduleCategory;
       if (EmptyPredicate.isNotEmpty(category)) {
         moduleCategory = pmsPipelineServiceStepHelper.calculateStepsForModuleBasedOnCategoryV2(
-            displayModuleName, category, stepInfoList, accountId);
+            displayModuleName, category, stepInfoList, accountId, version);
       } else {
         moduleCategory =
-            pmsPipelineServiceStepHelper.calculateStepsForCategory(displayModuleName, stepInfoList, accountId);
+            pmsPipelineServiceStepHelper.calculateStepsForCategory(displayModuleName, stepInfoList, accountId, version);
       }
       stepCategory.addStepCategory(moduleCategory);
       if (request.isShouldShowCommonSteps()) {
         pmsPipelineServiceStepHelper.addStepsToStepCategory(
-            moduleCategory, commonStepInfo.getCommonSteps(request.getCommonStepCategory()), accountId);
+            moduleCategory, commonStepInfo.getCommonSteps(request.getCommonStepCategory()), accountId, version);
       }
     }
 
