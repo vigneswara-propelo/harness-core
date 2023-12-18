@@ -22,9 +22,7 @@ import static org.mockito.Mockito.verify;
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
-import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.dtos.rollback.K8sPostProdRollbackInfo;
 import io.harness.dtos.rollback.PostProdRollbackCheckDTO;
 import io.harness.dtos.rollback.PostProdRollbackResponseDTO;
@@ -54,7 +52,6 @@ import org.mockito.Spy;
 @OwnedBy(HarnessTeam.CDP)
 public class PostProdRollbackServiceImplTest extends CategoryTest {
   @Mock private InstanceRepository instanceRepository;
-  @Mock private CDFeatureFlagHelper cdFeatureFlagHelper;
   @Mock private PipelineServiceClient pipelineServiceClient;
   @Mock private PostProdRollbackHelperUtils postProdRollbackHelperUtils;
   @InjectMocks @Spy private PostProdRollbackServiceImpl postProdRollbackService;
@@ -74,12 +71,6 @@ public class PostProdRollbackServiceImplTest extends CategoryTest {
   @Owner(developers = BRIJESH)
   @Category(UnitTests.class)
   public void testCheckIfRollbackAllowed() {
-    doReturn(false).when(cdFeatureFlagHelper).isEnabled(accountId, FeatureName.POST_PROD_ROLLBACK);
-
-    assertThatThrownBy(() -> postProdRollbackService.checkIfRollbackAllowed(accountId, instanceKey, infraMappingId))
-        .isInstanceOf(InvalidRequestException.class);
-
-    doReturn(true).when(cdFeatureFlagHelper).isEnabled(accountId, FeatureName.POST_PROD_ROLLBACK);
     doReturn(Instance.builder()
                  .lastPipelineExecutionId(planExecutionId)
                  .stageStatus(Status.FAILED)
@@ -148,12 +139,6 @@ public class PostProdRollbackServiceImplTest extends CategoryTest {
     responseMap.put("planExecution", planExecutionMap);
     MockedStatic<NGRestUtils> mockRestStatic = Mockito.mockStatic(NGRestUtils.class);
     mockRestStatic.when(() -> NGRestUtils.getResponse(any())).thenReturn(responseMap);
-
-    doReturn(false).when(cdFeatureFlagHelper).isEnabled(accountId, FeatureName.POST_PROD_ROLLBACK);
-    assertThatThrownBy(() -> postProdRollbackService.checkIfRollbackAllowed(accountId, instanceKey, infraMappingId))
-        .isInstanceOf(InvalidRequestException.class);
-
-    doReturn(true).when(cdFeatureFlagHelper).isEnabled(accountId, FeatureName.POST_PROD_ROLLBACK);
 
     doThrow(new InvalidRequestException("invalid request"))
         .when(pipelineServiceClient)

@@ -7,15 +7,11 @@
 
 package io.harness.ng.rollback;
 
-import static io.harness.beans.FeatureName.POST_PROD_ROLLBACK;
-
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.beans.FeatureName;
-import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.dtos.rollback.PostProdRollbackCheckDTO;
 import io.harness.dtos.rollback.PostProdRollbackResponseDTO;
 import io.harness.dtos.rollback.PostProdRollbackSwimLaneInfo;
@@ -35,26 +31,18 @@ import java.util.Set;
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_ECS})
 @OwnedBy(HarnessTeam.CDP)
 public class PostProdRollbackServiceImpl implements PostProdRollbackService {
-  // Each instanceType will have its own separate FF.
-  private static final Map<InstanceType, FeatureName> INSTANCE_TYPE_TO_FF_MAP =
-      Map.of(InstanceType.K8S_INSTANCE, POST_PROD_ROLLBACK, InstanceType.TAS_INSTANCE, POST_PROD_ROLLBACK,
-          InstanceType.ECS_INSTANCE, POST_PROD_ROLLBACK, InstanceType.ASG_INSTANCE, POST_PROD_ROLLBACK,
-          InstanceType.SPOT_INSTANCE, POST_PROD_ROLLBACK, InstanceType.NATIVE_HELM_INSTANCE, POST_PROD_ROLLBACK);
+  // Set of instanceTypes that supports the PostProdRollback.
+  private static final Set<InstanceType> SUPPORTED_INSTANCE_TYPES_FOR_ROLLBACK =
+      Set.of(InstanceType.K8S_INSTANCE, InstanceType.TAS_INSTANCE, InstanceType.ECS_INSTANCE, InstanceType.ASG_INSTANCE,
+          InstanceType.SPOT_INSTANCE, InstanceType.NATIVE_HELM_INSTANCE);
   private static final Set<RollbackStatus> ALLOWED_ROLLBACK_START_STATUSES =
       Set.of(RollbackStatus.NOT_STARTED, RollbackStatus.UNAVAILABLE);
   @Inject private PipelineServiceClient pipelineServiceClient;
   @Inject private InstanceRepository instanceRepository;
-  @Inject private CDFeatureFlagHelper cdFeatureFlagHelper;
   @Inject private PostProdRollbackHelperUtils postProdRollbackHelperUtils;
   @Override
   public PostProdRollbackCheckDTO checkIfRollbackAllowed(
       String accountIdentifier, String instanceKey, String infraMappingId) {
-    if (!cdFeatureFlagHelper.isEnabled(accountIdentifier, POST_PROD_ROLLBACK)) {
-      throw new InvalidRequestException(String.format(
-          "PostProd rollback Feature-flag %s is disabled. Please contact harness support for enabling the feature-flag",
-          POST_PROD_ROLLBACK.name()));
-    }
-
     boolean isRollbackAllowed = true;
     String message = null;
     Instance instance =
@@ -67,8 +55,7 @@ public class PostProdRollbackServiceImpl implements PostProdRollbackService {
       isRollbackAllowed = false;
       message = String.format(
           "The deployment stage was not successful in latest execution %s", instance.getLastPipelineExecutionId());
-    } else if (!INSTANCE_TYPE_TO_FF_MAP.containsKey(instance.getInstanceType())
-        || !cdFeatureFlagHelper.isEnabled(accountIdentifier, INSTANCE_TYPE_TO_FF_MAP.get(instance.getInstanceType()))) {
+    } else if (!SUPPORTED_INSTANCE_TYPES_FOR_ROLLBACK.contains(instance.getInstanceType())) {
       isRollbackAllowed = false;
       message =
           String.format("The given instanceType %s is not supported for rollback.", instance.getInstanceType().name());
