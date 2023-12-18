@@ -69,4 +69,30 @@ public class CustomPluginDetailedInfoMapper
         throw new UnsupportedOperationException(String.format("File type %s is not supported", fileType));
     }
   }
+
+  public void removeFileDetails(PluginInfoEntity entity, String fileType, String gcsBucketUrl) {
+    CustomPluginInfoEntity customPluginInfoEntity = (CustomPluginInfoEntity) entity;
+    switch (FileType.valueOf(fileType)) {
+      case ZIP:
+        Artifact artifact = customPluginInfoEntity.getArtifact();
+        if (artifact != null && ZIP.equals(artifact.getType()) && gcsBucketUrl.equals(artifact.getUrl())) {
+          customPluginInfoEntity.setArtifact(null);
+        }
+        break;
+      case ICON:
+        if (gcsBucketUrl.equals(customPluginInfoEntity.getIconUrl())) {
+          customPluginInfoEntity.setIconUrl(null);
+        }
+        break;
+      case SCREENSHOT:
+        List<String> images = customPluginInfoEntity.getImages();
+        if (images != null && !images.isEmpty()) {
+          images.remove(gcsBucketUrl);
+        }
+        customPluginInfoEntity.setImages(images);
+        break;
+      default:
+        throw new UnsupportedOperationException(String.format("File type %s is not supported", fileType));
+    }
+  }
 }

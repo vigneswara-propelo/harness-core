@@ -142,6 +142,8 @@ import io.harness.idp.plugin.mappers.CustomPluginDetailedInfoMapper;
 import io.harness.idp.plugin.mappers.DefaultPluginDetailedInfoMapper;
 import io.harness.idp.plugin.mappers.PluginDetailedInfoMapper;
 import io.harness.idp.plugin.resources.AuthInfoApiImpl;
+import io.harness.idp.plugin.resources.PluginFileUploadApi;
+import io.harness.idp.plugin.resources.PluginFileUploadApiImpl;
 import io.harness.idp.plugin.resources.PluginInfoApiImpl;
 import io.harness.idp.plugin.services.AuthInfoService;
 import io.harness.idp.plugin.services.AuthInfoServiceImpl;
@@ -502,6 +504,7 @@ public class IdpModule extends AbstractModule {
     bind(LayoutProxyApi.class).to(LayoutProxyApiImpl.class);
     bind(ProxyApi.class).to(ProxyApiImpl.class);
     bind(PluginInfoApi.class).to(PluginInfoApiImpl.class);
+    bind(PluginFileUploadApi.class).to(PluginFileUploadApiImpl.class);
     bind(DelegateProxyApi.class).to(DelegateProxyApiImpl.class);
     bind(PluginInfoService.class).to(PluginInfoServiceImpl.class);
     bind(ConnectorInfoApi.class).to(ConnectorInfoApiImpl.class);

@@ -45,6 +45,7 @@ import io.harness.idp.plugin.mappers.DefaultPluginDetailedInfoMapper;
 import io.harness.idp.plugin.mappers.PluginDetailedInfoMapper;
 import io.harness.idp.plugin.repositories.PluginInfoRepository;
 import io.harness.idp.plugin.repositories.PluginRequestRepository;
+import io.harness.idp.plugin.utils.GcpStorageUtil;
 import io.harness.rule.Owner;
 import io.harness.spec.server.idp.v1.model.PluginDetailedInfo;
 import io.harness.spec.server.idp.v1.model.PluginInfo;
@@ -76,6 +77,7 @@ public class PluginInfoServiceImplTest {
   @Mock private PluginsProxyInfoService pluginsProxyInfoService;
   @Mock private IdpCommonService idpCommonService;
   @Mock private HashMap<String, String> notificationConfigs = new HashMap<>();
+  @Mock private GcpStorageUtil gcpStorageUtil;
   private Map<PluginInfo.PluginTypeEnum, PluginDetailedInfoMapper> mapBinder;
   private final ObjectMapper objectMapper = mock(ObjectMapper.class);
 
@@ -98,7 +100,7 @@ public class PluginInfoServiceImplTest {
     mapBinder = Map.of(PluginInfo.PluginTypeEnum.DEFAULT, pluginDetailedInfoMapper);
     pluginInfoServiceImpl = new PluginInfoServiceImpl(pluginInfoRepository, pluginRequestRepository,
         configManagerService, configEnvVariablesService, backstageEnvVariableService, pluginsProxyInfoService,
-        idpCommonService, "", notificationConfigs, mapBinder);
+        idpCommonService, "", notificationConfigs, mapBinder, gcpStorageUtil);
   }
 
   @Test

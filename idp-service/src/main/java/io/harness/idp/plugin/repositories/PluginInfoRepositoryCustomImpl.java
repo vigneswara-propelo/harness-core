@@ -78,15 +78,12 @@ public class PluginInfoRepositoryCustomImpl implements PluginInfoRepositoryCusto
     update.set(PluginInfoEntityKeys.config, pluginInfoEntity.getConfig());
     update.set(PluginInfoEntityKeys.envVariables, pluginInfoEntity.getEnvVariables());
 
-    if (pluginInfoEntity.getImages() != null && !pluginInfoEntity.getImages().isEmpty()) {
+    if (pluginInfoEntity.getImages() != null) {
       update.set(PluginInfoEntityKeys.images, pluginInfoEntity.getImages());
     }
 
     if (CUSTOM.equals(pluginInfoEntity.getType())) {
-      CustomPluginInfoEntity customPluginInfoEntity = (CustomPluginInfoEntity) pluginInfoEntity;
-      if (customPluginInfoEntity.getArtifact() != null) {
-        update.set(CustomPluginInfoEntityKeys.artifact, ((CustomPluginInfoEntity) pluginInfoEntity).getArtifact());
-      }
+      update.set(CustomPluginInfoEntityKeys.artifact, ((CustomPluginInfoEntity) pluginInfoEntity).getArtifact());
     } else if (DEFAULT.equals(pluginInfoEntity.getType())) {
       update.set(DefaultPluginInfoEntityKeys.core, ((DefaultPluginInfoEntity) pluginInfoEntity).isCore());
     }

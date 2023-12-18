@@ -1388,29 +1388,6 @@ paths:
         $ref: '#/components/requestBodies/ScorecardRecalibrateRequest'
       x-internal: true
     parameters: []
-  '/v1/plugins-info/{plugin-id}/upload':
-    parameters:
-      - schema:
-          type: string
-        name: plugin-id
-        in: path
-        required: true
-    post:
-      summary: Upload Custom Plugin File
-      operationId: upload-custom-plugin-file
-      responses:
-        '200':
-          $ref: '#/components/responses/CustomPluginInfoResponse'
-      x-stoplight:
-        id: 32n05qs9vws0f
-      parameters:
-        - $ref: '#/components/parameters/AccountHeader'
-      requestBody:
-        $ref: '#/components/requestBodies/FileUploadRequest'
-      security:
-        - x-api-key: []
-      tags:
-        - PluginInfo
   /v1/backstage-harness/sync:
     post:
       summary: Sync Backstage Entities as Harness Entities for all IDP enabled accounts
@@ -1888,6 +1865,8 @@ components:
           enum:
             - DEFAULT
             - CUSTOM
+          required:
+            - id
     PluginInfoResponse:
       title: PluginInfoResponse
       x-stoplight:
@@ -2248,8 +2227,6 @@ components:
             id: 43cv9jhplzytw
       required:
         - plugin_details
-        - config
-        - exports
     LayoutIngestRequest:
       title: LayoutIngestRequest
       x-stoplight:
@@ -3856,61 +3833,6 @@ components:
       properties:
         info:
           $ref: '#/components/schemas/CustomPluginDetailedInfo'
-    FileUpload:
-      title: FileUpload
-      x-stoplight:
-        id: 42qigqf34g3qa
-      type: object
-      description: Details of the file to be upload
-      properties:
-        file_type:
-          type: string
-          x-stoplight:
-            id: fkuih8a0cohq6
-          enum:
-            - ICON
-            - SCREENSHOT
-            - ZIP
-        file:
-          type: string
-          x-stoplight:
-            id: m506b6wsbw9b4
-          format: binary
-      required:
-        - file_type
-        - file
-    FileUploadInfo:
-      title: FileUploadInfo
-      x-stoplight:
-        id: tg0lcsmut5g4m
-      type: object
-      properties:
-        identifier:
-          type: string
-          x-stoplight:
-            id: 68qkmk2s7q3ke
-        name:
-          type: string
-          x-stoplight:
-            id: 9xravl6w1v0ri
-        url:
-          type: string
-          x-stoplight:
-            id: mm714ve2fwzkk
-      required:
-        - identifier
-        - name
-        - url
-    FileUploadResponse:
-      title: FileUploadResponse
-      x-stoplight:
-        id: rk1u7nzipft0a
-      type: object
-      properties:
-        info:
-          $ref: '#/components/schemas/FileUploadInfo'
-      required:
-        - info
     BackstageHarnessSyncRequest:
       title: BackstageHarnessSyncRequest
       type: object
@@ -4292,11 +4214,6 @@ components:
         application/json:
           schema:
             type: object
-    FileUploadRequest:
-      content:
-        multipart/form-data:
-          schema:
-            $ref: '#/components/schemas/FileUpload'
     BackstageHarnessSyncRequest:
       content:
         application/json:
@@ -4743,15 +4660,6 @@ components:
         application/yaml:
           schema:
             $ref: '#/components/schemas/CustomPluginInfoResponse'
-    FileUploadResponse:
-      description: Response for File Upload request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/FileUploadResponse'
-        application/yaml:
-          schema:
-            $ref: '#/components/schemas/FileUploadResponse'
     BackstageHarnessSyncEntitiesResponse:
       description: Response for backstage harness entities sync
       content:

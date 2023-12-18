@@ -16,6 +16,7 @@ import io.harness.spec.server.idp.v1.model.RequestPlugin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.InputStream;
 import java.util.List;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.springframework.data.domain.Page;
 
 public interface PluginInfoService {
@@ -33,5 +34,8 @@ public interface PluginInfoService {
 
   CustomPluginDetailedInfo updatePluginInfo(String pluginId, CustomPluginDetailedInfo info, String harnessAccount);
 
-  CustomPluginDetailedInfo uploadFile(String pluginId, String info, InputStream fileInputStream, String harnessAccount);
+  CustomPluginDetailedInfo uploadFile(String pluginId, String info, InputStream fileInputStream,
+      FormDataContentDisposition fileDetail, String harnessAccount);
+
+  CustomPluginDetailedInfo deleteFile(String pluginId, String fileType, String fileName, String harnessAccount);
 }

@@ -23,6 +23,7 @@ java_library(
         "//idp-service/src/main/java/io/harness/idp/configmanager/service:module",
         "//idp-service/src/main/java/io/harness/idp/plugin/events:module",
         "@maven//:com_google_inject_guice",
+        "@maven//:org_glassfish_jersey_media_jersey_media_multipart",
         "@maven//:org_mongodb_morphia_morphia",
         "@maven//:org_springframework_data_spring_data_commons",
         "@maven//:org_springframework_data_spring_data_mongodb",
