@@ -57,6 +57,7 @@ enableElasticsearch: false
 elasticsearch:
   url: "https://localhost:9200"
   apiKey: "apiKey"
+  indexName: "harness-ssca"
 
 s3Config:
   accessKeyId: "access-key-id"

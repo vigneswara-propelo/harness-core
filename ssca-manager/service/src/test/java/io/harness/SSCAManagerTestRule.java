@@ -34,9 +34,10 @@ import io.harness.ssca.api.EnforcementApiImpl;
 import io.harness.ssca.api.OrchestrationApiImpl;
 import io.harness.ssca.api.SbomProcessorApiImpl;
 import io.harness.ssca.api.TokenApiImpl;
+import io.harness.ssca.beans.ElasticSearchConfig;
 import io.harness.ssca.beans.PolicyType;
 import io.harness.ssca.search.ElasticSearchIndexManager;
-import io.harness.ssca.search.ElasticSearchIndexManagerImpl;
+import io.harness.ssca.search.SSCAIndexManager;
 import io.harness.ssca.search.SearchService;
 import io.harness.ssca.search.SearchServiceImpl;
 import io.harness.ssca.services.ArtifactService;
@@ -94,6 +95,7 @@ import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 import dev.morphia.converters.TypeConverter;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -197,6 +199,13 @@ public class SSCAManagerTestRule implements InjectorRuleMixin, MethodRule, Mongo
       public boolean isElasticSearchEnabled() {
         return false;
       }
+
+      @Provides
+      @Singleton
+      @Named("elasticsearch")
+      public ElasticSearchConfig elasticSearchConfig() {
+        return ElasticSearchConfig.builder().url("url").apiKey("apiKey").indexName("harness-ssca").build();
+      }
     });
 
     modules.add(new AbstractModule() {
@@ -229,7 +238,7 @@ public class SSCAManagerTestRule implements InjectorRuleMixin, MethodRule, Mongo
         bind(AccountClient.class).toInstance(mock(AccountClient.class));
         bind(SearchService.class).to(SearchServiceImpl.class);
         bind(ElasticsearchClient.class).toInstance(mock(ElasticsearchClient.class));
-        bind(ElasticSearchIndexManager.class).to(ElasticSearchIndexManagerImpl.class);
+        bind(ElasticSearchIndexManager.class).annotatedWith(Names.named("SSCA")).to(SSCAIndexManager.class);
 
         bind(RemediationTrackerService.class).to(RemediationTrackerServiceImpl.class);
         MapBinder<PolicyType, PolicyEvaluationService> policyEvaluationServiceMapBinder =

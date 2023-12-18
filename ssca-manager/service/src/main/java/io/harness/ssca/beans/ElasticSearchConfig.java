@@ -20,4 +20,5 @@ import lombok.Value;
 public class ElasticSearchConfig {
   String url;
   String apiKey;
+  String indexName;
 }

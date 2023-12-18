@@ -53,12 +53,13 @@ import io.harness.ssca.api.RemediationTrackerApiImpl;
 import io.harness.ssca.api.SbomProcessorApiImpl;
 import io.harness.ssca.api.ScorecardApiImpl;
 import io.harness.ssca.api.TokenApiImpl;
+import io.harness.ssca.beans.ElasticSearchConfig;
 import io.harness.ssca.beans.PolicyType;
 import io.harness.ssca.events.handler.SSCAArtifactEventHandler;
 import io.harness.ssca.events.handler.SSCAOutboxEventHandler;
 import io.harness.ssca.eventsframework.SSCAEventsFrameworkModule;
 import io.harness.ssca.search.ElasticSearchIndexManager;
-import io.harness.ssca.search.ElasticSearchIndexManagerImpl;
+import io.harness.ssca.search.SSCAIndexManager;
 import io.harness.ssca.search.SearchService;
 import io.harness.ssca.search.SearchServiceImpl;
 import io.harness.ssca.services.ArtifactService;
@@ -120,6 +121,7 @@ import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 import dev.morphia.converters.TypeConverter;
 import java.util.Collections;
 import java.util.List;
@@ -179,9 +181,9 @@ public class SSCAManagerModule extends AbstractModule {
     bind(FeatureFlagService.class).to(FeatureFlagServiceImpl.class);
     bind(SbomDriftService.class).to(SbomDriftServiceImpl.class);
     bind(SearchService.class).to(SearchServiceImpl.class);
-    bind(ElasticSearchIndexManager.class).to(ElasticSearchIndexManagerImpl.class);
     bind(RemediationTrackerService.class).to(RemediationTrackerServiceImpl.class);
     bind(RemediationApi.class).to(RemediationTrackerApiImpl.class);
+    bind(ElasticSearchIndexManager.class).annotatedWith(Names.named("SSCA")).to(SSCAIndexManager.class);
     MapBinder<PolicyType, PolicyEvaluationService> policyEvaluationServiceMapBinder =
         MapBinder.newMapBinder(binder(), PolicyType.class, PolicyEvaluationService.class);
     policyEvaluationServiceMapBinder.addBinding(PolicyType.OPA)
@@ -248,6 +250,13 @@ public class SSCAManagerModule extends AbstractModule {
   @Named("isElasticSearchEnabled")
   public boolean isElasticSearchEnabled() {
     return this.configuration.isEnableElasticsearch();
+  }
+
+  @Provides
+  @Singleton
+  @Named("elasticsearch")
+  public ElasticSearchConfig elasticSearchConfig() {
+    return this.configuration.getElasticSearchConfig();
   }
 
   @Provides

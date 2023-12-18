@@ -17,12 +17,14 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.lock.AcquiredLock;
 import io.harness.lock.PersistentLocker;
 import io.harness.repositories.MigrationRepo;
+import io.harness.ssca.beans.ElasticSearchConfig;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
 import io.harness.ssca.entities.migration.MigrationEntity;
 import io.harness.ssca.helpers.BatchProcessor;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import java.time.Duration;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,7 @@ public class ElkMigrationService implements Runnable {
   private final PersistentLocker persistentLocker;
 
   private MigrationRepo migrationRepo;
+  private ElasticSearchConfig elasticSearchConfig;
 
   private static final String ELK_DEBUG_LOG = "[ElkMigrationService]: ";
 
@@ -44,11 +47,13 @@ public class ElkMigrationService implements Runnable {
 
   @Inject
   public ElkMigrationService(SearchService searchService, MongoTemplate mongoTemplate,
-      PersistentLocker persistentLocker, MigrationRepo migrationRepo) {
+      PersistentLocker persistentLocker, MigrationRepo migrationRepo,
+      @Named("elasticsearch") ElasticSearchConfig elasticSearchConfig) {
     this.searchService = searchService;
     this.mongoTemplate = mongoTemplate;
     this.persistentLocker = persistentLocker;
     this.migrationRepo = migrationRepo;
+    this.elasticSearchConfig = elasticSearchConfig;
   }
 
   @Override
@@ -88,7 +93,7 @@ public class ElkMigrationService implements Runnable {
       componentEntityBatchProcessor.processBatch(
           new Query(), NormalizedSBOMComponentEntity::getAccountId, this::processComponents);
     } catch (Exception e) {
-      searchService.deleteMigrationIndex();
+      searchService.deleteIndex(elasticSearchConfig.getIndexName());
       log.error(ELK_DEBUG_LOG + "Elk migration failed....", e);
       throw new GeneralException("Elk migration failed");
     }

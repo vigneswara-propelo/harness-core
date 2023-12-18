@@ -33,21 +33,20 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.UpdateResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 
 @OwnedBy(HarnessTeam.SSCA)
-@AllArgsConstructor(onConstructor = @__({ @Inject }))
 @Slf4j
 public class SearchServiceImpl implements SearchService {
   @Inject private ElasticsearchClient elasticsearchClient;
-  @Inject ElasticSearchIndexManager elasticSearchIndexManager;
+  @Inject @Named("SSCA") ElasticSearchIndexManager elasticSearchIndexManager;
 
   @Override
   public Result saveArtifact(ArtifactEntity artifactEntity) {
@@ -170,8 +169,8 @@ public class SearchServiceImpl implements SearchService {
   }
 
   @Override
-  public boolean deleteMigrationIndex() {
-    return elasticSearchIndexManager.deleteDefaultIndex();
+  public boolean deleteIndex(String indexName) {
+    return elasticSearchIndexManager.deleteIndexByName(indexName);
   }
 
   public List<String> getOrchestrationIds(

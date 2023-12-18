@@ -24,15 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(HarnessTeam.SSCA)
 @Slf4j
-public class ElasticSearchIndexManagerImpl implements ElasticSearchIndexManager {
-  String DEFAULT_INDEX = "harness-ssca";
-  String DEFAULT_INDEX_MAPPING = "ssca/search/ssca-schema.json";
+public abstract class ElasticSearchIndexManagerImpl implements ElasticSearchIndexManager {
   @Inject private ElasticsearchClient elasticsearchClient;
-  @Override
-  public String getIndexName(String accountId) {
-    // update this when we have multiple indexes
-    return DEFAULT_INDEX;
-  }
+
+  protected abstract String getIndexName(String accountId);
+  protected abstract String getIndexMapping();
 
   @Override
   public String getIndex(String accountId) {
@@ -62,7 +58,7 @@ public class ElasticSearchIndexManagerImpl implements ElasticSearchIndexManager 
         CreateIndexRequest createIndexRequest =
             new CreateIndexRequest.Builder()
                 .index(indexName)
-                .mappings(ElasticSearchUtils.getTypeMappingFromFile(DEFAULT_INDEX_MAPPING))
+                .mappings(ElasticSearchUtils.getTypeMappingFromFile(getIndexMapping()))
                 .build();
         CreateIndexResponse createIndexResponse = elasticsearchIndicesClient.create(createIndexRequest);
         return createIndexResponse.acknowledged();
@@ -92,11 +88,10 @@ public class ElasticSearchIndexManagerImpl implements ElasticSearchIndexManager 
   }
 
   @Override
-  public boolean deleteDefaultIndex() {
+  public boolean deleteIndexByName(String indexName) {
     ElasticsearchIndicesClient elasticsearchIndicesClient = this.elasticsearchClient.indices();
-
-    if (indexExists(DEFAULT_INDEX)) {
-      DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest.Builder().index(DEFAULT_INDEX).build();
+    if (indexExists(indexName)) {
+      DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest.Builder().index(indexName).build();
 
       try {
         DeleteIndexResponse deleteIndexResponse = elasticsearchIndicesClient.delete(deleteIndexRequest);

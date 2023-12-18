@@ -31,7 +31,7 @@ public interface SearchService {
 
   boolean bulkSaveArtifacts(String accountId, List<ArtifactEntity> artifactEntities);
 
-  boolean deleteMigrationIndex();
+  boolean deleteIndex(String indexName);
 
   List<String> getOrchestrationIds(
       String accountId, String orgIdentifier, String projectIdentifier, ArtifactFilter filter);

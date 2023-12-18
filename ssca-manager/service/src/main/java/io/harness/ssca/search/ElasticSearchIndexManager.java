@@ -12,8 +12,6 @@ import io.harness.annotations.dev.OwnedBy;
 
 @OwnedBy(HarnessTeam.SSCA)
 public interface ElasticSearchIndexManager {
-  String getIndexName(String accountId);
-
   String getIndex(String accountId);
 
   boolean indexExists(String index);
@@ -22,5 +20,5 @@ public interface ElasticSearchIndexManager {
 
   boolean deleteIndex(String accountId);
 
-  boolean deleteDefaultIndex();
+  boolean deleteIndexByName(String indexName);
 }
