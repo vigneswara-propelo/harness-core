@@ -9,6 +9,8 @@ package io.harness.batch.processing.schedule;
 
 import static io.harness.batch.processing.ApplicationReadyListener.createLivenessMarker;
 
+import io.harness.batch.processing.config.BatchMainConfig;
+import io.harness.batch.processing.connectors.ConnectorsHealthUpdateService;
 import io.harness.metrics.service.api.MetricService;
 import io.harness.metrics.service.api.MetricsPublisher;
 import io.harness.timescaledb.metrics.QueryStatsPrinter;
@@ -27,6 +29,8 @@ public class StartUpJobScheduler {
 
   @Autowired private MetricsPublisher metricsPublisher;
   @Autowired private MetricService metricService;
+  @Autowired private BatchMainConfig batchMainConfig;
+  @Autowired private ConnectorsHealthUpdateService connectorsHealthUpdateService;
 
   /**
    * Created this job because while running functional test
@@ -41,6 +45,16 @@ public class StartUpJobScheduler {
       createLivenessMarker();
     } catch (Exception ex) {
       log.error("StartUpJobs: Failed to create liveness marker");
+    }
+    try {
+      if (!batchMainConfig.getConnectorHealthUpdateJobConfig().isEnabled()) {
+        log.info("connectorHealthUpdateJob is disabled in config");
+        return;
+      }
+      connectorsHealthUpdateService.update();
+      log.info("Updated health of the connectors in NG");
+    } catch (Exception ex) {
+      log.error("Exception while running runNGConnectorsHealthUpdateJob", ex);
     }
   }
 
