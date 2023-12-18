@@ -6,6 +6,7 @@
  */
 
 package io.harness.ngmigration.expressions;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
@@ -17,7 +18,9 @@ import io.harness.ngmigration.utils.MigratorUtility;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.data.util.Pair;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_MIGRATOR})
 public class SecretMigratorFunctor implements ExpressionFunctor {
@@ -49,9 +52,41 @@ public class SecretMigratorFunctor implements ExpressionFunctor {
       // want to keep it as it is so the Engine can decode it.
       secretIdentifier = MigratorUtility.getScopedIdentifier(scope, secretName);
     } else {
-      // Default value
-      secretIdentifier = MigratorUtility.getIdentifierWithScope(this.scope, secretName, caseFormat);
+      if (secretName.contains("<+")) {
+        Pair<Map<String, String>, String> placeholdersAndInputString = replaceExpressions(secretName);
+        Map<String, String> placeholders = placeholdersAndInputString.getFirst();
+        secretIdentifier =
+            MigratorUtility.getIdentifierWithScope(this.scope, placeholdersAndInputString.getSecond(), caseFormat);
+        secretIdentifier = replacePlaceholders(secretIdentifier, placeholders);
+      } else {
+        // Default value
+        secretIdentifier = MigratorUtility.getIdentifierWithScope(this.scope, secretName, caseFormat);
+      }
     }
     return "<+secrets.getValue(\"" + secretIdentifier + "\")>";
+  }
+
+  private static Pair<Map<String, String>, String> replaceExpressions(String inputString) {
+    Map<String, String> placeholders = new HashMap<>();
+    Pattern pattern = Pattern.compile("<\\+([^>]+)>");
+    Matcher matcher = pattern.matcher(inputString);
+
+    int count = 1;
+    while (matcher.find()) {
+      String placeholder = "harnessplaceholder" + count;
+      String expression = matcher.group(0);
+      placeholders.put(placeholder, expression);
+      inputString = inputString.replace(expression, placeholder);
+      count++;
+    }
+    return Pair.of(placeholders, inputString);
+  }
+
+  private static String replacePlaceholders(String inputString, Map<String, String> placeholders) {
+    for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+      Pattern pattern = Pattern.compile(Pattern.quote(entry.getKey()), Pattern.CASE_INSENSITIVE);
+      inputString = pattern.matcher(inputString).replaceAll(entry.getValue());
+    }
+    return inputString;
   }
 }
