@@ -28,6 +28,7 @@ import io.harness.rule.Owner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -378,6 +379,8 @@ public class EngineExpressionEvaluatorTest extends CategoryTest {
     map.put("v16", "<+secret1>");
     map.put("v17", "<+c>");
     map.put("v18", "values-for-<+f>.yaml");
+    map.put("v19", "{\"values\":[{\"id\":\"abcdefg\",\"name\":\"Stratos harness\"}]}");
+    map.put("v20", "{\"values\":[{\"id\":\"abcdefg\",\"name\":\"Company harness\"}]}");
 
     EngineExpressionEvaluator evaluator = prepareEngineExpressionEvaluator(
         new ImmutableMap.Builder<String, Object>()
@@ -413,7 +416,7 @@ public class EngineExpressionEvaluatorTest extends CategoryTest {
 
     assertThat(evaluator.resolve("<+variables>", ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED))
         .isEqualTo(
-            "{\"v6\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v7\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v8\":\"harness/archit-abc\",\"v9\":\"harness/archit-<+f1>\",\"v10\":\"harness architharness\",\"v12\":\"<b> archit-harness </b>\",\"v11\":\"harness architharness\",\"v13\":\"harnessabc\",\"v16\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v1\":\"abcdef\",\"v2\":\"harnessabcdef\",\"v18\":\"values-for-abc.yaml\",\"v3\":\"abcdefharness\",\"v17\":\"29\",\"v4\":\"abcdef\",\"v5\":\"archit-harness\"}");
+            "{\"v6\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v7\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v8\":\"harness/archit-abc\",\"v9\":\"harness/archit-<+f1>\",\"v10\":\"harness architharness\",\"v20\":\"{\\\"values\\\":[{\\\"id\\\":\\\"abcdefg\\\",\\\"name\\\":\\\"Company harness\\\"}]}\",\"v12\":\"<b> archit-harness </b>\",\"v11\":\"harness architharness\",\"v13\":\"harnessabc\",\"v16\":\"${ngSecretManager.obtain(\\\"org.v2\\\", 123)}\",\"v1\":\"abcdef\",\"v2\":\"harnessabcdef\",\"v18\":\"values-for-abc.yaml\",\"v3\":\"abcdefharness\",\"v17\":\"29\",\"v4\":\"abcdef\",\"v5\":\"archit-harness\",\"v19\":\"{\\\"values\\\":[{\\\"id\\\":\\\"abcdefg\\\",\\\"name\\\":\\\"Stratos harness\\\"}]}\"}");
     assertThat(evaluator.resolve("<+variables.v18>", ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED))
         .isEqualTo("values-for-abc.yaml");
     assertThat(evaluator.evaluateExpression("<+if ((<+j> == null) || (empty(<+j>))) {\"emptyVar\";} else {<+f>;}>   "))
@@ -497,6 +500,20 @@ public class EngineExpressionEvaluatorTest extends CategoryTest {
                    + "||\n"
                    + "<+c21.anotherStatus> == \"IGNORE_FAILED\")"))
         .isEqualTo(true);
+    assertThat(
+        evaluator.evaluateExpression(
+            "<+c2.status> == \"RUNNING\" && (empty(<+json.select(\"values[?(@.name == 'Stratos <+company>')].id\",<+variables.v19>)>))"))
+        .isEqualTo(false);
+    assertThat(
+        evaluator.evaluateExpression(
+            "<+c2.status> == \"RUNNING\" && (empty(<+json.select(\"values[?(@.name == 'Stratos <+company>')].id\",<+variables.v20>)>))"))
+        .isEqualTo(true);
+    assertThat(evaluator.evaluateExpression(
+                   "<+json.select(\"values[?(@.name == 'Stratos <+company>')].id\",<+variables.v20>)>"))
+        .isEqualTo(new ArrayList<>());
+    assertThat(evaluator.evaluateExpression(
+                   "<+json.select(\"values[?(@.name == 'Stratos <+company>')].id\",<+variables.v19>)>"))
+        .isEqualTo(List.of("abcdefg"));
 
     // size operator
     assertThat(evaluator.resolve("<+size(<+variables.v8>)>", ExpressionMode.RETURN_ORIGINAL_EXPRESSION_IF_UNRESOLVED))
@@ -548,6 +565,9 @@ public class EngineExpressionEvaluatorTest extends CategoryTest {
 
     // Functors having 2nd param as expression shouldn't cause issue in evaluation
     assertThat(evaluator.resolve("<+json.list(\"$\", <+var4>)>", true)).isEqualTo("[\"abc\",\"def\"]");
+    assertThat(evaluator.resolve(
+                   "<+empty(<+json.select(\"values[?(@.name == 'Stratos <+company>')].id\",<+variables.v19>)>)>", true))
+        .isEqualTo("false");
 
     // Ternary operators
     assertThat(evaluator.resolve("<+ <+a>==5?<+f>:<+g> >", true)).isEqualTo("abc");

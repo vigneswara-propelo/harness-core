@@ -335,11 +335,14 @@ public class StringReplacer {
 
   private boolean checkIfCommaIsInMethodInvocationInLeftSubstring(StringBuffer buf, int currentPos) {
     int i = currentPos - 1;
+    int x = 0;
     for (; i >= 0; i--) {
       if (buf.charAt(i) == ')') {
-        return false;
+        x--;
+      } else if (buf.charAt(i) == '(') {
+        x++;
       }
-      if (buf.charAt(i) == '(') {
+      if (x > 0) {
         break;
       }
     }
@@ -352,11 +355,14 @@ public class StringReplacer {
   private boolean checkIfCommaIsInMethodInvocationInRightSubstring(
       StringBuffer buf, int currentPos, int expressionEndPos) {
     int i = currentPos + 1;
+    int x = 0;
     for (; i < expressionEndPos; i++) {
       if (buf.charAt(i) == '(') {
-        return false;
+        x++;
+      } else if (buf.charAt(i) == ')') {
+        x--;
       }
-      if (buf.charAt(i) == ')') {
+      if (x < 0) {
         return true;
       }
     }
