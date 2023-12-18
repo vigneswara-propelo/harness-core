@@ -75,6 +75,7 @@ import io.harness.ng.core.user.entities.UserGroup.UserGroupKeys;
 import io.harness.ng.core.user.service.LastAdminCheckService;
 import io.harness.ng.core.user.service.NgUserService;
 import io.harness.ng.core.usergroups.filter.UserGroupFilterType;
+import io.harness.ng.core.utils.UserGroupMapper;
 import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.ng.core.spring.UserGroupRepository;
 import io.harness.rule.Owner;
@@ -352,11 +353,6 @@ public class UserGroupServiceImplTest extends CategoryTest {
                                            .isSsoLinked(true)
                                            .users(Lists.newArrayList("abc", "def", "ok"))
                                            .build();
-    when(userGroupRepository.save(userGroup)).thenReturn(userGroup);
-    ConstraintViolation<Object> mockviolation = mock(ConstraintViolation.class);
-    Set<ConstraintViolation<Object>> violations = new HashSet<>();
-    violations.add(mockviolation);
-    when(validator.validate(any())).thenReturn(violations);
     UserGroup updatedUserGroup = userGroupService.updateWithCheckThatSCIMFieldsAreNotModified(updatedUserGroupDTO);
     assertThat(updatedUserGroup).isNotNull();
   }
@@ -402,7 +398,7 @@ public class UserGroupServiceImplTest extends CategoryTest {
   @Test
   @Owner(developers = BHAVYA)
   @Category(UnitTests.class)
-  public void testUpdateUserGroupWithNameNull_throwsJerseyViolation() {
+  public void testCreateUserGroupWithNameNull_throwsJerseyViolation() {
     Scope scope = Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
     String userGroupIdentifier = randomAlphabetic(10);
     UserGroupDTO updatedUserGroupDTO = UserGroupDTO.builder()
@@ -410,17 +406,14 @@ public class UserGroupServiceImplTest extends CategoryTest {
                                            .orgIdentifier(scope.getOrgIdentifier())
                                            .projectIdentifier(scope.getProjectIdentifier())
                                            .identifier(userGroupIdentifier)
+                                           .name(null)
                                            .externallyManaged(true)
                                            .isSsoLinked(true)
                                            .users(Lists.newArrayList("abc", "def", "ok"))
                                            .build();
-    ConstraintViolation<Object> mockviolation = createDummyViolation("name", "cannot be null or empty");
-    Set<ConstraintViolation<Object>> violations = new HashSet<>();
-    violations.add(mockviolation);
-    when(validator.validateValue(any(), anyString(), any())).thenReturn(violations);
-    assertThatThrownBy(() -> userGroupService.update(updatedUserGroupDTO))
-        .isInstanceOf(JerseyViolationException.class)
-        .hasMessage("name: cannot be null or empty");
+    assertThatThrownBy(() -> userGroupService.createForSCIM(updatedUserGroupDTO))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Create UserGroup- name: cannot be null or empty");
   }
 
   @Test
@@ -1563,6 +1556,183 @@ public class UserGroupServiceImplTest extends CategoryTest {
         .findAll(userGroupCriteriaArgumentCaptor.capture());
     userGroupService.getUserGroupsForUser(ACCOUNT_IDENTIFIER, "testUserId");
     verify(userGroupRepository, times(1)).findAll(userGroupCriteriaArgumentCaptor.capture());
+  }
+
+  @Test
+  @Owner(developers = PRATEEK)
+  @Category(UnitTests.class)
+  public void testCreateUserGroupWithBlankNameInSCIM_throwsInvalidRequestException() {
+    Scope scope = Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
+    String userGroupIdentifier = "  ";
+    UserGroupDTO updatedUserGroupDTO = UserGroupDTO.builder()
+                                           .accountIdentifier(scope.getAccountIdentifier())
+                                           .orgIdentifier(scope.getOrgIdentifier())
+                                           .projectIdentifier(scope.getProjectIdentifier())
+                                           .identifier(userGroupIdentifier)
+                                           .name(userGroupIdentifier)
+                                           .externallyManaged(true)
+                                           .isSsoLinked(false)
+                                           .users(Lists.newArrayList("abc@xyz.com", "def@xyz.com", "jkh@xyz.com"))
+                                           .build();
+    assertThatThrownBy(() -> userGroupService.createForSCIM(updatedUserGroupDTO))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage("Create UserGroup- name: cannot be null or empty");
+  }
+
+  @Test
+  @Owner(developers = PRATEEK)
+  @Category(UnitTests.class)
+  public void testCreateUserGroupWithBlankIdentifierInSCIM_throwsJerseyViolation() {
+    Scope scope = Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
+    String userGroupIdentifier = "  ";
+    String userGroupName = " testGroupName ";
+    UserGroupDTO updatedUserGroupDTO = UserGroupDTO.builder()
+                                           .accountIdentifier(scope.getAccountIdentifier())
+                                           .orgIdentifier(scope.getOrgIdentifier())
+                                           .projectIdentifier(scope.getProjectIdentifier())
+                                           .identifier(userGroupIdentifier)
+                                           .name(userGroupName)
+                                           .externallyManaged(true)
+                                           .isSsoLinked(false)
+                                           .users(Lists.newArrayList("abc@xyz.com", "def@xyz.com", "jkh@xyz.com"))
+                                           .build();
+    ConstraintViolation<Object> mockviolation = createDummyViolation("identifier", "cannot be empty");
+    Set<ConstraintViolation<Object>> violations = new HashSet<>();
+    violations.add(mockviolation);
+    when(validator.validateValue(any(), anyString(), any())).thenReturn(violations);
+    assertThatThrownBy(() -> userGroupService.createForSCIM(updatedUserGroupDTO))
+        .isInstanceOf(JerseyViolationException.class)
+        .hasMessage("identifier: cannot be empty");
+  }
+
+  @Test
+  @Owner(developers = PRATEEK)
+  @Category(UnitTests.class)
+  public void testUpdateUserGroupWithBlankNameInSCIM_throwsInvalidRequestException() {
+    Scope scope = Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
+    String userGroupIdentifier = "testGroupIdentifier";
+    String userGroupName = "    ";
+    UserGroupDTO updatedUserGroupDTO = UserGroupDTO.builder()
+                                           .accountIdentifier(scope.getAccountIdentifier())
+                                           .orgIdentifier(scope.getOrgIdentifier())
+                                           .projectIdentifier(scope.getProjectIdentifier())
+                                           .identifier(userGroupIdentifier)
+                                           .name(userGroupName)
+                                           .externallyManaged(true)
+                                           .isSsoLinked(false)
+                                           .users(Lists.newArrayList("abc@xyz.com", "def@xyz.com", "jkh@xyz.com"))
+                                           .build();
+    assertThatThrownBy(() -> userGroupService.update(updatedUserGroupDTO))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(String.format("Update UserGroup [%s]- name: cannot be null or empty", userGroupIdentifier));
+  }
+
+  @Test
+  @Owner(developers = PRATEEK)
+  @Category(UnitTests.class)
+  public void testCreateUserGroupSuccess() {
+    Scope scope = Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
+    String userGroupIdentifier = randomAlphabetic(10);
+    String userGroupName = "validNAME";
+    UserGroupDTO createUserGroupDTO = UserGroupDTO.builder()
+                                          .accountIdentifier(scope.getAccountIdentifier())
+                                          .orgIdentifier(scope.getOrgIdentifier())
+                                          .projectIdentifier(scope.getProjectIdentifier())
+                                          .identifier(userGroupIdentifier)
+                                          .name(userGroupName)
+                                          .externallyManaged(false)
+                                          .isSsoLinked(false)
+                                          .build();
+    userGroupService.create(createUserGroupDTO);
+    verify(transactionTemplate, times(1)).execute(any());
+  }
+
+  @Test
+  @Owner(developers = PRATEEK)
+  @Category(UnitTests.class)
+  public void testCreateUserGroupWithInvalidName_throwsJerseyViolation() {
+    Scope scope = Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
+    String userGroupIdentifier = randomAlphabetic(10);
+    String userGroupName = "display?INVALID#name!";
+    UserGroupDTO createUserGroupDTO = UserGroupDTO.builder()
+                                          .accountIdentifier(scope.getAccountIdentifier())
+                                          .orgIdentifier(scope.getOrgIdentifier())
+                                          .projectIdentifier(scope.getProjectIdentifier())
+                                          .identifier(userGroupIdentifier)
+                                          .name(userGroupName)
+                                          .externallyManaged(false)
+                                          .isSsoLinked(true)
+                                          .users(Lists.newArrayList("abc", "def", "ok"))
+                                          .build();
+    ConstraintViolation<Object> mockviolation = createDummyViolation("name", "invalid name");
+    Set<ConstraintViolation<Object>> violations = new HashSet<>();
+    violations.add(mockviolation);
+    doReturn(violations).when(validator).validate(any(UserGroupDTO.class));
+    assertThatThrownBy(() -> userGroupService.create(createUserGroupDTO)).isInstanceOf(JerseyViolationException.class);
+  }
+
+  @Test
+  @Owner(developers = PRATEEK)
+  @Category(UnitTests.class)
+  public void testSCIMCreateUserGroupWithInvalidNameSuccess() {
+    Scope scope = Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
+    String userGroupIdentifier = randomAlphabetic(10);
+    String userGroupName = "display?INVALID#name!";
+    UserGroupDTO createUserGroupDTO = UserGroupDTO.builder()
+                                          .accountIdentifier(scope.getAccountIdentifier())
+                                          .orgIdentifier(scope.getOrgIdentifier())
+                                          .projectIdentifier(scope.getProjectIdentifier())
+                                          .identifier(userGroupIdentifier)
+                                          .name(userGroupName)
+                                          .externallyManaged(true)
+                                          .build();
+    userGroupService.createForSCIM(createUserGroupDTO);
+    verify(transactionTemplate, times(1)).execute(any());
+  }
+
+  @Test
+  @Owner(developers = PRATEEK)
+  @Category(UnitTests.class)
+  public void testUpdateUserGroupInvalidNameSuccess() {
+    Scope scope = Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
+    String userGroupIdentifier = randomAlphabetic(10);
+    String userGroupName = "invalid#NAME!23";
+    UserGroupDTO updateUserGroupDTO = UserGroupDTO.builder()
+                                          .accountIdentifier(scope.getAccountIdentifier())
+                                          .orgIdentifier(scope.getOrgIdentifier())
+                                          .projectIdentifier(scope.getProjectIdentifier())
+                                          .identifier(userGroupIdentifier)
+                                          .name(userGroupName)
+                                          .externallyManaged(false)
+                                          .isSsoLinked(false)
+                                          .build();
+    UserGroup ug = UserGroupMapper.toEntity(updateUserGroupDTO);
+    when(userGroupRepository.find(any(Criteria.class))).thenReturn(Optional.of(ug));
+    userGroupService.update(updateUserGroupDTO);
+    verify(transactionTemplate, times(1)).execute(any());
+  }
+
+  @Test
+  @Owner(developers = PRATEEK)
+  @Category(UnitTests.class)
+  public void testSCIMUpdateUserGroupInvalidIdentifier() {
+    Scope scope = Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER);
+    String userGroupIdentifier = randomAlphabetic(10);
+    String userGroupName = "invalid#NAME!23";
+    UserGroupDTO updateUserGroupDTO = UserGroupDTO.builder()
+                                          .accountIdentifier(scope.getAccountIdentifier())
+                                          .orgIdentifier(scope.getOrgIdentifier())
+                                          .projectIdentifier(scope.getProjectIdentifier())
+                                          .identifier(userGroupIdentifier)
+                                          .name(userGroupName)
+                                          .externallyManaged(false)
+                                          .isSsoLinked(false)
+                                          .build();
+    ConstraintViolation<Object> mockviolation = createDummyViolation("description", "very long description");
+    Set<ConstraintViolation<Object>> violations = new HashSet<>();
+    violations.add(mockviolation);
+    when(validator.validateValue(any(), anyString(), any())).thenReturn(violations);
+    assertThatThrownBy(() -> userGroupService.update(updateUserGroupDTO)).isInstanceOf(JerseyViolationException.class);
   }
 
   private static ConstraintViolation<Object> createDummyViolation(String propertyPath, String message) {

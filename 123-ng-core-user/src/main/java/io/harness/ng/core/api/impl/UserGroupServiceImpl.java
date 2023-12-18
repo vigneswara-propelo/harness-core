@@ -173,6 +173,21 @@ public class UserGroupServiceImpl implements UserGroupService {
     return createInternal(userGroupDTO);
   }
 
+  /**
+   * Separate method as we don't do 'name' validation in SCIM group create
+   *
+   * @param userGroupDTO
+   * @return
+   */
+  @Override
+  public UserGroup createForSCIM(UserGroupDTO userGroupDTO) {
+    validationOnUserGroupDTOCreateForSCIM(userGroupDTO);
+    if (userGroupDTO.isHarnessManaged() || defaultUserGroups.contains(userGroupDTO.getIdentifier())) {
+      throw new InvalidRequestException("Cannot create a harness managed user group");
+    }
+    return createInternal(userGroupDTO);
+  }
+
   public UserGroup createDefaultUserGroup(UserGroupDTO userGroupDTO) {
     return createInternal(userGroupDTO);
   }
@@ -216,14 +231,8 @@ public class UserGroupServiceImpl implements UserGroupService {
 
   @Override
   public UserGroup update(UserGroupDTO userGroupDTO) {
-    validationOnUserGroupUpdateDTO(userGroupDTO);
-    UserGroup savedUserGroup = getOrThrow(userGroupDTO.getAccountIdentifier(), userGroupDTO.getOrgIdentifier(),
-        userGroupDTO.getProjectIdentifier(), userGroupDTO.getIdentifier());
-    checkUpdateForHarnessManagedGroup(userGroupDTO, savedUserGroup);
-    UserGroup userGroup = toEntity(userGroupDTO);
-    userGroup.setId(savedUserGroup.getId());
-    userGroup.setVersion(savedUserGroup.getVersion());
-    return updateInternal(userGroup, toDTO(savedUserGroup));
+    validationOnUserGroupDTOUpdate(userGroupDTO);
+    return updateCommon(userGroupDTO);
   }
 
   @Override
@@ -241,17 +250,52 @@ public class UserGroupServiceImpl implements UserGroupService {
     return update(userGroupDTO);
   }
 
-  private void validationOnUserGroupUpdateDTO(UserGroupDTO userGroupDTO) {
+  private UserGroup updateCommon(UserGroupDTO userGroupDTO) {
+    UserGroup savedUserGroup = getOrThrow(userGroupDTO.getAccountIdentifier(), userGroupDTO.getOrgIdentifier(),
+        userGroupDTO.getProjectIdentifier(), userGroupDTO.getIdentifier());
+    checkUpdateForHarnessManagedGroup(userGroupDTO, savedUserGroup);
+    UserGroup userGroup = toEntity(userGroupDTO);
+    userGroup.setId(savedUserGroup.getId());
+    userGroup.setVersion(savedUserGroup.getVersion());
+    return updateInternal(userGroup, toDTO(savedUserGroup));
+  }
+
+  private void validationOnUserGroupDTOCreateForSCIM(UserGroupDTO userGroupDTO) {
+    // just check for non-empty separately on name
+    if (isBlank(userGroupDTO.getName())) {
+      throw new InvalidRequestException("Create UserGroup- name: cannot be null or empty");
+    }
     Set<ConstraintViolation<UserGroupDTO>> violations =
-        validator.validateValue(UserGroupDTO.class, UserGroupKeys.name, userGroupDTO.getName());
+        validator.validateValue(UserGroupDTO.class, UserGroupKeys.identifier, userGroupDTO.getIdentifier());
 
     Set<ConstraintViolation<UserGroupDTO>> descriptionViolations =
         validator.validateValue(UserGroupDTO.class, UserGroupKeys.description, userGroupDTO.getDescription());
+
     if (!violations.isEmpty()) {
       violations.addAll(descriptionViolations);
     } else {
       violations = descriptionViolations;
     }
+    Set<ConstraintViolation<UserGroupDTO>> tagViolations =
+        validator.validateValue(UserGroupDTO.class, UserGroupKeys.tags, userGroupDTO.getTags());
+    if (!violations.isEmpty()) {
+      violations.addAll(tagViolations);
+    } else {
+      violations = tagViolations;
+    }
+    if (!violations.isEmpty()) {
+      throw new JerseyViolationException(violations, null);
+    }
+  }
+
+  private void validationOnUserGroupDTOUpdate(UserGroupDTO userGroupDTO) {
+    if (isBlank(userGroupDTO.getName())) {
+      throw new InvalidRequestException(
+          String.format("Update UserGroup [%s]- name: cannot be null or empty", userGroupDTO.getIdentifier()));
+    }
+
+    Set<ConstraintViolation<UserGroupDTO>> violations =
+        validator.validateValue(UserGroupDTO.class, UserGroupKeys.description, userGroupDTO.getDescription());
 
     Set<ConstraintViolation<UserGroupDTO>> tagViolations =
         validator.validateValue(UserGroupDTO.class, UserGroupKeys.tags, userGroupDTO.getTags());
