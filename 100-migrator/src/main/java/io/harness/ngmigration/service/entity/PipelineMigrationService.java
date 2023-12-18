@@ -21,6 +21,7 @@ import static software.wings.ngmigration.NGMigrationEntityType.ENVIRONMENT;
 import static software.wings.ngmigration.NGMigrationEntityType.INFRA;
 import static software.wings.ngmigration.NGMigrationEntityType.PIPELINE;
 import static software.wings.ngmigration.NGMigrationEntityType.SERVICE;
+import static software.wings.ngmigration.NGMigrationEntityType.USER_GROUP;
 import static software.wings.ngmigration.NGMigrationEntityType.WORKFLOW;
 import static software.wings.sm.StateType.ARTIFACT_COLLECTION;
 
@@ -233,6 +234,18 @@ public class PipelineMigrationService extends NgMigrationService {
                                          : SERVICE)
                                  .build())
                       .collect(Collectors.toList()));
+            }
+          }
+        } else if (StateType.APPROVAL.name().equals(stageElement.getType())) {
+          Map<String, Object> properties = emptyIfNull(stageElement.getProperties());
+          if (isNotEmpty(properties)) {
+            ApprovalState state = new ApprovalState(stageElement.getName());
+            state.parseProperties(properties);
+            if (!state.isUserGroupAsExpression()) {
+              children.addAll(state.getUserGroups()
+                                  .stream()
+                                  .map(entry -> CgEntityId.builder().id(entry).type(USER_GROUP).build())
+                                  .collect(Collectors.toList()));
             }
           }
         }
