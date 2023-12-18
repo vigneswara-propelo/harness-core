@@ -365,16 +365,34 @@ ciExecutionServiceConfig:
         - "C:\\drone-cache.exe"
     sscaOrchestrationConfig:
       image: harness/ssca-plugin:0.11.0
+      entrypoint:
+        - /bin/ssca-plugin
+        - orchestrate
     sscaEnforcementConfig:
       image: harness/ssca-plugin:0.11.0
+      entrypoint:
+        - /bin/ssca-plugin
+        - enforce
     provenanceConfig:
       image: harness/slsa-plugin:latest
+      entrypoint:
+        - /bin/slsa-plugin
+        - attest
     provenanceGcrConfig:
       image: harness/slsa-plugin:latest
+      entrypoint:
+        - /bin/slsa-plugin
+        - attest
     slsaVerificationConfig:
       image: harness/slsa-plugin:latest
+      entrypoint:
+        - /bin/slsa-plugin
+        - verify
     slsaVerificationGcrConfig:
       image: harness/slsa-plugin:latest
+      entrypoint:
+        - /bin/slsa-plugin
+        - verify
     vmImageConfig:
       # Use root image for VM git clone
       gitClone: harness/drone-git:1.4.9
