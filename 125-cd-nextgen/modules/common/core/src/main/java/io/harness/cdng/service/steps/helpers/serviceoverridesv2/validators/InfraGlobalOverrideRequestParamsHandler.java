@@ -33,17 +33,20 @@ import lombok.NonNull;
 @AllArgsConstructor(onConstructor = @__({ @Inject }))
 public class InfraGlobalOverrideRequestParamsHandler implements ServiceOverrideTypeBasedRequestParamsHandler {
   @Inject private InfrastructureEntityService infrastructureEntityService;
+  @Inject ServiceOverrideValidatorService overrideValidatorService;
 
   @Override
   public void validateRequest(@NonNull ServiceOverrideRequestDTOV2 requestDTOV2, @NonNull String accountId) {
     validateRequiredField(requestDTOV2.getInfraIdentifier());
+    overrideValidatorService.validateEnvWithRBACOrThrow(accountId, requestDTOV2.getOrgIdentifier(),
+        requestDTOV2.getProjectIdentifier(), requestDTOV2.getEnvironmentRef());
     checkIfInfraExist(requestDTOV2, accountId);
   }
 
   private void checkIfInfraExist(ServiceOverrideRequestDTOV2 requestDTOV2, String accountId) {
     IdentifierRef envIdentifierRef = IdentifierRefHelper.getIdentifierRef(requestDTOV2.getEnvironmentRef(), accountId,
         requestDTOV2.getOrgIdentifier(), requestDTOV2.getProjectIdentifier());
-    Optional<InfrastructureEntity> infrastructureEntity = infrastructureEntityService.get(
+    Optional<InfrastructureEntity> infrastructureEntity = infrastructureEntityService.getMetadata(
         envIdentifierRef.getAccountIdentifier(), envIdentifierRef.getOrgIdentifier(),
         envIdentifierRef.getProjectIdentifier(), envIdentifierRef.getIdentifier(), requestDTOV2.getInfraIdentifier());
     if (infrastructureEntity.isEmpty()) {
