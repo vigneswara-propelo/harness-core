@@ -10,6 +10,7 @@ import io.harness.annotation.HarnessEntity;
 import io.harness.annotations.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.EmbeddedUser;
 import io.harness.iterator.PersistentRegularIterable;
 import io.harness.mongo.index.FdIndex;
 import io.harness.ng.DbAliases;
@@ -17,6 +18,8 @@ import io.harness.persistence.AccountAccess;
 import io.harness.persistence.UuidAware;
 
 import dev.morphia.annotations.Entity;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -64,6 +67,9 @@ public class RemediationTrackerEntity implements UuidAware, PersistentRegularIte
   @CreatedDate Long createdAt;
   @LastModifiedDate Long lastUpdatedAt;
   String comments;
+  boolean closedManually;
+  EmbeddedUser closedBy;
+  LocalDate targetEnddate;
 
   @Override
   public Long obtainNextIteration(String fieldName) {
@@ -73,6 +79,9 @@ public class RemediationTrackerEntity implements UuidAware, PersistentRegularIte
     throw new IllegalArgumentException("Invalid fieldName " + fieldName);
   }
 
+  public ZoneOffset getZoneOffset() {
+    return ZoneOffset.UTC; // hardcoding it to UTC for now. We need to ask it from user.
+  }
   @Override
   public void updateNextIteration(String fieldName, long nextIteration) {
     if (RemediationTrackerEntityKeys.nextIteration.equals(fieldName)) {

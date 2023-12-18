@@ -8,6 +8,7 @@
 package io.harness.ssca.services.remediation_tracker;
 
 import static io.harness.rule.OwnerRule.VARSHA_LALWANI;
+import static io.harness.rule.TestUserProvider.testUserProvider;
 import static io.harness.ssca.entities.remediation_tracker.RemediationStatus.COMPLETED;
 import static io.harness.ssca.entities.remediation_tracker.RemediationStatus.ON_GOING;
 
@@ -18,10 +19,12 @@ import static org.mockito.Mockito.when;
 
 import io.harness.BuilderFactory;
 import io.harness.SSCAManagerTestBase;
+import io.harness.beans.EmbeddedUser;
 import io.harness.category.element.UnitTests;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.repositories.remediation_tracker.RemediationTrackerRepository;
 import io.harness.rule.Owner;
+import io.harness.spec.server.ssca.v1.model.ExcludeArtifactRequestBody;
 import io.harness.spec.server.ssca.v1.model.RemediationCondition;
 import io.harness.spec.server.ssca.v1.model.RemediationStatus;
 import io.harness.spec.server.ssca.v1.model.RemediationTrackerCreateRequestBody;
@@ -80,6 +83,7 @@ public class RemediationTrackerServiceImplTest extends SSCAManagerTestBase {
             builderFactory.getCdInstanceSummaryBuilder().artifactCorrelationId("pending").build()));
     FieldUtils.writeField(remediationTrackerService, "artifactService", artifactService, true);
     FieldUtils.writeField(remediationTrackerService, "cdInstanceSummaryService", cdInstanceSummaryService, true);
+    testUserProvider.setActiveUser(EmbeddedUser.builder().name("user1").email("user1@harness.io").build());
   }
 
   @Test
@@ -344,5 +348,42 @@ public class RemediationTrackerServiceImplTest extends SSCAManagerTestBase {
             builderFactory.getCdInstanceSummaryBuilder().artifactCorrelationId("pending").build()));
     FieldUtils.writeField(remediationTrackerService, "artifactService", artifactService, true);
     FieldUtils.writeField(remediationTrackerService, "cdInstanceSummaryService", cdInstanceSummaryService, true);
+  }
+
+  @Test
+  @Owner(developers = VARSHA_LALWANI)
+  @Category(UnitTests.class)
+  public void testCloseRemediationTracker() {
+    RemediationTrackerEntity remediationTrackerEntity =
+        getRemediationTrackerEntity(remediationTrackerCreateRequestBody);
+    remediationTrackerEntity.setStatus(ON_GOING);
+    repository.save(remediationTrackerEntity);
+
+    remediationTrackerService.close(builderFactory.getContext().getAccountId(),
+        builderFactory.getContext().getOrgIdentifier(), builderFactory.getContext().getProjectIdentifier(),
+        remediationTrackerEntity.getUuid());
+    remediationTrackerEntity = remediationTrackerService.getRemediationTracker(remediationTrackerEntity.getUuid());
+    assertThat(remediationTrackerEntity.getStatus()).isEqualTo(COMPLETED);
+    assertThat(remediationTrackerEntity.getEndTimeMilli()).isNotNull();
+    assertThat(remediationTrackerEntity.isClosedManually()).isTrue();
+    assertThat(remediationTrackerEntity.getClosedBy().getName()).isEqualTo(testUserProvider.activeUser().getName());
+    assertThat(remediationTrackerEntity.getClosedBy().getEmail()).isEqualTo(testUserProvider.activeUser().getEmail());
+  }
+
+  @Test
+  @Owner(developers = VARSHA_LALWANI)
+  @Category(UnitTests.class)
+  public void testExcludeArtifact() {
+    RemediationTrackerEntity remediationTrackerEntity =
+        getRemediationTrackerEntity(remediationTrackerCreateRequestBody);
+    remediationTrackerEntity.setStatus(ON_GOING);
+    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId").isExcluded()).isFalse();
+    repository.save(remediationTrackerEntity);
+
+    remediationTrackerService.excludeArtifact(builderFactory.getContext().getAccountId(),
+        builderFactory.getContext().getOrgIdentifier(), builderFactory.getContext().getProjectIdentifier(),
+        remediationTrackerEntity.getUuid(), new ExcludeArtifactRequestBody().artifactId("artifactId"));
+    remediationTrackerEntity = remediationTrackerService.getRemediationTracker(remediationTrackerEntity.getUuid());
+    assertThat(remediationTrackerEntity.getArtifactInfos().get("artifactId").isExcluded()).isTrue();
   }
 }

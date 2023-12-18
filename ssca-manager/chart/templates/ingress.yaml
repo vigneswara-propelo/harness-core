@@ -132,7 +132,14 @@ spec:
                 port:
                   number: {{ $.Values.service.port }}
             path: /(v1/org/.+/project/.+/normalised-sbom-component)
-            pathType: ImplementationSpecific           
+            pathType: ImplementationSpecific
+          - backend:
+              service:
+                name: ssca-manager
+                port:
+                  number: {{ $.Values.service.port }}
+            path: /(v1/orgs/.+/projects/.+/remediation.*)
+            pathType: ImplementationSpecific
     {{- end }}
   {{- if .Values.global.ingress.tls.enabled }}
   tls:

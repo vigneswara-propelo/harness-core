@@ -27,7 +27,6 @@ import io.harness.opaclient.OpaClientModule;
 import io.harness.outbox.TransactionOutboxModule;
 import io.harness.outbox.api.OutboxEventHandler;
 import io.harness.persistence.HPersistence;
-import io.harness.persistence.NoopUserProvider;
 import io.harness.persistence.UserProvider;
 import io.harness.pipeline.remote.PipelineRemoteClientModule;
 import io.harness.redis.RedisConfig;
@@ -149,7 +148,7 @@ public class SSCAManagerModule extends AbstractModule {
     install(new AbstractMongoModule() {
       @Override
       public UserProvider userProvider() {
-        return new NoopUserProvider();
+        return new UserPrincipalUserProvider();
       }
     });
     registerOutboxEventHandlers();

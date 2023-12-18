@@ -8,8 +8,10 @@ package io.harness.ssca.services.remediation_tracker;
 
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidArgumentsException;
+import io.harness.persistence.UserProvider;
 import io.harness.repositories.remediation_tracker.RemediationTrackerRepository;
 import io.harness.spec.server.ssca.v1.model.ComponentFilter;
+import io.harness.spec.server.ssca.v1.model.ExcludeArtifactRequestBody;
 import io.harness.spec.server.ssca.v1.model.Operator;
 import io.harness.spec.server.ssca.v1.model.RemediationCount;
 import io.harness.spec.server.ssca.v1.model.RemediationTrackerCreateRequestBody;
@@ -62,6 +64,8 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
   @Inject NormalisedSbomComponentService normalisedSbomComponentService;
 
   @Inject MongoTemplate mongoTemplate;
+
+  @Inject UserProvider userProvider;
   @Override
   public String createRemediationTracker(
       String accountId, String orgId, String projectId, RemediationTrackerCreateRequestBody body) {
@@ -77,11 +81,50 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
             .vulnerabilityInfo(RemediationTrackerMapper.getVulnerabilityInfo(body.getVulnerabilityInfo()))
             .status(RemediationStatus.ON_GOING)
             .startTimeMilli(System.currentTimeMillis())
+            .targetEnddate(body.getTargetEndDate())
             .build();
     remediationTracker = repository.save(remediationTracker);
     // If this increases API latency, we can move this to a separate thread or a job.
     updateArtifactsAndEnvironments(remediationTracker);
     return remediationTracker.getUuid();
+  }
+
+  @Override
+  public boolean close(String accountId, String orgId, String projectId, String remediationTrackerId) {
+    RemediationTrackerEntity remediationTracker =
+        repository
+            .findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndUuid(
+                accountId, orgId, projectId, remediationTrackerId)
+            .orElseThrow(() -> new InvalidArgumentsException("Remediation Tracker not found"));
+    if (remediationTracker.getStatus() == RemediationStatus.COMPLETED) {
+      return false;
+    }
+    closeTracker(remediationTracker);
+    remediationTracker.setClosedManually(true);
+    remediationTracker.setClosedBy(userProvider.activeUser());
+    repository.save(remediationTracker);
+    return true;
+  }
+
+  @Override
+  public boolean excludeArtifact(
+      String accountId, String orgId, String projectId, String remediationTrackerId, ExcludeArtifactRequestBody body) {
+    RemediationTrackerEntity remediationTracker =
+        repository
+            .findByAccountIdentifierAndOrgIdentifierAndProjectIdentifierAndUuid(
+                accountId, orgId, projectId, remediationTrackerId)
+            .orElseThrow(() -> new InvalidArgumentsException("Remediation Tracker not found"));
+    if (remediationTracker.getStatus() == RemediationStatus.COMPLETED) {
+      throw new InvalidArgumentsException(
+          String.format("Remediation Tracker: %s is already closed.", remediationTrackerId));
+    }
+    ArtifactInfo artifactInfo = remediationTracker.getArtifactInfos().get(body.getArtifactId());
+    if (artifactInfo == null) {
+      throw new InvalidArgumentsException(String.format("ArtifactId: %s not present.", body.getArtifactId()));
+    }
+    artifactInfo.setExcluded(true);
+    repository.save(remediationTracker);
+    return true;
   }
 
   @Override
