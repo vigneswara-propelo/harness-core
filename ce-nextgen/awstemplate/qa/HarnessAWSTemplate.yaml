@@ -323,6 +323,13 @@ Resources:
                   - cloudwatch:GetMetricStatistics
                   - tag:GetResources
                   - account:ListRegions
+                  - elasticache:DeleteCacheCluster
+                  - elasticache:DeleteReplicationGroup
+                  - redshift:DeleteClusterSnapshot
+                  - redshift:DeleteCluster
+                  - s3:PutBucketVersioning
+                  - s3:PutIntelligentTieringConfiguration
+                  - s3:PutLifecycleConfiguration
                 Resource: "*"
       Roles:
         - !Ref HarnessCloudFormationRole
