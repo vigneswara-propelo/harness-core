@@ -14,7 +14,6 @@ import static io.harness.cdng.manifest.yaml.harness.HarnessStoreConstants.HARNES
 import static io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper.StoreConfigWrapperParameters;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.bool;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.expression;
-import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.runtime;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.string;
 
 import io.harness.annotation.RecasterAlias;
@@ -88,7 +87,7 @@ public class HelmChartManifest implements ManifestAttributes, Visitable {
   @Wither HelmVersion helmVersion;
   @Wither
   @ApiModelProperty(dataType = STRING_LIST_CLASSPATH)
-  @YamlSchemaTypes({runtime})
+  @YamlSchemaTypes({expression})
   @SkipAutoEvaluation
   @JsonProperty("valuesPaths")
   ParameterField<List<String>> valuesPaths;
