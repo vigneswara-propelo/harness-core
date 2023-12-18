@@ -34,7 +34,9 @@ import co.elastic.clients.elasticsearch.core.UpdateResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.google.inject.Inject;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -170,6 +172,21 @@ public class SearchServiceImpl implements SearchService {
   @Override
   public boolean deleteMigrationIndex() {
     return elasticSearchIndexManager.deleteDefaultIndex();
+  }
+
+  public List<String> getOrchestrationIds(
+      String accountId, String orgIdentifier, String projectIdentifier, ArtifactFilter filter) {
+    List<Hit<SSCAArtifact>> artifacts =
+        listArtifacts(accountId, orgIdentifier, projectIdentifier, filter, Pageable.unpaged());
+
+    if (artifacts != null) {
+      return artifacts.stream()
+          .map(sscaArtifactHit -> sscaArtifactHit.source().getOrchestrationId())
+          .filter(Objects::nonNull)
+          .collect(Collectors.toList());
+    } else {
+      return Collections.emptyList();
+    }
   }
 
   @Override

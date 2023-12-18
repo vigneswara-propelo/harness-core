@@ -277,3 +277,8 @@ replace_key_value accessControlClientConfig.accessControlServiceSecret "$ACCESS_
 replace_key_value iteratorsConfig.remediationTrackerUpdateIteratorConfig.enabled "$REMEDIATION_TRACKER_ITERATOR_ENABLED"
 replace_key_value iteratorsConfig.remediationTrackerUpdateIteratorConfig.targetIntervalInSeconds "$REMEDIATION_TRACKER_ITERATOR_INTERVAL_SEC"
 replace_key_value iteratorsConfig.remediationTrackerUpdateIteratorConfig.threadPoolSize "$REMEDIATION_TRACKER_ITERATOR_THREAD_POOL_SIZE"
+
+replace_key_value elasticsearch.url "$ELK_URL"
+replace_key_value elasticsearch.apiKey "$ELK_API_KEY"
+
+replace_key_value enableElasticsearch "$ENABLE_ELK"

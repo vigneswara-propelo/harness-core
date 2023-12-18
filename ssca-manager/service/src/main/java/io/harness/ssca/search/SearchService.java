@@ -33,6 +33,9 @@ public interface SearchService {
 
   boolean deleteMigrationIndex();
 
+  List<String> getOrchestrationIds(
+      String accountId, String orgIdentifier, String projectIdentifier, ArtifactFilter filter);
+
   List<Hit<SSCAArtifact>> listArtifacts(
       String accountId, String orgIdentifier, String projectIdentifier, ArtifactFilter filter, Pageable pageable);
 }

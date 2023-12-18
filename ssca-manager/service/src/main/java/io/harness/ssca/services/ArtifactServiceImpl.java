@@ -18,6 +18,7 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.skip
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.unwind;
 
+import io.harness.beans.FeatureName;
 import io.harness.network.Http;
 import io.harness.repositories.ArtifactRepository;
 import io.harness.repositories.BaselineRepository;
@@ -45,6 +46,8 @@ import io.harness.ssca.entities.BaselineEntity;
 import io.harness.ssca.entities.CdInstanceSummary;
 import io.harness.ssca.entities.EnforcementSummaryEntity;
 import io.harness.ssca.entities.EnforcementSummaryEntity.EnforcementSummaryEntityKeys;
+import io.harness.ssca.search.SearchService;
+import io.harness.ssca.search.beans.ArtifactFilter;
 import io.harness.ssca.utils.PipelineUtils;
 import io.harness.ssca.utils.SBOMUtils;
 
@@ -95,6 +98,10 @@ public class ArtifactServiceImpl implements ArtifactService {
   @Inject NormalisedSbomComponentService normalisedSbomComponentService;
   @Inject CdInstanceSummaryService cdInstanceSummaryService;
   @Inject PipelineUtils pipelineUtils;
+
+  @Inject FeatureFlagService featureFlagService;
+
+  @Inject SearchService searchService;
 
   @Inject BaselineRepository baselineRepository;
 
@@ -294,6 +301,30 @@ public class ArtifactServiceImpl implements ArtifactService {
   @Override
   public Page<ArtifactListingResponse> listArtifacts(String accountId, String orgIdentifier, String projectIdentifier,
       ArtifactListingRequestBody body, Pageable pageable) {
+    if (featureFlagService.isFeatureFlagEnabled(accountId, FeatureName.SSCA_USE_ELK.name())) {
+      List<String> orchestrationIds = searchService.getOrchestrationIds(accountId, orgIdentifier, projectIdentifier,
+          ArtifactFilter.builder()
+              .searchTerm(body.getSearchTerm())
+              .componentFilter(body.getComponentFilter())
+              .licenseFilter(body.getLicenseFilter())
+              .build());
+
+      if (orchestrationIds.isEmpty()) {
+        return Page.empty();
+      }
+
+      Criteria criteria = Criteria.where(ArtifactEntityKeys.orchestrationId)
+                              .in(orchestrationIds)
+                              .andOperator(getPolicyFilterCriteria(body), getDeploymentFilterCriteria(body));
+
+      Page<ArtifactEntity> artifactEntities = artifactRepository.findAll(criteria, pageable);
+
+      List<ArtifactListingResponse> artifactListingResponses =
+          getArtifactListingResponses(accountId, orgIdentifier, projectIdentifier, artifactEntities.toList());
+
+      return new PageImpl<>(artifactListingResponses, pageable, artifactEntities.getTotalElements());
+    }
+
     Criteria criteria = Criteria.where(ArtifactEntityKeys.accountId)
                             .is(accountId)
                             .and(ArtifactEntityKeys.orgId)
