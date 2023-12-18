@@ -11,7 +11,9 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.repositories.remediation_tracker.RemediationTrackerRepository;
 import io.harness.spec.server.ssca.v1.model.ComponentFilter;
 import io.harness.spec.server.ssca.v1.model.Operator;
+import io.harness.spec.server.ssca.v1.model.RemediationCount;
 import io.harness.spec.server.ssca.v1.model.RemediationTrackerCreateRequestBody;
+import io.harness.spec.server.ssca.v1.model.RemediationTrackersOverallSummaryResponseBody;
 import io.harness.ssca.beans.remediation_tracker.PatchedPendingArtifactEntitiesResult;
 import io.harness.ssca.enforcement.executors.mongo.filter.denylist.fields.VersionField;
 import io.harness.ssca.entities.ArtifactEntity;
@@ -31,6 +33,8 @@ import io.harness.ssca.services.NormalisedSbomComponentService;
 
 import com.google.inject.Inject;
 import com.nimbusds.oauth2.sdk.util.CollectionUtils;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +46,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -54,6 +60,8 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
   @Inject CdInstanceSummaryService cdInstanceSummaryService;
 
   @Inject NormalisedSbomComponentService normalisedSbomComponentService;
+
+  @Inject MongoTemplate mongoTemplate;
   @Override
   public String createRemediationTracker(
       String accountId, String orgId, String projectId, RemediationTrackerCreateRequestBody body) {
@@ -111,6 +119,54 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
         .orElseThrow(() -> new InvalidArgumentsException("Remediation Tracker not found"));
   }
 
+  @Override
+  public RemediationTrackersOverallSummaryResponseBody getOverallSummaryForRemediationTrackers(
+      String accountId, String orgId, String projectId) {
+    Aggregation aggregationForMeanTime =
+        Aggregation.newAggregation(Aggregation.match(Criteria.where(RemediationTrackerEntityKeys.accountIdentifier)
+                                                         .is(accountId)
+                                                         .and(RemediationTrackerEntityKeys.orgIdentifier)
+                                                         .is(orgId)
+                                                         .and(RemediationTrackerEntityKeys.projectIdentifier)
+                                                         .is(projectId)
+                                                         .and(RemediationTrackerEntityKeys.endTimeMilli)
+                                                         .exists(true)
+                                                         .and(RemediationTrackerEntityKeys.status)
+                                                         .is(RemediationStatus.COMPLETED)),
+            Aggregation.project().andExpression("$endTimeMilli - $startTimeMilli").as("remediationTimeInMilliseconds"),
+            Aggregation.group().avg("remediationTimeInMilliseconds").as("meanTimeToRemediateInMilliseconds"),
+            Aggregation.project("meanTimeToRemediateInMilliseconds")
+                .andExpression("meanTimeToRemediateInMilliseconds / 3600000")
+                .as("meanTimeToRemediateInHours"));
+
+    RemediationTrackersOverallSummaryResponseBody overallSummary =
+        new RemediationTrackersOverallSummaryResponseBody().meanTimeToRemediateInHours(null).remediationCounts(
+            new ArrayList<>());
+    List<RemediationTrackersOverallSummaryResponseBody> remediationTrackersOverallSummaryResponseBodies =
+        mongoTemplate
+            .aggregate(aggregationForMeanTime, RemediationTrackerEntity.class,
+                RemediationTrackersOverallSummaryResponseBody.class)
+            .getMappedResults();
+    if (EmptyPredicate.isNotEmpty(remediationTrackersOverallSummaryResponseBodies)) {
+      overallSummary.setMeanTimeToRemediateInHours(roundOffTwoDecimalPlace(
+          remediationTrackersOverallSummaryResponseBodies.get(0).getMeanTimeToRemediateInHours()));
+    }
+
+    Aggregation aggregationForRemediationCount =
+        Aggregation.newAggregation(Aggregation.match(Criteria.where(RemediationTrackerEntityKeys.accountIdentifier)
+                                                         .is(accountId)
+                                                         .and(RemediationTrackerEntityKeys.orgIdentifier)
+                                                         .is(orgId)
+                                                         .and(RemediationTrackerEntityKeys.projectIdentifier)
+                                                         .is(projectId)),
+            Aggregation.group(RemediationTrackerEntityKeys.status).count().as("count"),
+            Aggregation.project("status", "count").and("status").previousOperation());
+    overallSummary.setRemediationCounts(
+        mongoTemplate.aggregate(aggregationForRemediationCount, RemediationTrackerEntity.class, RemediationCount.class)
+            .getMappedResults());
+    return overallSummary;
+  }
+
   private void validateRemediationCreateRequest(RemediationTrackerCreateRequestBody body) {
     if ((body.getRemediationCondition().getOperator()
             != io.harness.spec.server.ssca.v1.model.RemediationCondition.OperatorEnum.ALL)
@@ -122,6 +178,10 @@ public class RemediationTrackerServiceImpl implements RemediationTrackerService 
             "Unsupported Version Format. Semantic Versioning is required for LessThan and LessThanEquals operator.");
       }
     }
+  }
+
+  public double roundOffTwoDecimalPlace(final double value) {
+    return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).doubleValue();
   }
 
   private void closeTrackerIfNoOrchestrations(
