@@ -131,6 +131,10 @@ public class EcsDaemonServiceSetup extends State {
   public EcsDaemonServiceSetup(String name) {
     super(name, ECS_DAEMON_SERVICE_SETUP.name());
   }
+  public EcsDaemonServiceSetup(String name, EcsStateHelper ecsStateHelper) {
+    super(name, ECS_DAEMON_SERVICE_SETUP.name());
+    this.ecsStateHelper = ecsStateHelper;
+  }
 
   @Override
   public ExecutionResponse execute(ExecutionContext context) {

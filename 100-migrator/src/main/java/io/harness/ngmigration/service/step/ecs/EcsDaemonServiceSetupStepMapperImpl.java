@@ -25,7 +25,9 @@ import software.wings.beans.GraphNode;
 import software.wings.sm.State;
 import software.wings.sm.states.EcsDaemonServiceSetup;
 import software.wings.sm.states.EcsServiceSetup;
+import software.wings.sm.states.EcsStateHelper;
 
+import com.google.inject.Inject;
 import java.util.Collections;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +35,8 @@ import org.apache.commons.lang3.StringUtils;
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_MIGRATOR})
 @OwnedBy(HarnessTeam.CDC)
 public class EcsDaemonServiceSetupStepMapperImpl extends EcsBaseStepMapper {
+  @Inject private EcsStateHelper ecsStateHelper;
+
   @Override
   public SupportStatus stepSupportStatus(GraphNode graphNode) {
     return SupportStatus.MANUAL_EFFORT;
@@ -51,7 +55,7 @@ public class EcsDaemonServiceSetupStepMapperImpl extends EcsBaseStepMapper {
   @Override
   public State getState(GraphNode stepYaml) {
     Map<String, Object> properties = getProperties(stepYaml);
-    EcsDaemonServiceSetup state = new EcsDaemonServiceSetup(stepYaml.getName());
+    EcsDaemonServiceSetup state = new EcsDaemonServiceSetup(stepYaml.getName(), ecsStateHelper);
     state.parseProperties(properties);
     return state;
   }

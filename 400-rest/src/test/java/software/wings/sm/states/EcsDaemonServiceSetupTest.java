@@ -99,7 +99,6 @@ import org.mockito.stubbing.Answer;
 
 public class EcsDaemonServiceSetupTest extends WingsBaseTest {
   @Mock private SecretManager mockSecretManager;
-  @Mock private EcsStateHelper mockEcsStateHelper;
   @Mock private ActivityService mockActivityService;
   @Mock private SettingsService mockSettingsService;
   @Mock private DelegateService mockDelegateService;
@@ -111,8 +110,9 @@ public class EcsDaemonServiceSetupTest extends WingsBaseTest {
   @Mock private SweepingOutputService mockSweepingOutputService;
   @Mock private StateExecutionService stateExecutionService;
   @Mock private ApplicationManifestUtils applicationManifestUtils;
+  @Mock private EcsStateHelper ecsStateHelper;
 
-  @InjectMocks private EcsDaemonServiceSetup state = new EcsDaemonServiceSetup("stateName");
+  @InjectMocks private EcsDaemonServiceSetup state = new EcsDaemonServiceSetup("stateName", ecsStateHelper);
 
   @Test
   @Owner(developers = SATYAM)
@@ -144,26 +144,26 @@ public class EcsDaemonServiceSetupTest extends WingsBaseTest {
                               .awsConfig(AwsConfig.builder().build())
                               .encryptedDataDetails(emptyList())
                               .build();
-    doReturn(bag).when(mockEcsStateHelper).prepareBagForEcsSetUp(any(), anyInt(), any(), any(), any(), any(), any());
+    doReturn(bag).when(ecsStateHelper).prepareBagForEcsSetUp(any(), anyInt(), any(), any(), any(), any(), any());
     Activity activity = Activity.builder().uuid(ACTIVITY_ID).build();
     doReturn(activity)
-        .when(mockEcsStateHelper)
+        .when(ecsStateHelper)
         .createActivity(any(), nullable(String.class), nullable(String.class), any(), any());
     EcsSetupParams params =
         anEcsSetupParams().withBlueGreen(false).withServiceName("EcsSvc").withClusterName(CLUSTER_NAME).build();
-    doReturn(params).when(mockEcsStateHelper).buildContainerSetupParams(any(), any());
+    doReturn(params).when(ecsStateHelper).buildContainerSetupParams(any(), any());
     CommandStateExecutionData executionData = aCommandStateExecutionData().build();
     doReturn(executionData)
-        .when(mockEcsStateHelper)
+        .when(ecsStateHelper)
         .getStateExecutionData(any(), nullable(String.class), any(), any(Activity.class));
     EcsSetupContextVariableHolder holder = EcsSetupContextVariableHolder.builder().build();
-    doReturn(holder).when(mockEcsStateHelper).renderEcsSetupContextVariables(any());
+    doReturn(holder).when(ecsStateHelper).renderEcsSetupContextVariables(any());
     doReturn(DelegateTask.builder().uuid("DEL_TASK_ID").description("desc").build())
-        .when(mockEcsStateHelper)
+        .when(ecsStateHelper)
         .createAndQueueDelegateTaskForEcsServiceSetUp(any(), any(), nullable(String.class), any(), eq(true));
     ExecutionResponse response = state.execute(mockContext);
     ArgumentCaptor<EcsSetupStateConfig> captor = ArgumentCaptor.forClass(EcsSetupStateConfig.class);
-    verify(mockEcsStateHelper).buildContainerSetupParams(any(), captor.capture());
+    verify(ecsStateHelper).buildContainerSetupParams(any(), captor.capture());
     EcsSetupStateConfig config = captor.getValue();
     assertThat(config).isNotNull();
     assertThat(config.getServiceName()).isEqualTo(SERVICE_NAME);
@@ -177,7 +177,7 @@ public class EcsDaemonServiceSetupTest extends WingsBaseTest {
     assertThat(config.getRoleArn()).isEqualTo("RoleArn");
     assertThat(config.isDaemonSchedulingStrategy()).isEqualTo(true);
     ArgumentCaptor<EcsServiceSetupRequest> captor2 = ArgumentCaptor.forClass(EcsServiceSetupRequest.class);
-    verify(mockEcsStateHelper)
+    verify(ecsStateHelper)
         .createAndQueueDelegateTaskForEcsServiceSetUp(captor2.capture(), any(), any(String.class), any(), eq(true));
     doNothing().when(stateExecutionService).appendDelegateTaskDetails(nullable(String.class), any());
     EcsServiceSetupRequest request = captor2.getValue();
@@ -221,11 +221,11 @@ public class EcsDaemonServiceSetupTest extends WingsBaseTest {
     doReturn(builder1).doReturn(builder2).when(mockContext).prepareSweepingOutputBuilder(any());
     doReturn("foo")
         .doReturn("bar")
-        .when(mockEcsStateHelper)
+        .when(ecsStateHelper)
         .getSweepingOutputName(any(), anyBoolean(), nullable(String.class));
     doReturn(null).doReturn(null).when(mockSweepingOutputService).save(any());
     ExecutionResponse response = state.handleAsyncResponse(mockContext, ImmutableMap.of(ACTIVITY_ID, delegateResponse));
-    verify(mockEcsStateHelper).populateFromDelegateResponse(any(), any(), any());
+    verify(ecsStateHelper).populateFromDelegateResponse(any(), any(), any());
     assertThat(response.getFailureTypes()).isNull();
   }
 
@@ -263,11 +263,11 @@ public class EcsDaemonServiceSetupTest extends WingsBaseTest {
     doReturn(builder1).doReturn(builder2).when(mockContext).prepareSweepingOutputBuilder(any());
     doReturn("foo")
         .doReturn("bar")
-        .when(mockEcsStateHelper)
+        .when(ecsStateHelper)
         .getSweepingOutputName(any(), anyBoolean(), nullable(String.class));
     doReturn(null).doReturn(null).when(mockSweepingOutputService).save(any());
     ExecutionResponse response = state.handleAsyncResponse(mockContext, ImmutableMap.of(ACTIVITY_ID, delegateResponse));
-    verify(mockEcsStateHelper).populateFromDelegateResponse(any(), any(), any());
+    verify(ecsStateHelper).populateFromDelegateResponse(any(), any(), any());
     assertThat(response.getFailureTypes()).isEqualTo(TIMEOUT);
   }
 
@@ -277,7 +277,7 @@ public class EcsDaemonServiceSetupTest extends WingsBaseTest {
   public void testExecuteThrowWingsException() {
     ExecutionContextImpl mockContext = mock(ExecutionContextImpl.class);
     doThrow(new WingsException("test"))
-        .when(mockEcsStateHelper)
+        .when(ecsStateHelper)
         .prepareBagForEcsSetUp(any(), anyInt(), any(), any(), any(), any(), any());
     state.execute(mockContext);
     assertThatExceptionOfType(WingsException.class).isThrownBy(() -> state.execute(mockContext));
@@ -289,7 +289,7 @@ public class EcsDaemonServiceSetupTest extends WingsBaseTest {
   public void testExecuteThrowInvalidRequestException() {
     ExecutionContextImpl mockContext = mock(ExecutionContextImpl.class);
     doThrow(new NullPointerException("test"))
-        .when(mockEcsStateHelper)
+        .when(ecsStateHelper)
         .prepareBagForEcsSetUp(any(), anyInt(), any(), any(), any(), any(), any());
     state.execute(mockContext);
     assertThatExceptionOfType(InvalidRequestException.class).isThrownBy(() -> state.execute(mockContext));
@@ -329,11 +329,11 @@ public class EcsDaemonServiceSetupTest extends WingsBaseTest {
     assertThat(state.getTimeoutMillis()).isNull();
     assertThat(state.getTimeoutMillis()).isNull();
 
-    doReturn(600000).when(mockEcsStateHelper).getTimeout(10);
+    doReturn(600000).when(ecsStateHelper).getTimeout(10);
     state.setServiceSteadyStateTimeout(10);
     assertThat(state.getTimeoutMillis()).isEqualTo(10 * 60 * 1000);
 
-    doReturn(null).when(mockEcsStateHelper).getTimeout(35792);
+    doReturn(null).when(ecsStateHelper).getTimeout(35792);
     state.setServiceSteadyStateTimeout(35792);
     assertThat(state.getTimeoutMillis()).isNull();
   }
