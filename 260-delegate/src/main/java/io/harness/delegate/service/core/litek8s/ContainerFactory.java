@@ -72,6 +72,7 @@ public class ContainerFactory {
     envVars.put(HARNESS_ACCOUNT_ID_VARIABLE, config.getAccountId());
     envVars.put(DELEGATE_TOKEN, config.getDelegateToken());
     envVars.put(TASK_DATA_PATH, config.getDelegateTaskParamsFile());
+    envVars.put(HARNESS_CI_INDIRECT_LOG_UPLOAD_FF, "true");
     envVars.put(TASK_ID, taskId);
     final V1ContainerBuilder containerBuilder = new V1ContainerBuilder()
                                                     .withName(K8SResourceHelper.getContainerName(taskId))
@@ -105,6 +106,7 @@ public class ContainerFactory {
   public V1ContainerBuilder createAddonInitContainer() {
     final var envVars = ImmutableMap.<String, String>builder();
     envVars.put(HARNESS_ACCOUNT_ID_VARIABLE, config.getAccountId());
+    envVars.put(HARNESS_CI_INDIRECT_LOG_UPLOAD_FF, "true");
     return new V1ContainerBuilder()
         .withName(SETUP_ADDON_CONTAINER_NAME)
         .withImage("harnessdev/bijou-ci-addon:v0.1")
