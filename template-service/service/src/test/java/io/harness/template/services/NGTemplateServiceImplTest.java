@@ -121,6 +121,7 @@ import io.harness.template.resources.beans.PermissionTypes;
 import io.harness.template.resources.beans.TemplateFilterPropertiesDTO;
 import io.harness.template.resources.beans.TemplateImportRequestDTO;
 import io.harness.template.resources.beans.TemplateMoveConfigResponse;
+import io.harness.template.resources.beans.UpdateGitDetailsList;
 import io.harness.template.resources.beans.UpdateGitDetailsParams;
 import io.harness.template.resources.beans.yaml.NGTemplateConfig;
 import io.harness.template.utils.NGTemplateFeatureFlagHelperService;
@@ -2027,6 +2028,23 @@ public class NGTemplateServiceImplTest extends TemplateServiceTestBase {
         .isInstanceOf(EntityNotFoundException.class)
         .hasMessage(String.format(
             "Template not found for template identifier [template-movetogit] and version label [version1] in account %s, org orgId, project projId",
+            ACCOUNT_ID));
+  }
+
+  @Test
+  @Owner(developers = SHIVAM)
+  @Category(UnitTests.class)
+  public void testUpdateGitDetailsForMultiVersion() {
+    UpdateGitDetailsList updateGitDetailsList = UpdateGitDetailsList.builder()
+                                                    .updateGitDetailsParams(UpdateGitDetailsParams.builder().build())
+                                                    .version("v1")
+                                                    .build();
+    assertThatThrownBy(()
+                           -> templateService.updateGitDetailsForMultipleVersion(ACCOUNT_ID, ORG_IDENTIFIER,
+                               PROJ_IDENTIFIER, "template-movetogit", Collections.singletonList(updateGitDetailsList)))
+        .isInstanceOf(EntityNotFoundException.class)
+        .hasMessage(String.format(
+            "Template not found for template identifier [template-movetogit] and version label [v1] in account %s, org orgId, project projId",
             ACCOUNT_ID));
   }
 

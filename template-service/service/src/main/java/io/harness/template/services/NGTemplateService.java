@@ -29,8 +29,10 @@ import io.harness.template.resources.beans.PageParamsDTO;
 import io.harness.template.resources.beans.TemplateImportRequestDTO;
 import io.harness.template.resources.beans.TemplateListRepoResponse;
 import io.harness.template.resources.beans.TemplateMoveConfigResponse;
+import io.harness.template.resources.beans.UpdateGitDetailsList;
 import io.harness.template.resources.beans.UpdateGitDetailsParams;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.domain.Page;
@@ -119,4 +121,7 @@ public interface NGTemplateService {
       String templateIdentifier, String versionLabel, UpdateGitDetailsParams updateGitDetailsParams);
   GovernanceMetadata validateGovernanceRules(TemplateEntity templateEntity);
   void populateSetupUsageAsync(TemplateEntity templateEntity);
+
+  void updateGitDetailsForMultipleVersion(String accountIdentifier, String orgIdentifier, String projectIdentifier,
+      String templateIdentifier, List<UpdateGitDetailsList> updateGitDetailsParamsList);
 }

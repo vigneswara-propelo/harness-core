@@ -53,6 +53,7 @@ import io.harness.spec.server.template.v1.model.TemplateImportRequestDTO;
 import io.harness.spec.server.template.v1.model.TemplateImportResponseBody;
 import io.harness.spec.server.template.v1.model.TemplateInputSchemaDetailsResponseBody;
 import io.harness.spec.server.template.v1.model.TemplateMetadataSummaryResponse;
+import io.harness.spec.server.template.v1.model.TemplateUpdateGitMetadataRequest;
 import io.harness.spec.server.template.v1.model.TemplateUpdateRequestBody;
 import io.harness.spec.server.template.v1.model.TemplateUpdateStableResponse;
 import io.harness.spec.server.template.v1.model.TemplateYamlInputDTO;
@@ -67,6 +68,9 @@ import io.harness.template.resources.beans.PageParamsDTO;
 import io.harness.template.resources.beans.PermissionTypes;
 import io.harness.template.resources.beans.TemplateFilterProperties;
 import io.harness.template.resources.beans.TemplateFilterPropertiesDTO;
+import io.harness.template.resources.beans.TemplateUpdateGitMetadataResponse;
+import io.harness.template.resources.beans.UpdateGitDetailsList;
+import io.harness.template.resources.beans.UpdateGitDetailsParams;
 import io.harness.template.services.NGTemplateSchemaService;
 import io.harness.template.services.NGTemplateService;
 import io.harness.template.services.TemplateMergeService;
@@ -308,6 +312,34 @@ public class TemplateResourceApiHelper {
     responseBody.setTemplateIdentifier(importedTemplate.getIdentifier());
     responseBody.setTemplateVersion(importedTemplate.getVersionLabel());
     return Response.ok().entity(responseBody).build();
+  }
+
+  public Response updateGitMetaData(@AccountIdentifier String account, @OrgIdentifier String org,
+      @ProjectIdentifier String project, @ResourceIdentifier String templateIdentifier,
+      List<TemplateUpdateGitMetadataRequest> templateUpdateGitMetadataRequests) {
+    accessControlClient.checkForAccessOrThrow(
+        ResourceScope.of(account, org, project), Resource.of(TEMPLATE, null), PermissionTypes.TEMPLATE_EDIT_PERMISSION);
+    List<UpdateGitDetailsList> updateGitDetailsLists;
+    try {
+      updateGitDetailsLists =
+          templateUpdateGitMetadataRequests.stream()
+              .map(request
+                  -> UpdateGitDetailsList.builder()
+                         .updateGitDetailsParams(UpdateGitDetailsParams.builder()
+                                                     .connectorRef(request.getGitDetails().getConnectorRef())
+                                                     .repoName(request.getGitDetails().getRepoName())
+                                                     .filePath(request.getGitDetails().getFilePath())
+                                                     .build())
+                         .version(request.getVersion())
+                         .build())
+              .collect(Collectors.toList());
+    } catch (Exception exception) {
+      throw new InvalidRequestException("Please provide valid Git details");
+    }
+
+    templateService.updateGitDetailsForMultipleVersion(
+        account, org, project, templateIdentifier, updateGitDetailsLists);
+    return Response.ok().entity(TemplateUpdateGitMetadataResponse.builder().status(true).build()).build();
   }
 
   public Response updateTemplate(@AccountIdentifier String account, @OrgIdentifier String org,

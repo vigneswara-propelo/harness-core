@@ -22,6 +22,7 @@ import io.harness.spec.server.template.v1.model.GitFindDetails;
 import io.harness.spec.server.template.v1.model.GitUpdateDetails;
 import io.harness.spec.server.template.v1.model.TemplateCreateRequestBody;
 import io.harness.spec.server.template.v1.model.TemplateImportRequestBody;
+import io.harness.spec.server.template.v1.model.TemplateUpdateGitMetadataRequest;
 import io.harness.spec.server.template.v1.model.TemplateUpdateRequestBody;
 
 import com.google.inject.Inject;
@@ -91,6 +92,12 @@ public class AccountTemplateApiImpl implements AccountTemplateApi {
       @AccountIdentifier String harnessAccount) {
     return templateResourceApiHelper.importTemplate(
         harnessAccount, null, null, template, body.getGitImportDetails(), body.getTemplateImportRequest());
+  }
+
+  @Override
+  public Response updateGitMetadataDetails(
+      String templateIdentifier, @Valid List<TemplateUpdateGitMetadataRequest> body, String harnessAccount) {
+    return templateResourceApiHelper.updateGitMetaData(harnessAccount, null, null, templateIdentifier, body);
   }
 
   @Override

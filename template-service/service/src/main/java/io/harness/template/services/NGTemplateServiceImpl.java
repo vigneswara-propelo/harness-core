@@ -107,6 +107,7 @@ import io.harness.template.resources.beans.TemplateFilterPropertiesDTO;
 import io.harness.template.resources.beans.TemplateImportRequestDTO;
 import io.harness.template.resources.beans.TemplateListRepoResponse;
 import io.harness.template.resources.beans.TemplateMoveConfigResponse;
+import io.harness.template.resources.beans.UpdateGitDetailsList;
 import io.harness.template.resources.beans.UpdateGitDetailsParams;
 import io.harness.template.resources.beans.yaml.NGTemplateConfig;
 import io.harness.template.utils.TemplateUtils;
@@ -1564,6 +1565,19 @@ public class NGTemplateServiceImpl implements NGTemplateService {
       throw new EntityNotFoundException(
           String.format("Template not found for template identifier [%s] and version label [%s] in %s",
               templateIdentifier, versionLabel, scope));
+    }
+  }
+
+  @Override
+  public void updateGitDetailsForMultipleVersion(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, String templateIdentifier, List<UpdateGitDetailsList> updateGitDetailsParamsList) {
+    for (UpdateGitDetailsList request : updateGitDetailsParamsList) {
+      updateGitDetails(accountIdentifier, orgIdentifier, projectIdentifier, templateIdentifier, request.getVersion(),
+          UpdateGitDetailsParams.builder()
+              .filePath(request.getUpdateGitDetailsParams().getFilePath())
+              .repoName(request.getUpdateGitDetailsParams().getRepoName())
+              .connectorRef(request.getUpdateGitDetailsParams().getConnectorRef())
+              .build());
     }
   }
 
