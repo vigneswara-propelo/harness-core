@@ -5039,8 +5039,8 @@ components:
             x-stoplight:
               id: 3jrk17q8v6ncw
             type: string
-    RerunPipelineRequestBody:
-      title: RerunPipelineRequestBody
+    RerunPipelineRequest:
+      title: RerunPipelineRequest
       x-stoplight:
         id: 59p2xtj7rgnie
       type: object
@@ -6717,7 +6717,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/RerunPipelineRequestBody'
+            $ref: '#/components/schemas/RerunPipelineRequest'
     RunStageRequestBody:
       content:
         application/json:

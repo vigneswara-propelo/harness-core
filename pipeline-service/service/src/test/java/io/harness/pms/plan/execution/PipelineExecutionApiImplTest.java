@@ -29,7 +29,7 @@ import io.harness.pms.plan.execution.beans.dto.RunStageRequestDTO;
 import io.harness.rule.Owner;
 import io.harness.spec.server.pipeline.v1.model.PipelineExecuteRequestBody;
 import io.harness.spec.server.pipeline.v1.model.PipelineExecuteResponseBody;
-import io.harness.spec.server.pipeline.v1.model.RerunPipelineRequestBody;
+import io.harness.spec.server.pipeline.v1.model.RerunPipelineRequest;
 import io.harness.spec.server.pipeline.v1.model.RunStageRequestBody;
 import io.harness.utils.PmsFeatureFlagService;
 
@@ -176,7 +176,7 @@ public class PipelineExecutionApiImplTest extends CategoryTest {
     when(pmsFeatureFlagService.isEnabled(eq(accountId), eq(FeatureName.PIE_GET_FILE_CONTENT_ONLY))).thenReturn(false);
     when(retryExecutionHelper.validateRetry(accountId, orgId, projectId, pipelineId, planExecutionId, null))
         .thenReturn(RetryInfo.builder().isResumable(true).build());
-    RerunPipelineRequestBody rerunPipelineRequestBody = new RerunPipelineRequestBody();
+    RerunPipelineRequest rerunPipelineRequestBody = new RerunPipelineRequest();
     rerunPipelineRequestBody.setInputsYaml("input");
     Status status = Status.RUNNING;
     String module = "CD";
@@ -208,7 +208,7 @@ public class PipelineExecutionApiImplTest extends CategoryTest {
 
     String planExecutionId = generateUuid();
     when(pmsFeatureFlagService.isEnabled(eq(accountId), eq(FeatureName.PIE_GET_FILE_CONTENT_ONLY))).thenReturn(false);
-    RerunPipelineRequestBody rerunPipelineRequestBody = new RerunPipelineRequestBody();
+    RerunPipelineRequest rerunPipelineRequestBody = new RerunPipelineRequest();
     rerunPipelineRequestBody.setInputsYaml("input");
     Status status = Status.RUNNING;
     String module = "CD";

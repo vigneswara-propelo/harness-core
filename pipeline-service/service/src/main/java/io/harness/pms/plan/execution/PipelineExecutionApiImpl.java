@@ -40,7 +40,7 @@ import io.harness.spec.server.pipeline.v1.PipelineExecutionApi;
 import io.harness.spec.server.pipeline.v1.model.ExecutionDetails;
 import io.harness.spec.server.pipeline.v1.model.PipelineExecuteRequestBody;
 import io.harness.spec.server.pipeline.v1.model.PipelineExecuteResponseBody;
-import io.harness.spec.server.pipeline.v1.model.RerunPipelineRequestBody;
+import io.harness.spec.server.pipeline.v1.model.RerunPipelineRequest;
 import io.harness.spec.server.pipeline.v1.model.RunStageRequestBody;
 import io.harness.spec.server.pipeline.v1.model.StageExecutionResponseBody;
 import io.harness.spec.server.pipeline.v1.model.StageExecutionResponseList;
@@ -182,7 +182,7 @@ public class PipelineExecutionApiImpl implements PipelineExecutionApi {
 
   @Override
   public Response rerunPipeline(String org, String project, String pipeline, String executionId,
-      @Valid RerunPipelineRequestBody body, String harnessAccount, String module, Boolean useFqnIfError, String notes,
+      @Valid RerunPipelineRequest body, String harnessAccount, String module, Boolean useFqnIfError, String notes,
       String branchName, String connectorRef, String repoName) {
     GitAwareContextHelper.populateGitDetails(
         GitEntityInfo.builder().branch(branchName).connectorRef(connectorRef).repoName(repoName).build());
@@ -219,7 +219,7 @@ public class PipelineExecutionApiImpl implements PipelineExecutionApi {
 
   @Override
   public Response retryPipelineWithInputsetPipelineYaml(String org, String project, String pipeline, String executionId,
-      @Valid RerunPipelineRequestBody body, String harnessAccount, String module, List<String> retryStages,
+      @Valid RerunPipelineRequest body, String harnessAccount, String module, List<String> retryStages,
       Boolean runAllStages, String notes) {
     if (pmsFeatureFlagService.isEnabled(harnessAccount, PIE_GET_FILE_CONTENT_ONLY)) {
       ThreadOperationContextHelper.setUserFlow(USER_FLOW.EXECUTION);
