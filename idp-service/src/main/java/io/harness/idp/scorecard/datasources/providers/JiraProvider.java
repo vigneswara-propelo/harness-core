@@ -51,6 +51,7 @@ public class JiraProvider extends HttpDataSourceProvider {
     Map<String, String> requestBodyPairs = prepareRequestBodyReplaceablePairs(entity);
     Map<String, String> requestUrlPairs = prepareUrlReplaceablePairs(API_BASE_URL,
         (String) configReader.getConfigValues(accountIdentifier, configs, JIRA_TARGET_URL_EXPRESSION_KEY));
+    requestBodyPairs.putAll(requestUrlPairs);
     return processOut(accountIdentifier, JIRA_IDENTIFIER, entity, replaceableHeaders, requestBodyPairs, requestUrlPairs,
         dataPointsAndInputValues);
   }
