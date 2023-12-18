@@ -106,6 +106,9 @@ else
    echo "Unknown purpose ${PURPOSE}"
    exit 1
 fi
+
+echo "VERSION is $VERSION"
+
 for KEY in ${KEYS}
 do
     EXCLUDE_PROJECTS=",CCM,IDP,SRM,OIP,"
@@ -129,7 +132,7 @@ do
       else
         curl \
            -X PUT \
-           --data "{ \"fields\" : { \"${FIELD_ID}\" : \"${VERSION}00\" }}" \
+           --data "{ \"fields\" : { \"${FIELD_ID}\" : \"${VERSION}\" }}" \
            -H "Content-Type: application/json" \
            https://harness.atlassian.net/rest/api/2/issue/${KEY} \
            --user $JIRA_USERNAME:$JIRA_PASSWORD
