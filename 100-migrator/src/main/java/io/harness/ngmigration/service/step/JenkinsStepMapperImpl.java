@@ -6,6 +6,7 @@
  */
 
 package io.harness.ngmigration.service.step;
+
 import static io.harness.ngmigration.utils.NGMigrationConstants.RUNTIME_INPUT;
 
 import io.harness.annotations.dev.CodePulse;
@@ -127,7 +128,9 @@ public class JenkinsStepMapperImpl extends StepMapper {
     if (StringUtils.isEmpty(sweepingOutputName)) {
       return Collections.emptyList();
     }
-    return Lists.newArrayList(String.format("context.%s", sweepingOutputName), String.format("%s", sweepingOutputName))
+    return Lists
+        .newArrayList(String.format("context.%s", sweepingOutputName), String.format("%s", sweepingOutputName),
+            graphNode.getName())
         .stream()
         .map(exp
             -> StepOutput.builder()

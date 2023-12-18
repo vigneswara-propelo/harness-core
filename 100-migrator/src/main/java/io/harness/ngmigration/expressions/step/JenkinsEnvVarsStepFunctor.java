@@ -15,30 +15,25 @@ import io.harness.ngmigration.beans.StepOutput;
 import org.apache.commons.lang3.StringUtils;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_MIGRATOR})
-public class JenkinsStepFunctor extends StepExpressionFunctor {
-  public StepOutput stepOutput;
-  public JenkinsStepFunctor(StepOutput stepOutput) {
+public class JenkinsEnvVarsStepFunctor extends JenkinsStepFunctor {
+  public JenkinsEnvVarsStepFunctor(StepOutput stepOutput, String currentStageIdentifier) {
     super(stepOutput);
+    this.setCurrentStageIdentifier(currentStageIdentifier);
     this.stepOutput = stepOutput;
   }
 
   @Override
   public synchronized Object get(Object key) {
-    if ("jobParameters".equals(key)) {
-      return new JenkinsJobParametersStepFunctor(stepOutput, getCurrentStageIdentifier());
-    } else if ("envVars".equals(key)) {
-      return new JenkinsEnvVarsStepFunctor(stepOutput, getCurrentStageIdentifier());
-    }
     return getFQN(key);
   }
 
   private String getFQN(Object key) {
     if (StringUtils.equals(stepOutput.getStageIdentifier(), getCurrentStageIdentifier())) {
-      return String.format("<+execution.steps.%s.steps.%s.build.%s>", stepOutput.getStepGroupIdentifier(),
+      return String.format("<+execution.steps.%s.steps.%s.build.envVars.%s>", stepOutput.getStepGroupIdentifier(),
           stepOutput.getStepIdentifier(), key);
     }
 
-    return String.format("<+pipeline.stages.%s.spec.execution.steps.%s.steps.%s.build.%s>",
+    return String.format("<+pipeline.stages.%s.spec.execution.steps.%s.steps.%s.build.envVars.%s>",
         stepOutput.getStageIdentifier(), stepOutput.getStepGroupIdentifier(), stepOutput.getStepIdentifier(), key);
   }
 }
