@@ -104,7 +104,8 @@ public class NGExpressionUtils {
   }
 
   public boolean matchesPattern(Pattern pattern, String expression) {
-    if (isEmpty(expression)) {
+    // supporting empty strings to match expression like $^
+    if (expression == null) {
       return false;
     }
     return pattern.matcher(expression).matches();
