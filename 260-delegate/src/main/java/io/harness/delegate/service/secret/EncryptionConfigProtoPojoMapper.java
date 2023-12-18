@@ -27,6 +27,10 @@ public interface EncryptionConfigProtoPojoMapper {
       return GcpKmsConfigProtoPojoMapper.INSTANCE.map(config);
     } else if (config.getEncryptionType().equals(EncryptionType.AWS_KMS)) {
       return AwsKmsConfigProtoPojoMapper.INSTANCE.map(config);
+    } else if (config.getEncryptionType().equals(EncryptionType.HASHICORP_VAULT)) {
+      return VaultConfigProtoPojoMapper.INSTANCE.map(config);
+    } else if (config.getEncryptionType().equals(EncryptionType.AZURE_VAULT)) {
+      return AzureVaultConfigProtoPojoMapper.INSTANCE.map(config);
     } else if (config.getEncryptionType().equals(EncryptionType.LOCAL)) {
       return LocalEncryptionConfigProtoPojoMapper.INSTANCE.map(config);
     }
