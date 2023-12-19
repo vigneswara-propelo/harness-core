@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.rule.OwnerRule.VIVEK_DIXIT;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
@@ -31,14 +32,14 @@ public class PipelineServiceStepRegistrarTest {
   @Category(UnitTests.class)
   public void testGetEngineFacilitators() {
     Map<StepType, Class<? extends Step>> engineSteps = PipelineServiceStepRegistrar.getEngineSteps();
-    assertEquals(47L, engineSteps.size());
+    assertEquals(48L, engineSteps.size());
     assertEquals(true, engineSteps.containsValue(PipelineStageStep.class));
     assertEquals(true, engineSteps.containsValue(PipelineRollbackStageStep.class));
 
     Map<StepType, Class<? extends Step>> orchestrationEngineSteps =
         OrchestrationStepsModuleStepRegistrar.getEngineSteps();
     for (Map.Entry<StepType, Class<? extends Step>> entry : orchestrationEngineSteps.entrySet()) {
-      assertEquals(true, engineSteps.containsValue(entry.getValue()));
+      assertTrue(engineSteps.containsValue(entry.getValue()));
     }
   }
 }

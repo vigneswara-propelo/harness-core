@@ -14,6 +14,7 @@ import io.harness.cdng.pipeline.steps.v1.CustomStageStep;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.InvalidYamlException;
 import io.harness.plancreator.stages.v1.AbstractStagePlanCreator;
+import io.harness.plancreator.stages.v1.StageParameterUtilsV1;
 import io.harness.plancreator.steps.common.v1.StageElementParametersV1.StageElementParametersV1Builder;
 import io.harness.plancreator.strategy.StrategyUtilsV1;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
@@ -92,7 +93,7 @@ public class CustomStagePlanCreator extends AbstractStagePlanCreator<CustomStage
   @Override
   public PlanNode createPlanForParentNode(
       PlanCreationContext ctx, CustomStageNodeV1 customStageNode, List<String> childrenNodeIds) {
-    StageElementParametersV1Builder stageParameters = StepParametersUtils.getStageParameters(customStageNode);
+    StageElementParametersV1Builder stageParameters = StageParameterUtilsV1.getCommonStageParameters(customStageNode);
     stageParameters.type(YAMLFieldNameConstants.CUSTOM_V1);
     stageParameters.spec(CustomStageSpecParams.builder().childNodeID(childrenNodeIds.get(0)).build());
     String name = customStageNode.getName();

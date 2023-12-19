@@ -10,13 +10,9 @@ package io.harness.plancreator.steps.common.v1;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.plancreator.stages.stage.v1.AbstractStageNodeV1;
-import io.harness.plancreator.steps.common.v1.StageElementParametersV1.StageElementParametersV1Builder;
 import io.harness.plancreator.steps.common.v1.StepElementParametersV1.StepElementParametersV1Builder;
 import io.harness.plancreator.steps.internal.v1.PmsAbstractStepNodeV1;
-import io.harness.pms.tags.TagUtils;
 import io.harness.pms.yaml.ParameterField;
-import io.harness.steps.SdkCoreStepUtils;
 import io.harness.utils.TimeoutUtils;
 
 import lombok.experimental.UtilityClass;
@@ -37,21 +33,5 @@ public class StepParametersUtilsV1 {
     stepBuilder.enforce(stepElementConfig.getEnforce());
     stepBuilder.type(stepElementConfig.getType());
     return stepBuilder;
-  }
-
-  public StageElementParametersV1Builder getStageParameters(AbstractStageNodeV1 stageNode) {
-    TagUtils.removeUuidFromTags(stageNode.getLabels());
-    StageElementParametersV1Builder stageBuilder = StageElementParametersV1.builder();
-    stageBuilder.name(stageNode.getName());
-    stageBuilder.id(stageNode.getId());
-    stageBuilder.desc(SdkCoreStepUtils.getParameterFieldHandleValueNull(stageNode.getDesc()));
-    stageBuilder.failure(stageNode.getFailure() != null ? stageNode.getFailure().getValue() : null);
-    stageBuilder.when(stageNode.getWhen() != null ? (String) stageNode.getWhen().fetchFinalValue() : null);
-    stageBuilder.uuid(stageNode.getUuid());
-    stageBuilder.variables(stageNode.getVariables());
-    stageBuilder.delegates(stageNode.getDelegates());
-    stageBuilder.labels(stageNode.getLabels());
-
-    return stageBuilder;
   }
 }
