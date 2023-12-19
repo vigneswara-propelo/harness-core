@@ -441,8 +441,7 @@ public class NexusThreeClientImpl {
                 versionToArtifactDownloadUrls.put(version, artifactFileMetadata);
               }
             } else {
-              throw new HintException(HintException.HINT_NEXUS_ISSUE,
-                  new InvalidRequestException("No versions found matching the provided extension/classifier", USER));
+              break;
             }
             if (response.body().getContinuationToken() != null) {
               continuationToken = response.body().getContinuationToken();
@@ -455,6 +454,11 @@ public class NexusThreeClientImpl {
               WingsException.USER);
         }
       }
+      if (components.isEmpty()) {
+        throw new HintException(HintException.HINT_NEXUS_ISSUE,
+            new InvalidRequestException("No versions found matching the provided extension/classifier", USER));
+      }
+
       List<String> versions = sort(components).stream().map(Component::getVersion).collect(toList());
       return constructBuildDetails(repoId, groupId, artifactName, versions, versionToArtifactUrls,
           versionToArtifactDownloadUrls, extension, classifier);

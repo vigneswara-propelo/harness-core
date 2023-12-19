@@ -12,6 +12,7 @@ import static io.harness.rule.OwnerRule.ARVIND;
 import static io.harness.rule.OwnerRule.DEEPAK_PUTHRAYA;
 import static io.harness.rule.OwnerRule.MLUKIC;
 import static io.harness.rule.OwnerRule.SHIVAM;
+import static io.harness.rule.OwnerRule.vivekveman;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -1702,6 +1703,76 @@ public class NexusThreeClientImplTest extends CategoryTest {
                 + "&maven.groupId=my.group&maven.artifactId=" + URLEncoder.encode(artifactPath, "UTF-8")
                 + "&maven.extension=zip&maven.classifier=dist"))
             .willReturn(aResponse().withStatus(200).withBody(searchResponse)));
+
+    List<BuildDetailsInternal> response =
+        nexusThreeService.getVersions(nexusConfig, repoKey, "my.group", artifactPath, "zip", "dist", Integer.MAX_VALUE);
+
+    assertThat(response).isNotNull();
+    assertThat(response).size().isEqualTo(4);
+    for (BuildDetailsInternal details : response) {
+      String number = details.getNumber();
+      assertThat(details.getBuildUrl()).endsWith(number + "-dist.zip");
+      assertThat(details.getMetadata().get("version")).isEqualTo(number);
+      List<ArtifactFileMetadataInternal> artifactFileMetadataList = details.getArtifactFileMetadataList();
+      assertThat(artifactFileMetadataList).hasSize(1);
+      assertThat(artifactFileMetadataList.get(0).getFileName()).endsWith("my-app-" + number + "-dist.zip");
+      assertThat(artifactFileMetadataList.get(0).getUrl()).endsWith("my-app-" + number + "-dist.zip");
+      assertThat(artifactFileMetadataList.get(0).getImagePath()).endsWith("my-app-" + number + "-dist.zip");
+    }
+  }
+  @Test
+  @Owner(developers = vivekveman)
+  @Category(UnitTests.class)
+  public void testGetVersionsSuccessV2ForInvalidContinuationToken() throws IOException {
+    NexusRequest nexusConfig = NexusRequest.builder()
+                                   .nexusUrl(url)
+                                   .username(USERNAME)
+                                   .password(PASSWORD.toCharArray())
+                                   .hasCredentials(true)
+                                   .artifactRepositoryUrl(artifactRepoUrl)
+                                   .version(VERSION_3)
+                                   .build();
+
+    String repoKey = "snapshots-harness";
+    String artifactPath = "my-app";
+
+    wireMockRule.stubFor(get(urlEqualTo("/service/rest/v1/repositories"))
+                             .willReturn(aResponse().withStatus(200).withBody("[\n"
+                                 + "    {\n"
+                                 + "        \"name\": \"my-app\",\n"
+                                 + "        \"format\": \"maven2\",\n"
+                                 + "        \"attributes\": {}\n"
+                                 + "    }\n"
+                                 + "]")));
+
+    wireMockRule.stubFor(get(urlEqualTo("/repository/" + repoKey + "/v2/_catalog"))
+                             .willReturn(aResponse().withStatus(200).withBody("{\n"
+                                 + "    \"repositories\": [\n"
+                                 + "        \"busybox\",\n"
+                                 + "        \"nginx\",\n"
+                                 + "        \"" + artifactPath + "\"\n"
+                                 + "    ]\n"
+                                 + "}")));
+
+    byte[] bytes = Files.readAllBytes(
+        Paths.get("960-api-services/src/test/resources/__files/artifactory/nexus-3-response-with-token.json"));
+    String searchResponse = new String(bytes, StandardCharsets.UTF_8);
+
+    wireMockRule.stubFor(
+        get(urlEqualTo("/service/rest/v1/search?sort=version&direction=desc&repository=" + repoKey
+                + "&maven.groupId=my.group&maven.artifactId=" + URLEncoder.encode(artifactPath, "UTF-8")
+                + "&maven.extension=zip&maven.classifier=dist"))
+            .willReturn(aResponse().withStatus(200).withBody(searchResponse)));
+
+    byte[] bytes2 = Files.readAllBytes(
+        Paths.get("960-api-services/src/test/resources/__files/artifactory/nexus-3-empty-response.json"));
+    String searchResponse2 = new String(bytes2, StandardCharsets.UTF_8);
+    wireMockRule.stubFor(
+        get(urlEqualTo("/service/rest/v1/search?sort=version&direction=desc&repository=" + repoKey
+                + "&maven.groupId=my.group&maven.artifactId=" + URLEncoder.encode(artifactPath, "UTF-8")
+                + "&maven.extension=zip&maven.classifier=dist"
+                + "&continuationToken=3130303b3939343433386631346235846236373562373035606637333265316535613"))
+            .willReturn(aResponse().withStatus(200).withBody(searchResponse2)));
 
     List<BuildDetailsInternal> response =
         nexusThreeService.getVersions(nexusConfig, repoKey, "my.group", artifactPath, "zip", "dist", Integer.MAX_VALUE);
