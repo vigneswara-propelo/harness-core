@@ -27,4 +27,5 @@ public class BaseUrls {
   @JsonProperty("webhookBaseUrl") String webhookBaseUrl;
   @JsonProperty("ngManagerInternalBaseUrl") String ngManagerInternalBaseUrl;
   @JsonProperty("scmServiceBaseUrl") String scmServiceBaseUrl;
+  @JsonProperty("harnessCodeGitUrl") String harnessCodeGitUrl;
 }

@@ -27,12 +27,12 @@ import io.harness.ci.ff.CIFeatureFlagService;
 import io.harness.ci.metrics.ExecutionMetricsService;
 import io.harness.ci.utils.BaseConnectorUtils;
 import io.harness.connector.ConnectorResourceClient;
+import io.harness.connector.utils.HarnessCodeConnectorUtils;
 import io.harness.delegate.TaskSelector;
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.connector.k8Connector.KubernetesClusterConfigDTO;
 import io.harness.exception.ConnectorNotFoundException;
 import io.harness.exception.ngexception.CIStageExecutionException;
-import io.harness.git.GitClientHelper;
 import io.harness.ng.core.BaseNGAccess;
 import io.harness.ng.core.NGAccess;
 import io.harness.plancreator.steps.TaskSelectorYaml;
@@ -44,9 +44,7 @@ import io.harness.pms.sdk.core.resolver.RefObjectUtils;
 import io.harness.pms.sdk.core.resolver.outputs.ExecutionSweepingOutputService;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
-import io.harness.security.JWTTokenServiceUtils;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -69,6 +67,7 @@ public class ConnectorUtils extends BaseConnectorUtils {
   private static final String CI_Connector_Error_Count = "ci_connector_error_count";
   @Inject private CIFeatureFlagService featureFlagService;
   @Inject @Named("harnessCodeGitBaseUrl") private String harnessCodeGitBaseUrl;
+  @Inject HarnessCodeConnectorUtils harnessCodeConnectorUtils;
   private final long TEN_HOURS_IN_MS = TimeUnit.MILLISECONDS.convert(10, TimeUnit.HOURS);
 
   @Inject
@@ -244,15 +243,7 @@ public class ConnectorUtils extends BaseConnectorUtils {
     String principal = executionPrincipalInfo.getPrincipal();
     io.harness.pms.contracts.plan.PrincipalType principalType = executionPrincipalInfo.getPrincipalType();
 
-    String completeRepoName = GitClientHelper.convertToHarnessRepoName(
-        ngAccess.getAccountIdentifier(), ngAccess.getOrgIdentifier(), ngAccess.getProjectIdentifier(), repoName);
-
-    String[] allowedResources = {completeRepoName};
-
-    ImmutableMap<String, String> claims = ImmutableMap.of("name", principal, "type", principalType.name());
-    ImmutableMap<String, String[]> arrayClaims = ImmutableMap.of("allowedResources", allowedResources);
-
-    return JWTTokenServiceUtils.generateJWTToken(
-        claims, arrayClaims, TEN_HOURS_IN_MS, cIExecutionServiceConfig.getGitnessConfig().getJwtSecret());
+    return harnessCodeConnectorUtils.getTokenWithClaims(cIExecutionServiceConfig.getGitnessConfig().getJwtSecret(),
+        ngAccess, repoName, principal, principalType.name(), 10);
   }
 }

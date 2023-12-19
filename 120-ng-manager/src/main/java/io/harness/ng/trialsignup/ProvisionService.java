@@ -31,6 +31,7 @@ import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.ConnectorValidationResult;
 import io.harness.connector.helper.DecryptionHelper;
 import io.harness.connector.services.ConnectorService;
+import io.harness.connector.utils.HarnessCodeConnectorUtils;
 import io.harness.delegate.beans.DelegateGroup;
 import io.harness.delegate.beans.DelegateSetupDetails;
 import io.harness.delegate.beans.DelegateSize;
@@ -67,6 +68,7 @@ import io.harness.delegate.beans.connector.scm.gitlab.GitlabUsernameTokenDTO;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnexpectedException;
 import io.harness.ff.FeatureFlagService;
+import io.harness.git.GitClientHelper;
 import io.harness.licensing.Edition;
 import io.harness.licensing.LicenseStatus;
 import io.harness.licensing.LicenseType;
@@ -75,6 +77,7 @@ import io.harness.licensing.services.LicenseService;
 import io.harness.network.Http;
 import io.harness.ng.NextGenConfiguration;
 import io.harness.ng.core.BaseNGAccess;
+import io.harness.ng.core.NGAccess;
 import io.harness.ng.core.api.SecretCrudService;
 import io.harness.ng.core.delegate.client.DelegateNgManagerCgManagerClient;
 import io.harness.ng.core.dto.secrets.SecretDTOV2;
@@ -83,6 +86,8 @@ import io.harness.ng.trialsignup.AutogenInput.AutogenInputBuilder;
 import io.harness.ng.trialsignup.ProvisionResponse.DelegateStatus;
 import io.harness.rest.RestResponse;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
+import io.harness.security.SecurityContextBuilder;
+import io.harness.security.dto.Principal;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.service.ScmClient;
 import io.harness.telemetry.TelemetryReporter;
@@ -107,6 +112,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,6 +134,9 @@ public class ProvisionService {
   @Inject ScmClient scmClient;
   @Inject TelemetryReporter telemetryReporter;
   @Inject DecryptionHelper decryptionHelper;
+  @Inject @Named("harnessCodeGitUrl") String harnessCodeGitUrl;
+  @Inject @Named("ngServiceSecret") String ngServiceSecret;
+  @Inject HarnessCodeConnectorUtils harnessCodeConnectorUtils;
 
   private static final String K8S_CONNECTOR_NAME = "Harness Kubernetes Cluster";
   private static final String K8S_CONNECTOR_DESC =
@@ -407,14 +416,34 @@ public class ProvisionService {
   // for repo type connectors expecting repo to be empty.
   public String generateYaml(String accountIdentifier, String orgIdentifier, String projectIdentifier,
       String connectorIdentifier, String repo, String version) {
-    BaseNGAccess build = BaseNGAccess.builder()
-                             .accountIdentifier(accountIdentifier)
-                             .orgIdentifier(orgIdentifier)
-                             .projectIdentifier(projectIdentifier)
-                             .build();
+    BaseNGAccess ngAccess = BaseNGAccess.builder()
+                                .accountIdentifier(accountIdentifier)
+                                .orgIdentifier(orgIdentifier)
+                                .projectIdentifier(projectIdentifier)
+                                .build();
     // check if `account.` needs to be trimmed in case of
-    Optional<ConnectorResponseDTO> connectorResponseDTO =
-        connectorService.get(accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier);
+    AutogenInput autogenInput;
+    if (Strings.isBlank(connectorIdentifier)) {
+      autogenInput = buildAutogenInputForHarnessCode(repo, ngAccess);
+      repo =
+          GitClientHelper.convertToHarnessRepoName(accountIdentifier, orgIdentifier, projectIdentifier, repo) + ".git";
+    } else {
+      autogenInput = buildAutogenInput(ngAccess, connectorIdentifier);
+    }
+
+    return scmClient.autogenerateStageYamlForCI(updateUrl(autogenInput, repo), version).getYaml();
+  }
+
+  private AutogenInput buildAutogenInputForHarnessCode(String repo, NGAccess ngAccess) {
+    Principal principal = SecurityContextBuilder.getPrincipal();
+    String token = harnessCodeConnectorUtils.getTokenWithClaims(
+        ngServiceSecret, ngAccess, repo, principal.getName(), principal.getType().name(), 1);
+    return AutogenInput.builder().username("admin").password(token).repo(harnessCodeGitUrl).build();
+  }
+
+  private AutogenInput buildAutogenInput(BaseNGAccess build, String connectorIdentifier) {
+    Optional<ConnectorResponseDTO> connectorResponseDTO = connectorService.get(
+        build.getAccountIdentifier(), build.getOrgIdentifier(), build.getProjectIdentifier(), connectorIdentifier);
     if (!connectorResponseDTO.isPresent()) {
       throw new InvalidRequestException(String.format("connector %s doesn't exists", connectorIdentifier));
     }
@@ -431,8 +460,7 @@ public class ProvisionService {
     } else {
       builder = AutogenInput.builder();
     }
-    AutogenInput autogenInput = builder.build();
-    return scmClient.autogenerateStageYamlForCI(updateUrl(autogenInput, repo), version).getYaml();
+    return builder.build();
   }
 
   @NotNull
@@ -590,12 +618,18 @@ public class ProvisionService {
       // do nothing as the url already contains complete path
       cloneUrl = input.getRepo();
     }
+    // TODO: check for ssh connectors
+    if (cloneUrl.contains("http://")) {
+      cloneUrl = cloneUrl.replace("http://", "");
+      cloneUrl = cloneUrl.replace("//", "/");
+      cloneUrl = "http://" + userName + ":" + input.getPassword() + "@" + cloneUrl;
+    } else {
+      cloneUrl = cloneUrl.replace("https://", "");
+      cloneUrl = cloneUrl.replace("//", "/");
+      cloneUrl = "https://" + userName + ":" + input.getPassword() + "@" + cloneUrl;
+    }
 
-    cloneUrl = cloneUrl.replace("https://", "");
-
-    // sanity to remove multiple // in url path
-    cloneUrl = cloneUrl.replace("//", "/");
-    cloneUrl = "https://" + userName + ":" + input.getPassword() + "@" + cloneUrl;
+    log.info("Generated clone url: " + cloneUrl);
     return cloneUrl;
   }
 }

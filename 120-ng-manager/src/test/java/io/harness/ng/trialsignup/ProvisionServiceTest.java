@@ -7,6 +7,7 @@
 package io.harness.ng.trialsignup;
 
 import static io.harness.rule.OwnerRule.AMAN;
+import static io.harness.rule.OwnerRule.DEV_MITTAL;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -29,6 +30,7 @@ import io.harness.delegate.beans.connector.scm.github.GithubHttpCredentialsDTO;
 import io.harness.delegate.beans.connector.scm.github.GithubUsernamePasswordDTO;
 import io.harness.encryption.SecretRefData;
 import io.harness.exception.InvalidRequestException;
+import io.harness.git.GitClientHelper;
 import io.harness.product.ci.scm.proto.GenerateYamlResponse;
 import io.harness.rule.Owner;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
@@ -147,6 +149,28 @@ public class ProvisionServiceTest extends CategoryTest {
     String repo = "harness/harness-core";
     String cloneUrl = provisionService.updateUrl(autogenInput, repo);
     assertThat(cloneUrl).isEqualTo("https://username:pass@github.com/harness/harness-core");
+  }
+
+  @Test
+  @Owner(developers = DEV_MITTAL)
+  @Category(UnitTests.class)
+  public void updateUrlHarnessCodeTest() {
+    AutogenInput autogenInput =
+        AutogenInput.builder().repo("https://git.qa.harness.io").username("admin").password("sometoken").build();
+    String repo = GitClientHelper.convertToHarnessRepoName("acc", "org", "project", "repo.git") + ".git";
+    String cloneUrl = provisionService.updateUrl(autogenInput, repo);
+    assertThat(cloneUrl).isEqualTo("https://admin:sometoken@git.qa.harness.io/acc/org/project/repo.git");
+  }
+
+  @Test
+  @Owner(developers = DEV_MITTAL)
+  @Category(UnitTests.class)
+  public void updateUrlHarnessCodeTestHttp() {
+    AutogenInput autogenInput =
+        AutogenInput.builder().repo("http://git.qa.harness.io").username("admin").password("sometoken").build();
+    String repo = GitClientHelper.convertToHarnessRepoName("acc", "org", "project", "repo") + ".git";
+    String cloneUrl = provisionService.updateUrl(autogenInput, repo);
+    assertThat(cloneUrl).isEqualTo("http://admin:sometoken@git.qa.harness.io/acc/org/project/repo.git");
   }
 
   @Test

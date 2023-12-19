@@ -413,6 +413,7 @@ baseUrls:
   webhookBaseUrl: http://localhost:7457/
   ngManagerInternalBaseUrl: ${HARNESS_NG_MANAGER_INTERNAL_URL:-http://localhost:7457/}
   scmServiceBaseUrl: ${HARNESS_SCM_API_INTERNAL_URL:-http://localhost:3000/}
+  harnessCodeGitUrl: ${HARNESS_CODE_GIT_URL:- http://localhost:3000/git}
 
 ngAuthUIEnabled: false
 

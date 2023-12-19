@@ -17,11 +17,15 @@ import io.harness.delegate.beans.connector.scm.harness.HarnessConnectorDTO.Harne
 import io.harness.delegate.beans.connector.scm.harness.HarnessJWTTokenSpecDTO;
 import io.harness.encryption.SecretRefData;
 import io.harness.git.GitClientHelper;
+import io.harness.ng.core.NGAccess;
+import io.harness.security.JWTTokenServiceUtils;
 import io.harness.security.ServiceTokenGenerator;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class HarnessCodeConnectorUtils {
@@ -49,5 +53,16 @@ public class HarnessCodeConnectorUtils {
 
   private String getToken(String serviceSecret) {
     return tokenGenerator.getServiceTokenWithDuration(serviceSecret, Duration.ofHours(1));
+  }
+
+  public String getTokenWithClaims(
+      String serviceSecret, NGAccess ngAccess, String repoName, String principal, String principalType, int expiry) {
+    String completeRepoName = GitClientHelper.convertToHarnessRepoName(
+        ngAccess.getAccountIdentifier(), ngAccess.getOrgIdentifier(), ngAccess.getProjectIdentifier(), repoName);
+    String[] allowedResources = {completeRepoName};
+    ImmutableMap<String, String> claims = ImmutableMap.of("name", principal, "type", principalType);
+    ImmutableMap<String, String[]> arrayClaims = ImmutableMap.of("allowedResources", allowedResources);
+    return JWTTokenServiceUtils.generateJWTToken(
+        claims, arrayClaims, TimeUnit.MILLISECONDS.convert(expiry, TimeUnit.HOURS), serviceSecret);
   }
 }

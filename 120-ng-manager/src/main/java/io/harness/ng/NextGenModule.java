@@ -966,6 +966,13 @@ public class NextGenModule extends AbstractModule {
 
       @Provides
       @Singleton
+      @Named("harnessCodeGitUrl")
+      String getHarnessCodeGitUrl() {
+        return getBaseUrls().getHarnessCodeGitUrl();
+      }
+
+      @Provides
+      @Singleton
       BaseUrls getBaseUrls() {
         return appConfig.getBaseUrls();
       }
