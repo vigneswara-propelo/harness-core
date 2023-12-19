@@ -31,7 +31,7 @@ java_library(
         "//970-api-services-beans/src/main/java/io/harness/k8s/model:module",
         "//970-api-services-beans/src/main/java/io/harness/k8s/utils:module",
         "//970-api-services-beans/src/main/java/io/harness/logging:module",
-        "//970-ng-commons:module",
+        "//970-ng-commons/src/main/java/io/harness/encryption:module",
         "//980-commons/src/main/java/io/harness/beans:module",
         "//980-commons/src/main/java/io/harness/data/structure:module",
         "//980-commons/src/main/java/io/harness/exception:module",

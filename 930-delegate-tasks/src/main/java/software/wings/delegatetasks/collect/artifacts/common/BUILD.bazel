@@ -15,7 +15,7 @@ java_library(
         "//930-delegate-tasks/src/main/java/software/wings/delegatetasks/manager:module",
         "//950-delegate-tasks-beans:module",
         "//957-cg-beans:module",
-        "//959-file-service-commons:module",
+        "//959-file-service-commons/src/main/java/io/harness/delegate/beans:module",
         "@maven//:com_google_inject_guice",
         "@maven//:org_apache_commons_commons_lang3",
     ],
