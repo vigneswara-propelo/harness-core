@@ -57,7 +57,7 @@ public class SettingIdentifiers {
       "pagerduty_notification_integration_keys_allowlist";
   public static String AIDA = "aida";
   public static final String ENABLE_STEADY_STATE_FOR_JOBS_KEY_IDENTIFIER = "native_helm_enable_steady_state_for_jobs";
-  public static final String SKIP_FAIL_FAST_VALIDATION_CHECKS_FOR_PIPELINE_EXECUTE =
-      "skip_fail_fast_validation_checks_for_pipeline_execute";
   public static final String USE_BASE64_ENCODED_SECRETS_FOR_ATTESTATION = "use_base64_encoded_secrets_for_attestation";
+  public static final String RUN_RBAC_VALIDATION_BEFORE_EXECUTING_INLINE_PIPELINES =
+      "run_rbac_validation_before_executing_inline_pipelines";
 }

@@ -9,6 +9,7 @@ package io.harness.pms.plan.execution;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.gitcaching.GitCachingConstants.BOOLEAN_FALSE_VALUE;
+import static io.harness.ngsettings.SettingIdentifiers.RUN_RBAC_VALIDATION_BEFORE_EXECUTING_INLINE_PIPELINES;
 import static io.harness.pms.contracts.plan.TriggerType.MANUAL;
 import static io.harness.rule.OwnerRule.ARCHIT;
 import static io.harness.rule.OwnerRule.BRIJESH;
@@ -696,14 +697,14 @@ public class ExecutionHelperTest extends CategoryTest {
                                         .build();
     doReturn(request)
         .when(settingsClient)
-        .getSetting(eq("skip_fail_fast_validation_checks_for_pipeline_execute"), eq(pipelineEntity.getAccountId()),
+        .getSetting(eq(RUN_RBAC_VALIDATION_BEFORE_EXECUTING_INLINE_PIPELINES), eq(pipelineEntity.getAccountId()),
             eq(null), eq(null));
     SettingValueResponseDTO settingValueResponseDTOForFalseValue =
         SettingValueResponseDTO.builder().value("false").valueType(SettingValueType.BOOLEAN).build();
     doReturn(Response.success(ResponseDTO.newResponse(settingValueResponseDTOForFalseValue))).when(request).execute();
     executionHelper.getPipelineYamlAndValidateStaticallyReferredEntities(
         YamlUtils.readAsJsonNode(mergedRuntimeInputYaml), pipelineEntity);
-    verify(pipelineRbacServiceImpl, times(1))
+    verify(pipelineRbacServiceImpl, times(0))
         .extractAndValidateStaticallyReferredEntities(
             accountId, orgId, projectId, pipelineId, YamlUtils.readAsJsonNode(mergedRuntimeInputYaml));
     verify(pipelineRbacServiceImpl, times(0))
@@ -1063,25 +1064,25 @@ public class ExecutionHelperTest extends CategoryTest {
   @Test
   @Owner(developers = RISHIKESH)
   @Category(UnitTests.class)
-  public void testIsSkipFailFastValidationEnabled() throws IOException {
+  public void testShouldRunRbacValidationBeforeExecutingInlinePipelines() throws IOException {
     doReturn(request)
         .when(settingsClient)
-        .getSetting(eq("skip_fail_fast_validation_checks_for_pipeline_execute"), eq(pipelineEntity.getAccountId()),
+        .getSetting(eq(RUN_RBAC_VALIDATION_BEFORE_EXECUTING_INLINE_PIPELINES), eq(pipelineEntity.getAccountId()),
             eq(null), eq(null));
 
     SettingValueResponseDTO settingValueResponseDTOForFalseValue =
         SettingValueResponseDTO.builder().value("false").valueType(SettingValueType.BOOLEAN).build();
     doReturn(Response.success(ResponseDTO.newResponse(settingValueResponseDTOForFalseValue))).when(request).execute();
-    assertThat(executionHelper.isSkipFailFastValidationEnabled(pipelineEntity)).isFalse();
+    assertThat(executionHelper.shouldRunRbacValidationBeforeExecutingInlinePipelines(pipelineEntity)).isFalse();
 
     SettingValueResponseDTO settingValueResponseDTOForTrueValue =
         SettingValueResponseDTO.builder().value("true").valueType(SettingValueType.BOOLEAN).build();
     doReturn(Response.success(ResponseDTO.newResponse(settingValueResponseDTOForTrueValue))).when(request).execute();
-    assertThat(executionHelper.isSkipFailFastValidationEnabled(pipelineEntity)).isTrue();
+    assertThat(executionHelper.shouldRunRbacValidationBeforeExecutingInlinePipelines(pipelineEntity)).isTrue();
 
-    doThrow(new IOException("Could not find skip fail fast validation checks for pipeline execute setting"))
+    doThrow(new IOException("Could not find run rbac validation before executing inline pipelines setting"))
         .when(request)
         .execute();
-    assertThat(executionHelper.isSkipFailFastValidationEnabled(pipelineEntity)).isFalse();
+    assertThat(executionHelper.shouldRunRbacValidationBeforeExecutingInlinePipelines(pipelineEntity)).isTrue();
   }
 }
