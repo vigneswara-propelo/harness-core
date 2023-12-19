@@ -60,8 +60,9 @@ public class CICleanupTaskNotifyCallback implements NotifyCallbackWithErrorHandl
         }
       }
     } catch (Exception exception) {
-      log.error("Exception occurred during cleanup response consumption. Failure Message: {} and exception {}",
-          exception.getMessage(), exception);
+      log.error(
+          "Exception occurred during cleanup response consumption for stageExecutionId {}. Failure Message: {} and exception {}",
+          stageExecutionID, exception.getMessage(), exception);
     }
   }
 }
