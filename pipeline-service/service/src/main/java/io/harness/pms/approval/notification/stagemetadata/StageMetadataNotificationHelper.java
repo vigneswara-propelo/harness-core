@@ -19,6 +19,7 @@ import io.harness.beans.Scope;
 import io.harness.cd.CDStageSummaryConstants;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.cdstage.CDStageSummaryResponseDTO;
+import io.harness.plancreator.strategy.StrategyUtils;
 import io.harness.pms.approval.notification.ApprovalSummary;
 import io.harness.pms.plan.execution.beans.dto.GraphLayoutNodeDTO;
 
@@ -77,15 +78,15 @@ public interface StageMetadataNotificationHelper {
     }
     if (isGraphNodeOfCDDeploymentStageType(node)) {
       CDStageSummary cdStageSummary = CDStageSummary.builder().build();
-      cdStageSummary.setStageIdentifier(node.getNodeIdentifier());
+      cdStageSummary.setStageIdentifier(StrategyUtils.refineIdentifier(node.getNodeIdentifier()));
       cdStageSummary.setStageExecutionIdentifier(node.getNodeExecutionId());
-      cdStageSummary.setStageName(node.getName());
+      cdStageSummary.setStageName(StrategyUtils.refineIdentifier(node.getName()));
       stages.add(cdStageSummary);
     } else {
       GenericStageSummary genericStageSummary = GenericStageSummary.builder().build();
-      genericStageSummary.setStageIdentifier(node.getNodeIdentifier());
+      genericStageSummary.setStageIdentifier(StrategyUtils.refineIdentifier(node.getNodeIdentifier()));
       genericStageSummary.setStageExecutionIdentifier(node.getNodeExecutionId());
-      genericStageSummary.setStageName(node.getName());
+      genericStageSummary.setStageName(StrategyUtils.refineIdentifier(node.getName()));
       stages.add(genericStageSummary);
     }
   }
@@ -120,6 +121,22 @@ public interface StageMetadataNotificationHelper {
     if (StringUtils.isNotBlank(cdStageSummaryResponseDTO.getInfra())) {
       rows.add(String.format(CD_STAGE_METADATA_ROW_FORMAT, CDStageSummaryConstants.INFRA_DEFINITION,
           cdStageSummaryResponseDTO.getInfra()));
+    }
+    if (StringUtils.isNotBlank(cdStageSummaryResponseDTO.getServices())) {
+      rows.add(String.format(
+          CD_STAGE_METADATA_ROW_FORMAT, CDStageSummaryConstants.SERVICES, cdStageSummaryResponseDTO.getServices()));
+    }
+    if (StringUtils.isNotBlank(cdStageSummaryResponseDTO.getInfras())) {
+      rows.add(String.format(CD_STAGE_METADATA_ROW_FORMAT, CDStageSummaryConstants.INFRA_DEFINITIONS,
+          cdStageSummaryResponseDTO.getInfras()));
+    }
+    if (StringUtils.isNotBlank(cdStageSummaryResponseDTO.getEnvironments())) {
+      rows.add(String.format(CD_STAGE_METADATA_ROW_FORMAT, CDStageSummaryConstants.ENVIRONMENTS,
+          cdStageSummaryResponseDTO.getEnvironments()));
+    }
+    if (StringUtils.isNotBlank(cdStageSummaryResponseDTO.getEnvGroup())) {
+      rows.add(String.format(CD_STAGE_METADATA_ROW_FORMAT, CDStageSummaryConstants.ENVIRONMENT_GROUP,
+          cdStageSummaryResponseDTO.getEnvGroup()));
     }
 
     if (rows.isEmpty()) {

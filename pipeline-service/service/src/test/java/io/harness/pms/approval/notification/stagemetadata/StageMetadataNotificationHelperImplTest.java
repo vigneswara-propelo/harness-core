@@ -72,6 +72,8 @@ public class StageMetadataNotificationHelperImplTest extends CategoryTest {
   private static CDStageSummary cdStageSummaryFinished2;
   private static CDStageSummaryResponseDTO cdStageSummaryResponseFinished1;
   private static CDStageSummaryResponseDTO cdStageSummaryResponseFinished2;
+  private static CDStageSummary cdMultiStageSummaryUpcoming1;
+  private static CDStageSummaryResponseDTO cdMultiStageSummaryResponseUpcoming1;
   private static GenericStageSummary genericStageSummaryUpcoming;
   private static GenericStageSummary genericStageSummaryFinished;
   private static TestStageSummary testStageSummary;
@@ -91,6 +93,17 @@ public class StageMetadataNotificationHelperImplTest extends CategoryTest {
 
     cdStageSummaryResponseUpcoming2 =
         CDStageSummaryResponseDTO.builder().service("s4 s name").environment("s4 e name").infra("s4 i name").build();
+
+    cdMultiStageSummaryUpcoming1 = CDStageSummary.builder().build();
+    cdMultiStageSummaryUpcoming1.setStageIdentifier("multiService_id");
+    cdMultiStageSummaryUpcoming1.setStageName("multiService name");
+
+    cdMultiStageSummaryResponseUpcoming1 = CDStageSummaryResponseDTO.builder()
+                                               .services("[<+pipeline.variables.ser1>, <+pipeline.variables.ser2>]")
+                                               .environments("[env name]")
+                                               .infras("[infra name]")
+                                               .envGroup("[env grp]")
+                                               .build();
 
     genericStageSummaryUpcoming = GenericStageSummary.builder().build();
     genericStageSummaryUpcoming.setStageIdentifier("g1_id");
@@ -570,6 +583,11 @@ public class StageMetadataNotificationHelperImplTest extends CategoryTest {
                                         .nodeExecutionId("custom stage ex id")
                                         .nodeGroup("STAGE")
                                         .build();
+    GraphLayoutNodeDTO customLoopingNode = GraphLayoutNodeDTO.builder()
+                                               .name("custom stage<+strategy.identifierPostFix>")
+                                               .nodeIdentifier("custom_stage<+strategy.identifierPostFix>")
+                                               .nodeGroup("STAGE")
+                                               .build();
     assertThatThrownBy(() -> StageMetadataNotificationHelper.addStageNodeToStagesSummary(null, customNode))
         .isInstanceOf(InvalidRequestException.class)
         .hasMessage("Input stage node and stages set is required for adding details of stage node to a stages set");
@@ -590,15 +608,33 @@ public class StageMetadataNotificationHelperImplTest extends CategoryTest {
     cdStageSummary.setStageExecutionIdentifier("cd stage ex id");
     cdStageSummary.setStageName("cd stage name");
 
+    GraphLayoutNodeDTO cdMultiNode = GraphLayoutNodeDTO.builder()
+                                         .name("cd multi<+strategy.identifierPostFix>")
+                                         .nodeIdentifier("cd_multi<+strategy.identifierPostFix>")
+                                         .nodeGroup("STAGE")
+                                         .nodeType("Deployment")
+                                         .module(null)
+                                         .build();
+    CDStageSummary cdMultiStageSummary = CDStageSummary.builder().build();
+    cdMultiStageSummary.setStageIdentifier("cd_multi");
+    cdMultiStageSummary.setStageName("cd multi");
+
     GenericStageSummary genericStageSummary = GenericStageSummary.builder().build();
     genericStageSummary.setStageIdentifier("custom stage id");
     genericStageSummary.setStageExecutionIdentifier("custom stage ex id");
     genericStageSummary.setStageName("custom stage name");
 
-    Set<StageSummary> stages = new HashSet<>();
+    GenericStageSummary genericLoopingStageSummary = GenericStageSummary.builder().build();
+    genericLoopingStageSummary.setStageIdentifier("custom_stage");
+    genericLoopingStageSummary.setStageName("custom stage");
+
+    Set<StageSummary> stages = new LinkedHashSet<>();
     StageMetadataNotificationHelper.addStageNodeToStagesSummary(stages, customNode);
     StageMetadataNotificationHelper.addStageNodeToStagesSummary(stages, cdNode);
-    assertThat(stages).hasSize(2).containsExactly(genericStageSummary, cdStageSummary);
+    StageMetadataNotificationHelper.addStageNodeToStagesSummary(stages, cdMultiNode);
+    StageMetadataNotificationHelper.addStageNodeToStagesSummary(stages, customLoopingNode);
+    assertThat(stages).hasSize(4).containsExactly(
+        genericStageSummary, cdStageSummary, cdMultiStageSummary, genericLoopingStageSummary);
   }
 
   @Test
@@ -638,6 +674,13 @@ public class StageMetadataNotificationHelperImplTest extends CategoryTest {
             + "     Service  :  s2 s name\n"
             + "     Infrastructure Definition  :  s2 i name\n"
             + "     Environment  :  s2 e name");
+    assertThat(StageMetadataNotificationHelper.formatCDStageMetadata(
+                   cdMultiStageSummaryResponseUpcoming1, cdMultiStageSummaryUpcoming1))
+        .isEqualTo("multiService name : \n"
+            + "     Services  :  [<+pipeline.variables.ser1>, <+pipeline.variables.ser2>]\n"
+            + "     Infrastructure Definitions  :  [infra name]\n"
+            + "     Environments  :  [env name]\n"
+            + "     Environment Group  :  [env grp]");
   }
 
   @Test
