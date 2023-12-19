@@ -127,6 +127,18 @@ func ParseWebhook(ctx context.Context, in *pb.ParseWebhookRequest,
 			},
 		}, nil
 
+	case *scm.TagHook:
+		tag, tagHookErr := converter.ConvertTagHook(event)
+		if tagHookErr != nil {
+			return nil, tagHookErr
+		}
+		log.Infow("Successfully parsed tag webhook", "elapsed_time_ms", utils.TimeSince(start))
+		return &pb.ParseWebhookResponse{
+			Hook: &pb.ParseWebhookResponse_Tag{
+				Tag: tag,
+			},
+		}, nil
+
 	default:
 		log.Errorw(
 			"Unsupported webhook event",

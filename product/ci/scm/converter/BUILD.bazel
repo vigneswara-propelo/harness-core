@@ -14,6 +14,7 @@ go_library(
         "pr.go",
         "push.go",
         "release.go",
+        "tag.go",
     ],
     importpath = "github.com/harness/harness-core/product/ci/scm/converter",
     visibility = ["//visibility:public"],
