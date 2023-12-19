@@ -11,6 +11,7 @@ import static io.harness.eventsframework.EventsFrameworkConstants.IDP_CATALOG_EN
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.CREATE_ACTION;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.DELETE_ACTION;
 import static io.harness.eventsframework.EventsFrameworkMetadataConstants.UPDATE_ACTION;
+import static io.harness.eventsframework.EventsFrameworkMetadataConstants.UPSERT_ACTION;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -49,8 +50,9 @@ public class IdpCatalogEntitiesSyncCaptureEventConsumer extends AbstractIdpServi
     log.info("Processing message = {} in {} consumer", message, CONSUMER_NAME);
     if (message != null && message.hasMessage()) {
       try {
-        boolean entityTypeAndActionValidation = entityTypeAndActionValidation(CONSUMER_NAME, message,
-            IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT, List.of(CREATE_ACTION, UPDATE_ACTION, DELETE_ACTION));
+        boolean entityTypeAndActionValidation =
+            entityTypeAndActionValidation(CONSUMER_NAME, message, IDP_CATALOG_ENTITIES_SYNC_CAPTURE_EVENT,
+                List.of(CREATE_ACTION, UPDATE_ACTION, UPSERT_ACTION, DELETE_ACTION));
         if (entityTypeAndActionValidation) {
           ByteString data = message.getMessage().getData();
           IdpCatalogEntitiesSyncCaptureEvent idpCatalogEntitiesSyncCaptureEvent =

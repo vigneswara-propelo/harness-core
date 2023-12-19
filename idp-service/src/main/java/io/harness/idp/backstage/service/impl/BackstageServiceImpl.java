@@ -8,7 +8,6 @@
 package io.harness.idp.backstage.service.impl;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
-import static io.harness.eventsframework.EventsFrameworkMetadataConstants.CREATE_ACTION;
 import static io.harness.idp.common.JacksonUtils.convert;
 import static io.harness.idp.common.JacksonUtils.readValueForObject;
 import static io.harness.idp.common.YamlUtils.writeObjectAsYaml;
@@ -28,7 +27,9 @@ import io.harness.spec.server.idp.v1.model.BackstageHarnessSyncRequest;
 
 import com.google.inject.Inject;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -38,6 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @OwnedBy(HarnessTeam.IDP)
 public class BackstageServiceImpl implements BackstageService {
+  private static final String ENTITY_NOT_FOUND_MAPPED_ERROR = "HTTP Error Status (404 - Resource Not Found) received. ";
+
   @Inject NamespaceService namespaceService;
   @Inject BackstageResourceClient backstageResourceClient;
   @Inject BackstageCatalogEntityRepository backstageCatalogEntityRepository;
@@ -58,7 +61,8 @@ public class BackstageServiceImpl implements BackstageService {
       String url = String.format("%s/idp/api/catalog/entities", accountIdentifier);
       Object response = getGeneralResponse(backstageResourceClient.getCatalogEntities(url));
       List<BackstageCatalogEntity> backstageCatalogEntities = convert(response, BackstageCatalogEntity.class);
-      syncInternal(accountIdentifier, "", CREATE_ACTION, backstageCatalogEntities);
+      syncInternal(
+          accountIdentifier, "", BackstageHarnessSyncRequest.ActionEnum.UPSERT.value(), backstageCatalogEntities);
     } catch (Exception ex) {
       log.error("Error in IdpCatalogEntitiesAsHarnessEntities sync for accountIdentifier = {} Error = {}",
           accountIdentifier, ex.getMessage(), ex);
@@ -85,6 +89,7 @@ public class BackstageServiceImpl implements BackstageService {
         "Fetched {} catalog entities in IdpCatalogEntitiesAsHarnessEntities sync for accountIdentifier = {} EntityUid = {} Action = {}",
         backstageCatalogEntities.size(), accountIdentifier, entityUid, action);
     prepareEntitiesForSave(accountIdentifier, backstageCatalogEntities);
+    Map<BackstageCatalogEntity, String> entitiesActions = categorizeEntitiesActions(backstageCatalogEntities);
     Iterable<BackstageCatalogEntity> savedBackstageCatalogEntities =
         backstageCatalogEntityRepository.saveAll(backstageCatalogEntities);
     log.info(
@@ -102,7 +107,8 @@ public class BackstageServiceImpl implements BackstageService {
       switch (BackstageHarnessSyncRequest.ActionEnum.fromValue(action)) {
         case CREATE:
         case UPDATE:
-          handleCreateOrUpdateAction(accountIdentifier, entityUid, action);
+        case UPSERT:
+          handleCreateOrUpdateOrUpsertAction(accountIdentifier, entityUid, action);
           break;
         case DELETE:
           handleDeleteAction(accountIdentifier, entityUid);
@@ -140,6 +146,19 @@ public class BackstageServiceImpl implements BackstageService {
     });
   }
 
+  private Map<BackstageCatalogEntity, String> categorizeEntitiesActions(
+      List<BackstageCatalogEntity> backstageCatalogEntities) {
+    Map<BackstageCatalogEntity, String> entitiesActions = new HashMap<>();
+    backstageCatalogEntities.forEach(backstageCatalogEntity -> {
+      if (backstageCatalogEntity.getCreatedAt() == 0) {
+        entitiesActions.put(backstageCatalogEntity, BackstageHarnessSyncRequest.ActionEnum.CREATE.value());
+      } else {
+        entitiesActions.put(backstageCatalogEntity, BackstageHarnessSyncRequest.ActionEnum.UPDATE.value());
+      }
+    });
+    return entitiesActions;
+  }
+
   private String getEntityUniqueId(BackstageCatalogEntity backstageCatalogEntity) {
     String namespace = isEmpty(backstageCatalogEntity.getMetadata().getNamespace())
         ? "default"
@@ -160,8 +179,18 @@ public class BackstageServiceImpl implements BackstageService {
     });
   }
 
-  private void handleCreateOrUpdateAction(String accountIdentifier, String entityUid, String action) {
-    Object response = getGeneralResponse(backstageResourceClient.getCatalogEntityByName(accountIdentifier, entityUid));
+  private void handleCreateOrUpdateOrUpsertAction(String accountIdentifier, String entityUid, String action) {
+    Object response = null;
+    try {
+      response = getGeneralResponse(backstageResourceClient.getCatalogEntityByName(accountIdentifier, entityUid));
+    } catch (Exception ex) {
+      log.error("Error in fetching catalog entity by name for account = {} entityUid = {} Error = {}",
+          accountIdentifier, entityUid, ex.getMessage(), ex);
+      if (ex.getMessage().equals(ENTITY_NOT_FOUND_MAPPED_ERROR)) {
+        syncInSynchronousMode(accountIdentifier, entityUid, BackstageHarnessSyncRequest.ActionEnum.DELETE.value());
+        return;
+      }
+    }
     BackstageCatalogEntity backstageCatalogEntity = readValueForObject(response, BackstageCatalogEntity.class);
     List<BackstageCatalogEntity> backstageCatalogEntities = Collections.singletonList(backstageCatalogEntity);
     syncInternal(accountIdentifier, entityUid, action, backstageCatalogEntities);

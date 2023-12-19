@@ -3844,6 +3844,7 @@ components:
           enum:
             - create
             - update
+            - upsert
             - delete
         sync_mode:
           type: string
