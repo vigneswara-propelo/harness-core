@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.rule.OwnerRule.JIMIT_GANDHI;
 import static io.harness.rule.OwnerRule.KARAN;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Optional.of;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -38,9 +39,10 @@ import io.harness.aggregator.consumers.UserGroupChangeConsumer;
 import io.harness.aggregator.models.UserGroupUpdateEventData;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
-import io.harness.exception.InvalidRequestException;
+import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.dto.UserGroupDTO;
+import io.harness.ng.core.dto.UserGroupFilterDTO;
 import io.harness.rule.Owner;
 import io.harness.usergroups.UserGroupClient;
 
@@ -84,12 +86,17 @@ public class HarnessUserGroupServiceImplTest extends AccessControlTestBase {
         Scope.builder().level(HarnessScopeLevel.ACCOUNT).parentScope(null).instanceId(accountIdentifier).build();
     UserGroup userGroup =
         UserGroup.builder().identifier(identifier).scopeIdentifier(scope.toString()).users(emptySet()).build();
-    when(userGroupClient.getUserGroup(identifier, accountIdentifier, null, null).execute())
-        .thenReturn(Response.success(ResponseDTO.newResponse(
-            UserGroupDTO.builder().accountIdentifier(accountIdentifier).identifier(identifier).build())));
+    UserGroupFilterDTO userGroupFilterDTO =
+        UserGroupFilterDTO.builder().accountIdentifier(accountIdentifier).identifierFilter(Set.of(identifier)).build();
+    UserGroupDTO userGroupDTO =
+        UserGroupDTO.builder().accountIdentifier(accountIdentifier).identifier(identifier).build();
+    PageResponse<UserGroupDTO> pageResponse =
+        PageResponse.<UserGroupDTO>builder().pageIndex(0).pageSize(1).content(List.of(userGroupDTO)).build();
+    when(userGroupClient.getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null).execute())
+        .thenReturn(Response.success(ResponseDTO.newResponse(pageResponse)));
     when(userGroupService.upsert(userGroup)).thenReturn(userGroup);
     harnessUserGroupService.sync(identifier, scope);
-    verify(userGroupClient, atLeastOnce()).getUserGroup(identifier, accountIdentifier, null, null);
+    verify(userGroupClient, atLeastOnce()).getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null);
     verify(userGroupService, times(1)).upsert(userGroup);
   }
 
@@ -99,14 +106,19 @@ public class HarnessUserGroupServiceImplTest extends AccessControlTestBase {
   public void testSyncNotFound() throws IOException {
     String identifier = randomAlphabetic(10);
     String accountIdentifier = randomAlphabetic(11);
+    UserGroupFilterDTO userGroupFilterDTO =
+        UserGroupFilterDTO.builder().accountIdentifier(accountIdentifier).identifierFilter(Set.of(identifier)).build();
     Scope scope =
         Scope.builder().level(HarnessScopeLevel.ACCOUNT).parentScope(null).instanceId(accountIdentifier).build();
-    when(userGroupClient.getUserGroup(identifier, accountIdentifier, null, null).execute())
-        .thenThrow(InvalidRequestException.class);
+    PageResponse<UserGroupDTO> pageResponse =
+        PageResponse.<UserGroupDTO>builder().pageIndex(0).pageSize(1).content(emptyList()).build();
+    when(userGroupClient.getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null).execute())
+        .thenReturn(Response.success(ResponseDTO.newResponse(pageResponse)));
     doNothing().when(userGroupService).deleteIfPresent(identifier, scope.toString());
     harnessUserGroupService.sync(identifier, scope);
-    verify(userGroupClient, atLeastOnce()).getUserGroup(identifier, accountIdentifier, null, null);
+    verify(userGroupClient, atLeastOnce()).getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null);
     verify(userGroupService, times(1)).deleteIfPresent(identifier, scope.toString());
+    verify(userGroupService, never()).upsert(any());
   }
 
   @Test
@@ -123,12 +135,19 @@ public class HarnessUserGroupServiceImplTest extends AccessControlTestBase {
     HashSet<String> users = new HashSet<>(List.of("user1"));
     UserGroup userGroup =
         UserGroup.builder().identifier(identifier).scopeIdentifier(scope.toString()).users(users).build();
-    when(userGroupClient.getUserGroup(identifier, accountIdentifier, null, null).execute())
-        .thenReturn(Response.success(ResponseDTO.newResponse(UserGroupDTO.builder()
-                                                                 .accountIdentifier(accountIdentifier)
-                                                                 .users(new ArrayList<>(users))
-                                                                 .identifier(identifier)
-                                                                 .build())));
+
+    UserGroupFilterDTO userGroupFilterDTO =
+        UserGroupFilterDTO.builder().accountIdentifier(accountIdentifier).identifierFilter(Set.of(identifier)).build();
+    UserGroupDTO userGroupDTO = UserGroupDTO.builder()
+                                    .accountIdentifier(accountIdentifier)
+                                    .users(new ArrayList<>(users))
+                                    .identifier(identifier)
+                                    .build();
+    PageResponse<UserGroupDTO> pageResponse =
+        PageResponse.<UserGroupDTO>builder().pageIndex(0).pageSize(1).content(List.of(userGroupDTO)).build();
+    when(userGroupClient.getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null).execute())
+        .thenReturn(Response.success(ResponseDTO.newResponse(pageResponse)));
+
     when(userGroupService.upsert(userGroup)).thenReturn(userGroup);
     Optional<UserGroup> userGroupOptional =
         of(UserGroup.builder().identifier(identifier).scopeIdentifier(scope.toString()).build());
@@ -141,7 +160,7 @@ public class HarnessUserGroupServiceImplTest extends AccessControlTestBase {
                                                             .build();
     doNothing().when(accessControlChangeConsumer).consumeEvent(UPDATE_ACTION, null, userGroupUpdateEventData);
     harnessUserGroupService.sync(identifier, scope);
-    verify(userGroupClient, atLeastOnce()).getUserGroup(identifier, accountIdentifier, null, null);
+    verify(userGroupClient, atLeastOnce()).getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null);
     verify(userGroupService, times(1)).upsert(userGroup);
     verify(accessControlChangeConsumer, times(1))
         .consumeEvent(eq(UPDATE_ACTION), isNull(), refEq(userGroupUpdateEventData));
@@ -161,18 +180,23 @@ public class HarnessUserGroupServiceImplTest extends AccessControlTestBase {
     Set<String> users = emptySet();
     UserGroup userGroup =
         UserGroup.builder().identifier(identifier).scopeIdentifier(scope.toString()).users(users).build();
-    when(userGroupClient.getUserGroup(identifier, accountIdentifier, null, null).execute())
-        .thenReturn(Response.success(ResponseDTO.newResponse(UserGroupDTO.builder()
-                                                                 .accountIdentifier(accountIdentifier)
-                                                                 .users(new ArrayList<>(users))
-                                                                 .identifier(identifier)
-                                                                 .build())));
+    UserGroupFilterDTO userGroupFilterDTO =
+        UserGroupFilterDTO.builder().accountIdentifier(accountIdentifier).identifierFilter(Set.of(identifier)).build();
+    UserGroupDTO userGroupDTO = UserGroupDTO.builder()
+                                    .accountIdentifier(accountIdentifier)
+                                    .users(new ArrayList<>(users))
+                                    .identifier(identifier)
+                                    .build();
+    PageResponse<UserGroupDTO> pageResponse =
+        PageResponse.<UserGroupDTO>builder().pageIndex(0).pageSize(1).content(List.of(userGroupDTO)).build();
+    when(userGroupClient.getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null).execute())
+        .thenReturn(Response.success(ResponseDTO.newResponse(pageResponse)));
     when(userGroupService.upsert(userGroup)).thenReturn(userGroup);
     Optional<UserGroup> userGroupOptional =
         of(UserGroup.builder().identifier(identifier).users(emptySet()).scopeIdentifier(scope.toString()).build());
     when(userGroupService.get(identifier, userGroup.getScopeIdentifier())).thenReturn(userGroupOptional);
     harnessUserGroupService.sync(identifier, scope);
-    verify(userGroupClient, atLeastOnce()).getUserGroup(identifier, accountIdentifier, null, null);
+    verify(userGroupClient, atLeastOnce()).getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null);
     verify(userGroupService, never()).upsert(userGroup);
     verify(accessControlChangeConsumer, never()).consumeEvent(any(), any(), any());
   }
@@ -191,17 +215,20 @@ public class HarnessUserGroupServiceImplTest extends AccessControlTestBase {
     Set<String> users = emptySet();
     UserGroup userGroup =
         UserGroup.builder().identifier(identifier).scopeIdentifier(scope.toString()).users(users).build();
-    when(userGroupClient.getUserGroup(identifier, accountIdentifier, null, null).execute())
-        .thenReturn(Response.success(ResponseDTO.newResponse(UserGroupDTO.builder()
-                                                                 .accountIdentifier(accountIdentifier)
-                                                                 .users(new ArrayList<>(users))
-                                                                 .identifier(identifier)
-                                                                 .build())));
+    UserGroupFilterDTO userGroupFilterDTO =
+        UserGroupFilterDTO.builder().accountIdentifier(accountIdentifier).identifierFilter(Set.of(identifier)).build();
+    UserGroupDTO userGroupDTO = UserGroupDTO.builder()
+                                    .accountIdentifier(accountIdentifier)
+                                    .users(new ArrayList<>(users))
+                                    .identifier(identifier)
+                                    .build();
+    PageResponse<UserGroupDTO> pageResponse =
+        PageResponse.<UserGroupDTO>builder().pageIndex(0).pageSize(1).content(List.of(userGroupDTO)).build();
+    when(userGroupClient.getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null).execute())
+        .thenReturn(Response.success(ResponseDTO.newResponse(pageResponse)));
     when(userGroupService.upsert(userGroup)).thenReturn(userGroup);
-    Optional<UserGroup> userGroupOptional = Optional.empty();
-    when(userGroupService.get(identifier, userGroup.getScopeIdentifier())).thenReturn(userGroupOptional);
     harnessUserGroupService.sync(identifier, scope);
-    verify(userGroupClient, atLeastOnce()).getUserGroup(identifier, accountIdentifier, null, null);
+    verify(userGroupClient, atLeastOnce()).getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null);
     verify(userGroupService, times(1)).upsert(userGroup);
     verify(accessControlChangeConsumer, never()).consumeEvent(any(), any(), any());
   }
@@ -220,12 +247,17 @@ public class HarnessUserGroupServiceImplTest extends AccessControlTestBase {
     HashSet<String> users = new HashSet<>(List.of("user1"));
     UserGroup userGroup =
         UserGroup.builder().identifier(identifier).scopeIdentifier(scope.toString()).users(users).build();
-    when(userGroupClient.getUserGroup(identifier, accountIdentifier, null, null).execute())
-        .thenReturn(Response.success(ResponseDTO.newResponse(UserGroupDTO.builder()
-                                                                 .accountIdentifier(accountIdentifier)
-                                                                 .users(new ArrayList<>(users))
-                                                                 .identifier(identifier)
-                                                                 .build())));
+    UserGroupFilterDTO userGroupFilterDTO =
+        UserGroupFilterDTO.builder().accountIdentifier(accountIdentifier).identifierFilter(Set.of(identifier)).build();
+    UserGroupDTO userGroupDTO = UserGroupDTO.builder()
+                                    .accountIdentifier(accountIdentifier)
+                                    .users(new ArrayList<>(users))
+                                    .identifier(identifier)
+                                    .build();
+    PageResponse<UserGroupDTO> pageResponse =
+        PageResponse.<UserGroupDTO>builder().pageIndex(0).pageSize(1).content(List.of(userGroupDTO)).build();
+    when(userGroupClient.getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null).execute())
+        .thenReturn(Response.success(ResponseDTO.newResponse(pageResponse)));
     Optional<UserGroup> userGroupOptional =
         Optional.of(UserGroup.builder().identifier(identifier).scopeIdentifier(scope.toString()).build());
     when(userGroupService.get(identifier, userGroup.getScopeIdentifier())).thenReturn(userGroupOptional);
@@ -242,7 +274,7 @@ public class HarnessUserGroupServiceImplTest extends AccessControlTestBase {
 
     harnessUserGroupService.sync(identifier, scope);
 
-    verify(userGroupClient, atLeastOnce()).getUserGroup(identifier, accountIdentifier, null, null);
+    verify(userGroupClient, atLeastOnce()).getUserGroups(accountIdentifier, userGroupFilterDTO, 0, 1, null);
     verify(userGroupService, never()).upsert(userGroup);
     verify(accessControlChangeConsumer, times(1)).consumeEvent(UPDATE_ACTION, null, userGroupUpdateEventData);
   }

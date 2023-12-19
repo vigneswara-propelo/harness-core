@@ -10,7 +10,9 @@ package io.harness.usergroups;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.NGCommonEntityConstants;
+import io.harness.NGResourceFilterConstants;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.dto.UserGroupDTO;
 import io.harness.ng.core.dto.UserGroupFilterDTO;
@@ -46,4 +48,11 @@ public interface UserGroupClient {
   @GET(USER_GROUP_BASEURI + "/sso/{identifier}")
   Call<ResponseDTO<List<UserGroupDTO>>> getSsoLinkedUserGroups(
       @Path("identifier") String identifier, @Query(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier);
+
+  @POST(USER_GROUP_BASEURI + "/filter")
+  Call<ResponseDTO<PageResponse<UserGroupDTO>>> getUserGroups(
+      @Query(NGCommonEntityConstants.ACCOUNT_KEY) String accountIdentifier, @Body UserGroupFilterDTO userGroupFilter,
+      @Query(value = NGResourceFilterConstants.PAGE_KEY) int pageIndex,
+      @Query(value = NGResourceFilterConstants.SIZE_KEY) int pageSize,
+      @Query(value = NGResourceFilterConstants.SORT_KEY) List<String> sort);
 }

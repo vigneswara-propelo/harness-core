@@ -11,6 +11,7 @@ import static io.harness.aggregator.ACLEventProcessingConstants.UPDATE_ACTION;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.of;
 
 import io.harness.accesscontrol.scopes.core.Scope;
@@ -19,8 +20,9 @@ import io.harness.accesscontrol.scopes.harness.ScopeMapper;
 import io.harness.aggregator.consumers.AccessControlChangeConsumer;
 import io.harness.aggregator.models.UserGroupUpdateEventData;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.exception.InvalidRequestException;
+import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.UserGroupDTO;
+import io.harness.ng.core.dto.UserGroupFilterDTO;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.usergroups.UserGroupClient;
 
@@ -29,6 +31,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javax.validation.executable.ValidateOnExecution;
@@ -58,14 +61,20 @@ public class HarnessUserGroupServiceImpl implements HarnessUserGroupService {
   @Override
   public void sync(String identifier, Scope scope) {
     HarnessScopeParams scopeParams = ScopeMapper.toParams(scope);
-    Optional<UserGroupDTO> userGroupDTOOpt = Optional.empty();
+
     try {
-      userGroupDTOOpt = Optional.ofNullable(
-          NGRestUtils.getResponse(userGroupClient.getUserGroup(identifier, scopeParams.getAccountIdentifier(),
-                                      scopeParams.getOrgIdentifier(), scopeParams.getProjectIdentifier()),
-              "Could not find the user group with the given identifier"));
-      if (userGroupDTOOpt.isPresent()) {
-        UserGroup userGroup = UserGroupFactory.buildUserGroup(userGroupDTOOpt.get());
+      UserGroupFilterDTO userGroupFilterDTO = UserGroupFilterDTO.builder()
+                                                  .accountIdentifier(scopeParams.getAccountIdentifier())
+                                                  .orgIdentifier(scopeParams.getOrgIdentifier())
+                                                  .projectIdentifier(scopeParams.getProjectIdentifier())
+                                                  .identifierFilter(Set.of(identifier))
+                                                  .build();
+      PageResponse<UserGroupDTO> userGroupDTOPageResponse = NGRestUtils.getResponse(
+          userGroupClient.getUserGroups(scopeParams.getAccountIdentifier(), userGroupFilterDTO, 0, 1, null),
+          "Could not find the user group with the given identifier");
+      if (nonNull(userGroupDTOPageResponse) && userGroupDTOPageResponse.getContent().size() > 0) {
+        List<UserGroupDTO> userGroupDTOList = userGroupDTOPageResponse.getContent();
+        UserGroup userGroup = UserGroupFactory.buildUserGroup(userGroupDTOList.get(0));
         if (enableParallelProcessingOfUserGroupUpdates) {
           Optional<UserGroup> userGroupOptional =
               userGroupService.get(userGroup.getIdentifier(), userGroup.getScopeIdentifier());
@@ -97,12 +106,8 @@ public class HarnessUserGroupServiceImpl implements HarnessUserGroupService {
         } else {
           userGroupService.upsert(userGroup);
         }
-      }
-    } catch (InvalidRequestException e) {
-      if (userGroupDTOOpt.isEmpty()) {
-        deleteIfPresent(identifier, scope);
       } else {
-        throw e;
+        deleteIfPresent(identifier, scope);
       }
     } catch (Exception e) {
       log.error("Exception while syncing user groups", e);
@@ -111,7 +116,7 @@ public class HarnessUserGroupServiceImpl implements HarnessUserGroupService {
   }
 
   public void deleteIfPresent(String identifier, Scope scope) {
-    log.warn("Removing user group with identifier {} in scope {}.", identifier, scope.toString());
+    log.info("Removing user group with identifier {} in scope {}.", identifier, scope.toString());
     userGroupService.deleteIfPresent(identifier, scope.toString());
   }
 }
