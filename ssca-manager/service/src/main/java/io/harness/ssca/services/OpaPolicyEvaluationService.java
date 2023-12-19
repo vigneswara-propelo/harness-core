@@ -10,7 +10,6 @@ package io.harness.ssca.services;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.repositories.EnforcementResultRepo;
-import io.harness.repositories.SBOMComponentRepo;
 import io.harness.spec.server.ssca.v1.model.EnforceSbomRequestBody;
 import io.harness.ssca.beans.OpaPolicyEvaluationResult;
 import io.harness.ssca.beans.PolicyEvaluationResult;
@@ -18,6 +17,7 @@ import io.harness.ssca.beans.Violation;
 import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.EnforcementResultEntity;
 import io.harness.ssca.entities.NormalizedSBOMComponentEntity;
+import io.harness.ssca.entities.NormalizedSBOMComponentEntity.NormalizedSBOMEntityKeys;
 
 import com.google.inject.Inject;
 import java.time.Duration;
@@ -30,16 +30,13 @@ import java.util.stream.Stream;
 import javax.ws.rs.BadRequestException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 
 @OwnedBy(HarnessTeam.SSCA)
 @Slf4j
 public class OpaPolicyEvaluationService implements PolicyEvaluationService {
   @Inject PolicyMgmtService policyMgmtService;
-  @Inject SBOMComponentRepo sbomComponentRepo;
   @Inject EnforcementResultRepo enforcementResultRepo;
+  @Inject NormalisedSbomComponentService normalisedSbomComponentService;
   @Override
   public PolicyEvaluationResult evaluatePolicy(String accountId, String orgIdentifier, String projectIdentifier,
       EnforceSbomRequestBody body, ArtifactEntity artifactEntity) {
@@ -67,19 +64,24 @@ public class OpaPolicyEvaluationService implements PolicyEvaluationService {
         .build();
   }
 
-  @NotNull
   private List<NormalizedSBOMComponentEntity> getNormalizedSBOMComponentEntities(String accountId, String orgIdentifier,
       String projectIdentifier, EnforceSbomRequestBody body, ArtifactEntity artifactEntity) {
-    // TODO: Fetch records from the db in batches and use projection.
     Instant start = Instant.now();
-    Page<NormalizedSBOMComponentEntity> entities =
-        sbomComponentRepo.findByAccountIdAndOrgIdentifierAndProjectIdentifierAndOrchestrationId(accountId,
-            orgIdentifier, projectIdentifier, artifactEntity.getOrchestrationId(),
-            PageRequest.of(0, Integer.MAX_VALUE));
+    List<String> fieldsToBeIncluded = new ArrayList<>();
+    fieldsToBeIncluded.add(NormalizedSBOMEntityKeys.packageName);
+    fieldsToBeIncluded.add(NormalizedSBOMEntityKeys.purl);
+    fieldsToBeIncluded.add(NormalizedSBOMEntityKeys.packageLicense);
+    fieldsToBeIncluded.add(NormalizedSBOMEntityKeys.packageOriginatorName);
+    fieldsToBeIncluded.add(NormalizedSBOMEntityKeys.packageVersion);
+    fieldsToBeIncluded.add(NormalizedSBOMEntityKeys.originatorType);
+    fieldsToBeIncluded.add(NormalizedSBOMEntityKeys.packageManager);
+    List<NormalizedSBOMComponentEntity> entities =
+        normalisedSbomComponentService.getNormalizedSbomComponentsForOrchestrationId(
+            accountId, orgIdentifier, projectIdentifier, artifactEntity.getOrchestrationId(), fieldsToBeIncluded);
     Instant end = Instant.now();
-    log.info("Time taken to fetch {} sbom entities for enforcementId {} is {} ms", entities.getTotalElements(),
+    log.info("Time taken to fetch {} sbom entities for enforcementId {} is {} ms", entities.size(),
         body.getEnforcementId(), Duration.between(start, end).toMillis());
-    return entities.toList();
+    return entities;
   }
 
   private static List<EnforcementResultEntity> getEnforcementResultEntitiesFromOpaViolations(String accountId,
@@ -98,7 +100,7 @@ public class OpaPolicyEvaluationService implements PolicyEvaluationService {
       String projectIdentifier, String enforcementId, NormalizedSBOMComponentEntity component,
       ArtifactEntity artifactEntity, Violation opaViolation) {
     return EnforcementResultEntity.builder()
-        .artifactId(component.getArtifactId())
+        .artifactId(artifactEntity.getArtifactId())
         .enforcementID(enforcementId)
         .accountId(accountId)
         .projectIdentifier(projectIdentifier)

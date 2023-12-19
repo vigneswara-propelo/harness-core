@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -51,6 +52,26 @@ public class NormalisedSbomComponentServiceImpl implements NormalisedSbomCompone
   Map<ComponentFilter.FieldNameEnum, String> componentFilterToFieldNameMap =
       Map.of(ComponentFilter.FieldNameEnum.COMPONENTNAME, NormalizedSBOMEntityKeys.packageName,
           ComponentFilter.FieldNameEnum.COMPONENTVERSION, NormalizedSBOMEntityKeys.packageVersion);
+
+  @Override
+  public List<NormalizedSBOMComponentEntity> getNormalizedSbomComponentsForOrchestrationId(String accountId,
+      String orgIdentifier, String projectIdentifier, String orchestrationId, List<String> fieldsToBeIncluded) {
+    Query query = new Query();
+    Criteria criteria = Criteria.where(NormalizedSBOMEntityKeys.accountId)
+                            .is(accountId)
+                            .and(NormalizedSBOMEntityKeys.orgIdentifier)
+                            .is(orgIdentifier)
+                            .and(NormalizedSBOMEntityKeys.projectIdentifier)
+                            .is(projectIdentifier)
+                            .and(NormalizedSBOMEntityKeys.orchestrationId)
+                            .is(orchestrationId);
+    query.addCriteria(criteria);
+    if (CollectionUtils.isNotEmpty(fieldsToBeIncluded)) {
+      query.fields().include(fieldsToBeIncluded.toArray(new String[0]));
+    }
+    return sbomComponentRepo.findAllByQuery(query);
+  }
+
   @Override
   public Response listNormalizedSbomComponent(
       String orgIdentifier, String projectIdentifier, Integer page, Integer limit, Artifact body, String accountId) {

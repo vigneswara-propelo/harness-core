@@ -21,7 +21,6 @@ import io.harness.SSCAManagerTestBase;
 import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.repositories.EnforcementResultRepo;
-import io.harness.repositories.SBOMComponentRepo;
 import io.harness.rule.Owner;
 import io.harness.serializer.JsonUtils;
 import io.harness.spec.server.ssca.v1.model.Artifact;
@@ -47,8 +46,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 
 public class EnforcementStepServiceImplTest extends SSCAManagerTestBase {
   @Inject EnforcementStepService enforcementStepService;
@@ -57,7 +54,7 @@ public class EnforcementStepServiceImplTest extends SSCAManagerTestBase {
   @Mock EnforcementSummaryService enforcementSummaryService;
   @Mock EnforcementResultService enforcementResultService;
   @Mock PolicyMgmtService policyMgmtService;
-  @Mock SBOMComponentRepo sbomComponentRepo;
+  @Mock NormalisedSbomComponentService normalisedSbomComponentService;
   @Mock FeatureFlagService featureFlagService;
   @Mock EnforcementResultRepo enforcementResultRepo;
   private BuilderFactory builderFactory;
@@ -70,7 +67,8 @@ public class EnforcementStepServiceImplTest extends SSCAManagerTestBase {
   public void setup() throws IllegalAccessException {
     opaPolicyEvaluationService = (OpaPolicyEvaluationService) policyEvaluationServiceMapBinder.get(PolicyType.OPA);
     FieldUtils.writeField(opaPolicyEvaluationService, "policyMgmtService", policyMgmtService, true);
-    FieldUtils.writeField(opaPolicyEvaluationService, "sbomComponentRepo", sbomComponentRepo, true);
+    FieldUtils.writeField(
+        opaPolicyEvaluationService, "normalisedSbomComponentService", normalisedSbomComponentService, true);
     FieldUtils.writeField(opaPolicyEvaluationService, "enforcementResultRepo", enforcementResultRepo, true);
     FieldUtils.writeField(enforcementStepService, "artifactService", artifactService, true);
     FieldUtils.writeField(enforcementStepService, "enforcementSummaryService", enforcementSummaryService, true);
@@ -104,22 +102,21 @@ public class EnforcementStepServiceImplTest extends SSCAManagerTestBase {
   public void testEnforceSbom_featureFlagIsOn_bothOpaAndSscaPolicyConfigured() {
     ArtifactEntity artifactEntity = builderFactory.getArtifactEntityBuilder().build();
     EnforceSbomRequestBody enforceSbomRequestBody = getEnforcementSbomRequestBody();
-    Page<NormalizedSBOMComponentEntity> page = new PageImpl<>(getNormalizedSBOMComponentEntities());
     OpaPolicyEvaluationResult opaPolicyEvaluationResult = getOpaPolicyEvaluationResult();
     when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureName.SSCA_ENFORCEMENT_OPA.name())).thenReturn(true);
     when(artifactService.generateArtifactId(any(), any())).thenReturn(artifactEntity.getArtifactId());
     when(artifactService.getArtifact(any(), any(), any(), any(), any())).thenReturn(Optional.of(artifactEntity));
-    when(sbomComponentRepo.findByAccountIdAndOrgIdentifierAndProjectIdentifierAndOrchestrationId(
-             any(), any(), any(), any(), any()))
-        .thenReturn(page);
+    when(
+        normalisedSbomComponentService.getNormalizedSbomComponentsForOrchestrationId(any(), any(), any(), any(), any()))
+        .thenReturn(getNormalizedSBOMComponentEntities());
     when(policyMgmtService.evaluate(any(), any(), any(), any(), any())).thenReturn(opaPolicyEvaluationResult);
     when(enforcementSummaryService.persistEnforcementSummary(any(), any(), any(), any(), any())).thenReturn("status");
     EnforceSbomResponseBody enforceSbomResponseBody =
         enforcementStepService.enforceSbom(accountId, orgIdentifier, projectIdentifier, enforceSbomRequestBody);
     ArgumentCaptor<List<EnforcementResultEntity>> argument = ArgumentCaptor.forClass(List.class);
 
-    verify(sbomComponentRepo, times(1))
-        .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndOrchestrationId(any(), any(), any(), any(), any());
+    verify(normalisedSbomComponentService, times(1))
+        .getNormalizedSbomComponentsForOrchestrationId(any(), any(), any(), any(), any());
     verify(policyMgmtService, times(1)).evaluate(any(), any(), any(), any(), any());
     verify(enforcementResultRepo, times(1)).saveAll(argument.capture());
     List<EnforcementResultEntity> capturedViolations = argument.getAllValues().get(0);
@@ -140,22 +137,21 @@ public class EnforcementStepServiceImplTest extends SSCAManagerTestBase {
     ArtifactEntity artifactEntity = builderFactory.getArtifactEntityBuilder().build();
     EnforceSbomRequestBody enforceSbomRequestBody = getEnforcementSbomRequestBody();
     enforceSbomRequestBody.setPolicyFileId(null);
-    Page<NormalizedSBOMComponentEntity> page = new PageImpl<>(getNormalizedSBOMComponentEntities());
     OpaPolicyEvaluationResult opaPolicyEvaluationResult = getOpaPolicyEvaluationResult();
     when(featureFlagService.isFeatureFlagEnabled(accountId, FeatureName.SSCA_ENFORCEMENT_OPA.name())).thenReturn(true);
     when(artifactService.generateArtifactId(any(), any())).thenReturn(artifactEntity.getArtifactId());
     when(artifactService.getArtifact(any(), any(), any(), any(), any())).thenReturn(Optional.of(artifactEntity));
-    when(sbomComponentRepo.findByAccountIdAndOrgIdentifierAndProjectIdentifierAndOrchestrationId(
-             any(), any(), any(), any(), any()))
-        .thenReturn(page);
+    when(
+        normalisedSbomComponentService.getNormalizedSbomComponentsForOrchestrationId(any(), any(), any(), any(), any()))
+        .thenReturn(getNormalizedSBOMComponentEntities());
     when(policyMgmtService.evaluate(any(), any(), any(), any(), any())).thenReturn(opaPolicyEvaluationResult);
     when(enforcementSummaryService.persistEnforcementSummary(any(), any(), any(), any(), any())).thenReturn("status");
     EnforceSbomResponseBody enforceSbomResponseBody =
         enforcementStepService.enforceSbom(accountId, orgIdentifier, projectIdentifier, enforceSbomRequestBody);
     ArgumentCaptor<List<EnforcementResultEntity>> argument = ArgumentCaptor.forClass(List.class);
 
-    verify(sbomComponentRepo, times(1))
-        .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndOrchestrationId(any(), any(), any(), any(), any());
+    verify(normalisedSbomComponentService, times(1))
+        .getNormalizedSbomComponentsForOrchestrationId(any(), any(), any(), any(), any());
     verify(policyMgmtService, times(1)).evaluate(any(), any(), any(), any(), any());
     verify(enforcementResultRepo, times(1)).saveAll(argument.capture());
     List<EnforcementResultEntity> capturedViolations = argument.getAllValues().get(0);
