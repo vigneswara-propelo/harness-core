@@ -1865,8 +1865,8 @@ components:
           enum:
             - DEFAULT
             - CUSTOM
-          required:
-            - id
+      required:
+        - id
     PluginInfoResponse:
       title: PluginInfoResponse
       x-stoplight:
