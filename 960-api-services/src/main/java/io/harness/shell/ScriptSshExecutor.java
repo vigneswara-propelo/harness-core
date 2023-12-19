@@ -78,7 +78,7 @@ public class ScriptSshExecutor extends AbstractScriptExecutor {
         output.append(response.getOutput());
       }
       if (response.getStatus() == SUCCESS) {
-        saveExecutionLog("Command finished with status " + SUCCESS, SUCCESS);
+        saveExecutionLog("Command finished with status " + SUCCESS);
       }
       return response.getStatus();
     } catch (Exception ex) {
@@ -165,7 +165,7 @@ public class ScriptSshExecutor extends AbstractScriptExecutor {
 
       validateExportedVariables(envVariablesMap);
     }
-    saveExecutionLog("Command finished with status " + response.getStatus(), response.getStatus());
+    saveExecutionLog("Command finished with status " + response.getStatus());
     return result;
   }
 
