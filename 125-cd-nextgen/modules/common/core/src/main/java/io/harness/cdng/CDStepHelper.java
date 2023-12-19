@@ -942,7 +942,7 @@ public class CDStepHelper {
 
   public UnitProgressData completeUnitProgressData(
       UnitProgressData currentProgressData, Ambiance ambiance, String exceptionMessage) {
-    if (currentProgressData == null) {
+    if (currentProgressData == null || isEmpty(currentProgressData.getUnitProgresses())) {
       return UnitProgressData.builder().unitProgresses(new ArrayList<>()).build();
     }
 
