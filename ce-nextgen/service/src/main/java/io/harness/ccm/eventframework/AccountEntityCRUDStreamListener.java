@@ -29,6 +29,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 
 @OwnedBy(CE)
 @Slf4j
@@ -53,8 +54,12 @@ public class AccountEntityCRUDStreamListener implements MessageListener {
         String action = metadataMap.get(ACTION);
         if (action != null) {
           if (DELETE_ACTION.equals(action)) {
-            dataDeletionRecordDao.save(getDataDeletionRecord(entityChangeDTO.getAccountId()));
-            log.info("Created Data Deletion Record for account: {}", entityChangeDTO.getAccountId());
+            if (ObjectUtils.isNotEmpty(dataDeletionRecordDao.getByAccountId(entityChangeDTO.getAccountId()))) {
+              log.info("Data Deletion Record for account: {} already exists", entityChangeDTO.getAccountId());
+            } else {
+              dataDeletionRecordDao.save(getDataDeletionRecord(entityChangeDTO.getAccountId()));
+              log.info("Created Data Deletion Record for account: {}", entityChangeDTO.getAccountId());
+            }
           }
           return true;
         }
