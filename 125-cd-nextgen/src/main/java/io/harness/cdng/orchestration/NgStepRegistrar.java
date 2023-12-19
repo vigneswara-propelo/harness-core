@@ -200,6 +200,15 @@ import io.harness.cdng.tas.TasRollingRollbackStep;
 import io.harness.cdng.tas.TasRouteMappingStep;
 import io.harness.cdng.tas.TasSwapRollbackStep;
 import io.harness.cdng.tas.TasSwapRoutesStep;
+import io.harness.cdng.tas.asyncsteps.TasAppResizeStepV2;
+import io.harness.cdng.tas.asyncsteps.TasBasicAppSetupStepV2;
+import io.harness.cdng.tas.asyncsteps.TasCanaryAppSetupStepV2;
+import io.harness.cdng.tas.asyncsteps.TasRollbackStepV2;
+import io.harness.cdng.tas.asyncsteps.TasRollingDeployStepV2;
+import io.harness.cdng.tas.asyncsteps.TasRollingRollbackStepV2;
+import io.harness.cdng.tas.asyncsteps.TasRouteMappingStepV2;
+import io.harness.cdng.tas.asyncsteps.TasSwapRollbackStepV2;
+import io.harness.cdng.tas.asyncsteps.TasSwapRoutesStepV2;
 import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.sdk.core.steps.Step;
 import io.harness.registrar.NGCommonUtilStepsRegistrar;
@@ -361,6 +370,17 @@ public class NgStepRegistrar {
     engineSteps.put(TasRollingDeployStep.STEP_TYPE, TasRollingDeployStep.class);
     engineSteps.put(TasRollingRollbackStep.STEP_TYPE, TasRollingRollbackStep.class);
     engineSteps.put(TasRouteMappingStep.STEP_TYPE, TasRouteMappingStep.class);
+
+    // TAS ASYNC
+    engineSteps.put(TasCanaryAppSetupStepV2.STEP_TYPE, TasCanaryAppSetupStepV2.class);
+    engineSteps.put(TasRollbackStepV2.STEP_TYPE, TasRollbackStepV2.class);
+    engineSteps.put(TasRollingRollbackStepV2.STEP_TYPE, TasRollingRollbackStepV2.class);
+    engineSteps.put(TasSwapRollbackStepV2.STEP_TYPE, TasSwapRollbackStepV2.class);
+    engineSteps.put(TasAppResizeStepV2.STEP_TYPE, TasAppResizeStepV2.class);
+    engineSteps.put(TasRouteMappingStepV2.STEP_TYPE, TasRouteMappingStepV2.class);
+    engineSteps.put(TasSwapRoutesStepV2.STEP_TYPE, TasSwapRoutesStepV2.class);
+    engineSteps.put(TasRollingDeployStepV2.STEP_TYPE, TasRollingDeployStepV2.class);
+    engineSteps.put(TasBasicAppSetupStepV2.STEP_TYPE, TasBasicAppSetupStepV2.class);
 
     engineSteps.put(GoogleFunctionsDeployStep.STEP_TYPE, GoogleFunctionsDeployStep.class);
     engineSteps.put(GoogleFunctionsDeployWithoutTrafficStep.STEP_TYPE, GoogleFunctionsDeployWithoutTrafficStep.class);
