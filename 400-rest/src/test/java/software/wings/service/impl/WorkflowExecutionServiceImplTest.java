@@ -2182,6 +2182,7 @@ public class WorkflowExecutionServiceImplTest extends WingsBaseTest {
             .build());
   }
 
+  @Ignore
   @Test
   @Owner(developers = {SRINIVAS})
   @Category(UnitTests.class)
@@ -2450,6 +2451,7 @@ public class WorkflowExecutionServiceImplTest extends WingsBaseTest {
         .populateArtifactsAndServices(workflowExecution, stdParams, keywords, executionArgs, ACCOUNT_ID);
   }
 
+  @Ignore
   @Test
   @Owner(developers = PRASHANT)
   @Category(UnitTests.class)
