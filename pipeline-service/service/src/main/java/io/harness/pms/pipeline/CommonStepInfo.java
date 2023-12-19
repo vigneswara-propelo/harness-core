@@ -14,9 +14,11 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.enforcement.constants.FeatureRestrictionName;
 import io.harness.pms.contracts.steps.StepInfo;
 import io.harness.pms.contracts.steps.StepMetaData;
+import io.harness.pms.contracts.steps.YamlVersion;
 import io.harness.steps.FolderPathConstants;
 import io.harness.steps.StepCategoryConstants;
 import io.harness.steps.StepSpecTypeConstants;
+import io.harness.steps.StepSpecTypeConstantsV1;
 import io.harness.steps.container.ContainerStepSpecTypeConstants;
 import io.harness.steps.policy.PolicyStepConstants;
 import io.harness.utils.PmsFeatureFlagHelper;
@@ -43,12 +45,29 @@ public class CommonStepInfo {
           .setType(StepSpecTypeConstants.SHELL_SCRIPT)
           .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Utilities/Scripted").build())
           .build();
+
+  StepInfo shellScriptStepInfoV1 =
+      StepInfo.newBuilder()
+          .setName("Shell Script")
+          .setType(StepSpecTypeConstantsV1.SHELL_SCRIPT)
+          .setStepMetaData(
+              StepMetaData.newBuilder().setVersion(YamlVersion.V1).addFolderPaths("Utilities/Scripted").build())
+          .build();
   StepInfo httpStepInfo =
       StepInfo.newBuilder()
           .setName("HTTP")
           .setType("Http")
           .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Utilities/Non-Scripted").build())
           .build();
+
+  StepInfo httpStepInfoV1 =
+      StepInfo.newBuilder()
+          .setName("HTTP")
+          .setType(StepSpecTypeConstantsV1.HTTP)
+          .setStepMetaData(
+              StepMetaData.newBuilder().setVersion(YamlVersion.V1).addFolderPaths("Utilities/Non-Scripted").build())
+          .build();
+
   StepInfo emailStepInfo =
       StepInfo.newBuilder()
           .setName("Email")
@@ -200,6 +219,8 @@ public class CommonStepInfo {
     stepInfos.add(waitStepInfo);
     stepInfos.add(serviceNowImportSetStepInfo);
     stepInfos.add(containerStepInfo);
+    stepInfos.add(shellScriptStepInfoV1);
+    stepInfos.add(httpStepInfoV1);
 
     return stepInfos.stream().filter(getStepInfoPredicate(category)).collect(Collectors.toList());
   }

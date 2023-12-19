@@ -18,10 +18,12 @@ import io.harness.category.element.UnitTests;
 import io.harness.enforcement.constants.FeatureRestrictionName;
 import io.harness.pms.contracts.steps.StepInfo;
 import io.harness.pms.contracts.steps.StepMetaData;
+import io.harness.pms.contracts.steps.YamlVersion;
 import io.harness.rule.Owner;
 import io.harness.steps.FolderPathConstants;
 import io.harness.steps.StepCategoryConstants;
 import io.harness.steps.StepSpecTypeConstants;
+import io.harness.steps.StepSpecTypeConstantsV1;
 
 import java.util.List;
 import org.junit.Before;
@@ -39,6 +41,15 @@ public class CommonStepInfoTest extends CategoryTest {
           .setType("ShellScript")
           .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Utilities/Scripted").build())
           .build();
+
+  StepInfo shellScriptStepInfoV1 =
+      StepInfo.newBuilder()
+          .setName("Shell Script")
+          .setType(StepSpecTypeConstantsV1.SHELL_SCRIPT)
+          .setStepMetaData(
+              StepMetaData.newBuilder().setVersion(YamlVersion.V1).addFolderPaths("Utilities/Scripted").build())
+          .build();
+
   StepInfo customApprovalStepInfo =
       StepInfo.newBuilder()
           .setName("Custom Approval")
@@ -55,6 +66,14 @@ public class CommonStepInfoTest extends CategoryTest {
           .setName("HTTP")
           .setType("Http")
           .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Utilities/Non-Scripted").build())
+          .build();
+
+  StepInfo httpStepInfoV1 =
+      StepInfo.newBuilder()
+          .setName("HTTP")
+          .setType(StepSpecTypeConstantsV1.HTTP)
+          .setStepMetaData(
+              StepMetaData.newBuilder().setVersion(YamlVersion.V1).addFolderPaths("Utilities/Non-Scripted").build())
           .build();
   StepInfo harnessApprovalStepInfo =
       StepInfo.newBuilder()
@@ -134,5 +153,7 @@ public class CommonStepInfoTest extends CategoryTest {
     assertTrue(stepInfos.contains(barrierStepInfo));
     assertTrue(stepInfos.contains(shellScriptStepInfo));
     assertTrue(stepInfos.contains(serviceNowApprovalStepInfo));
+    assertTrue(stepInfos.contains(shellScriptStepInfoV1));
+    assertTrue(stepInfos.contains(httpStepInfoV1));
   }
 }
