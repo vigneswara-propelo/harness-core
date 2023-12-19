@@ -273,9 +273,7 @@ components:
           x-stoplight:
             id: jmsm2f8m7mmbx
         notification_channel_type:
-          type: string
-          x-stoplight:
-            id: s8qql7lru4lsz
+          $ref: '#/components/schemas/ChannelType'
         status:
           type: string
         channel:
@@ -287,7 +285,11 @@ components:
         created:
           type: integer
           x-stoplight:
-            id: 4i6y9rfcra70r
+            id: ewe71o8w1y79j
+        name:
+          type: string
+          x-stoplight:
+            id: xwi5kp0p2y69s
     NotificationRuleDTO:
       type: object
       x-examples:
@@ -415,7 +417,11 @@ components:
         created:
           type: integer
           x-stoplight:
-            id: ayurqp5ru8cyg
+            id: oi9hhfui9jsxr
+        name:
+          type: string
+          x-stoplight:
+            id: yuwrnh5pkqjj6
     ChannelType:
       title: ChannelType
       x-stoplight:
@@ -497,7 +503,15 @@ components:
             id: ls86hoilb7je6
           items:
             x-stoplight:
-              id: 0v3t4ghqcu6w3
+              id: pk834ztxk54rl
+            type: string
+        user_groups:
+          type: array
+          x-stoplight:
+            id: zrik5op2phdmw
+          items:
+            x-stoplight:
+              id: ugov9v3bbxzir
             type: string
   securitySchemes:
     x-api-key:

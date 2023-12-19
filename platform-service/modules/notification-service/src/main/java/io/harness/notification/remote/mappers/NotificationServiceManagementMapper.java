@@ -22,6 +22,7 @@ import io.harness.notification.entities.PagerDutyChannel;
 import io.harness.notification.entities.SlackChannel;
 import io.harness.notification.entities.WebhookChannel;
 import io.harness.spec.server.notification.v1.model.ChannelDTO;
+import io.harness.spec.server.notification.v1.model.ChannelType;
 import io.harness.spec.server.notification.v1.model.NotificationChannelDTO;
 import io.harness.spec.server.notification.v1.model.NotificationRuleDTO;
 import io.harness.spec.server.notification.v1.model.NotificationRuleDTONotificationChannels;
@@ -30,13 +31,29 @@ import io.harness.spec.server.notification.v1.model.NotificationRuleDTONotificat
 import io.harness.spec.server.notification.v1.model.Status;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class NotificationServiceManagementMapper {
+  private static Map<ChannelType, NotificationChannelType> notificationChannelTypeEnumMap = new HashMap<>();
+  private static Map<NotificationChannelType, ChannelType> channelTypeEnumMap = new HashMap<>();
+
+  static {
+    notificationChannelTypeEnumMap.put(ChannelType.EMAIL, NotificationChannelType.EMAIL);
+    notificationChannelTypeEnumMap.put(ChannelType.SLACK, NotificationChannelType.SLACK);
+    notificationChannelTypeEnumMap.put(ChannelType.MSTEAMS, NotificationChannelType.MSTEAMS);
+    notificationChannelTypeEnumMap.put(ChannelType.PAGERDUTY, NotificationChannelType.PAGERDUTY);
+    notificationChannelTypeEnumMap.put(ChannelType.WEBHOOK, NotificationChannelType.WEBHOOK);
+    channelTypeEnumMap = notificationChannelTypeEnumMap.entrySet().stream().collect(
+        Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+  }
+
   public NotificationRule toNotificationRuleEntity(NotificationRuleDTO notificationRuleDTO) {
     return NotificationRule.builder()
         .identifier(notificationRuleDTO.getIdentifier())
+        .name(notificationRuleDTO.getName())
         .accountIdentifier(notificationRuleDTO.getAccount())
         .orgIdentifier(notificationRuleDTO.getOrg())
         .projectIdentifier(notificationRuleDTO.getProject())
@@ -51,20 +68,21 @@ public class NotificationServiceManagementMapper {
         .org(notificationRule.getOrgIdentifier())
         .project(notificationRule.getOrgIdentifier())
         .identifier(notificationRule.getIdentifier())
+        .name(notificationRule.getName())
         .status(getNotificationRuleDTOStatus(notificationRule));
   }
 
   public NotificationChannel toNotificationChannelEntity(
       NotificationChannelDTO notificationChannelDTO, String accountIdentifier) {
     NotificationChannelType notificationChannelType =
-        Enum.valueOf(NotificationChannelType.class, notificationChannelDTO.getNotificationChannelType());
-
+        notificationChannelTypeEnumMap.get(notificationChannelDTO.getNotificationChannelType());
     return NotificationChannel.builder()
         .accountIdentifier(accountIdentifier)
         .orgIdentifier(notificationChannelDTO.getOrg())
         .projectIdentifier(notificationChannelDTO.getProject())
         .identifier(notificationChannelDTO.getIdentifier())
         .notificationChannelType(notificationChannelType)
+        .name(notificationChannelDTO.getName())
         .channel(toChannelEntity(notificationChannelDTO, notificationChannelType))
         .build();
   }
@@ -74,7 +92,8 @@ public class NotificationServiceManagementMapper {
         .identifier(notificationChannel.getIdentifier())
         .project(notificationChannel.getProjectIdentifier())
         .org(notificationChannel.getOrgIdentifier())
-        .notificationChannelType(notificationChannel.getNotificationChannelType().name())
+        .notificationChannelType(channelTypeEnumMap.get(notificationChannel.getNotificationChannelType()))
+        .name(notificationChannel.getName())
         .channel(getChannel(notificationChannel));
   }
 

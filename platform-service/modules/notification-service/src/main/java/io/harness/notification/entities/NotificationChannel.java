@@ -12,6 +12,8 @@ import io.harness.annotations.StoreIn;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EmbeddedUser;
+import io.harness.data.validator.EntityIdentifier;
+import io.harness.data.validator.NGEntityName;
 import io.harness.iterator.PersistentRegularIterable;
 import io.harness.mongo.index.CompoundMongoIndex;
 import io.harness.mongo.index.FdIndex;
@@ -30,6 +32,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -64,8 +67,8 @@ public class NotificationChannel implements PersistentEntity, PersistentRegularI
   }
   @Id @dev.morphia.annotations.Id String uuid;
 
-  String identifier;
-
+  @NotEmpty @EntityIdentifier String identifier;
+  @NotEmpty @NGEntityName String name;
   String accountIdentifier;
   String orgIdentifier;
   String projectIdentifier;
