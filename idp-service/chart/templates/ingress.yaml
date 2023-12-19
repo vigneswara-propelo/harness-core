@@ -240,6 +240,13 @@ spec:
                 name: {{.Values.name}}
                 port:
                   number: 12003
+          - path: /(v1/backstage-harness/sync.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: {{.Values.name}}
+                port:
+                  number: 12003
     {{- range .Values.global.ingress.hosts }}
       host: {{ . | quote }}
     {{- end }}
