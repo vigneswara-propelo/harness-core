@@ -335,7 +335,7 @@ public class ArtifactServiceImpl implements ArtifactService {
                             .is(false);
 
     if (!StringUtils.isEmpty(body.getSearchTerm())) {
-      criteria.and(ArtifactEntityKeys.name).regex(body.getSearchTerm());
+      criteria.and(ArtifactEntityKeys.name).regex(body.getSearchTerm(), "i");
     }
 
     LicenseFilter licenseFilter = body.getLicenseFilter();

@@ -277,8 +277,8 @@ public class SbomDriftServiceImpl implements SbomDriftService {
       criteria.and(DriftEntityKeys.COMPONENT_DRIFT_STATUS).is(status.name());
     }
     if (EmptyPredicate.isNotEmpty(searchTerm)) {
-      criteria.orOperator(Criteria.where(DriftEntityKeys.OLD_COMPONENT_DRIFT_NAME).regex(searchTerm),
-          Criteria.where(DriftEntityKeys.NEW_COMPONENT_DRIFT_NAME).regex(searchTerm));
+      criteria.orOperator(Criteria.where(DriftEntityKeys.OLD_COMPONENT_DRIFT_NAME).regex(searchTerm, "i"),
+          Criteria.where(DriftEntityKeys.NEW_COMPONENT_DRIFT_NAME).regex(searchTerm, "i"));
     }
     return criteria;
   }
@@ -289,7 +289,7 @@ public class SbomDriftServiceImpl implements SbomDriftService {
       criteria.and(DriftEntityKeys.LICENSE_DRIFT_STATUS).is(status.name());
     }
     if (EmptyPredicate.isNotEmpty(searchTerm)) {
-      criteria.and(DriftEntityKeys.LICENSE_DRIFT_NAME).regex(searchTerm);
+      criteria.and(DriftEntityKeys.LICENSE_DRIFT_NAME).regex(searchTerm, "i");
     }
     return criteria;
   }
