@@ -17,6 +17,7 @@ import io.harness.NGCommonEntityConstants;
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ccm.commons.beans.recommendation.RecommendationOverviewStats;
+import io.harness.ccm.commons.beans.recommendation.RecommendationResourceTypeStats;
 import io.harness.ccm.commons.beans.recommendation.RecommendationState;
 import io.harness.ccm.graphql.dto.recommendation.FilterStatsDTO;
 import io.harness.ccm.graphql.dto.recommendation.K8sRecommendationFilterDTO;
@@ -128,6 +129,36 @@ public class RESTWrapperRecommendationOverview {
     final ResolutionEnvironment env = GraphQLToRESTHelper.createResolutionEnv(accountId);
 
     return ResponseDTO.newResponse(overviewQueryV2.recommendationStats(filter, env));
+  }
+
+  @POST
+  @Path("resource-type/stats")
+  @Timed
+  @LogAccountIdentifier
+  @ExceptionMetered
+  @Consumes(MediaType.APPLICATION_JSON)
+  @ApiOperation(
+      value = "Recommendations Statistics Grouped on Resource Type", nickname = "recommendationResourceTypeStats")
+  @Operation(operationId = "recommendationResourceTypeStats",
+      description =
+          "Returns the Cloud Cost Recommendations statistics for the specified filters Grouped on Resource Type.",
+      summary = "Return Recommendations statistics Grouped on Resource Type",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",
+            description = "Returns the statistics of all Recommendations available Grouped on Resource Type.",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON) })
+      })
+  public ResponseDTO<List<RecommendationResourceTypeStats>>
+  resourceTypeStats(@Parameter(required = true, description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
+                        NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @NotNull @Valid String accountId,
+      @NotNull @Valid @RequestBody(
+          required = true, description = FILTER_DESCRIPTION) CCMRecommendationFilterPropertiesDTO ccmFilter) {
+    K8sRecommendationFilterDTO filter = RecommendationQueryHelper.buildK8sRecommendationFilterDTO(ccmFilter);
+    GraphQLToRESTHelper.setDefaultFilterValues(filter);
+    final ResolutionEnvironment env = GraphQLToRESTHelper.createResolutionEnv(accountId);
+
+    return ResponseDTO.newResponse(overviewQueryV2.recommendationResourceTypeStats(filter, env));
   }
 
   @POST

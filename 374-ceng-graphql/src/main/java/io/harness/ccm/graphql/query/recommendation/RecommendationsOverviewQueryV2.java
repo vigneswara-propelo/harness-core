@@ -43,6 +43,7 @@ import io.harness.ccm.bigQuery.BigQueryService;
 import io.harness.ccm.clickHouse.ClickHouseService;
 import io.harness.ccm.commons.beans.config.ClickHouseConfig;
 import io.harness.ccm.commons.beans.recommendation.RecommendationOverviewStats;
+import io.harness.ccm.commons.beans.recommendation.RecommendationResourceTypeStats;
 import io.harness.ccm.commons.beans.recommendation.RecommendationState;
 import io.harness.ccm.commons.beans.recommendation.ResourceType;
 import io.harness.ccm.commons.utils.BigQueryHelper;
@@ -247,20 +248,25 @@ public class RecommendationsOverviewQueryV2 {
       @GraphQLArgument(name = "filter", defaultValue = "{}") K8sRecommendationFilterDTO filter,
       @GraphQLEnvironment final ResolutionEnvironment env) {
     final String accountId = graphQLUtils.getAccountIdentifier(env);
-    Condition condition = null;
-
-    if (!hasRecommendationAccessOrAllPerspectiveView(accountId)) {
-      K8sRecommendationFilterDTO appliedAllowedPerspectiveFilter =
-          applyAllowedPerspectiveFilter(accountId, filter, listAllowedRecommendationsIdAndPerspectives(accountId));
-      if (isEmpty(appliedAllowedPerspectiveFilter.getIds())) {
-        return null;
-      }
-      condition = applyAllFiltersRestrictedAccess(appliedAllowedPerspectiveFilter, accountId);
-    } else {
-      condition = applyAllFilters(filter, accountId);
+    Condition condition = getStatsCondition(filter, accountId);
+    if (condition == null) {
+      return null;
     }
-
     return recommendationService.getStats(accountId, condition);
+  }
+
+  @GraphQLQuery(
+      name = "recommendationResourceTypeStatsV2", description = "Top panel stats API, grouped on resource type")
+  public List<RecommendationResourceTypeStats>
+  recommendationResourceTypeStats(
+      @GraphQLArgument(name = "filter", defaultValue = "{}") K8sRecommendationFilterDTO filter,
+      @GraphQLEnvironment final ResolutionEnvironment env) {
+    final String accountId = graphQLUtils.getAccountIdentifier(env);
+    Condition condition = getStatsCondition(filter, accountId);
+    if (condition == null) {
+      return null;
+    }
+    return recommendationService.getResourceTypeStats(accountId, condition);
   }
 
   // TODO(UTSAV): Add unit test
@@ -340,6 +346,22 @@ public class RecommendationsOverviewQueryV2 {
     }
 
     return recommendationService.getFilterStats(accountId, condition, columns, CE_RECOMMENDATIONS);
+  }
+
+  @Nullable
+  private Condition getStatsCondition(K8sRecommendationFilterDTO filter, String accountId) {
+    Condition condition;
+    if (!hasRecommendationAccessOrAllPerspectiveView(accountId)) {
+      K8sRecommendationFilterDTO appliedAllowedPerspectiveFilter =
+          applyAllowedPerspectiveFilter(accountId, filter, listAllowedRecommendationsIdAndPerspectives(accountId));
+      if (isEmpty(appliedAllowedPerspectiveFilter.getIds())) {
+        return null;
+      }
+      condition = applyAllFiltersRestrictedAccess(appliedAllowedPerspectiveFilter, accountId);
+    } else {
+      condition = applyAllFilters(filter, accountId);
+    }
+    return condition;
   }
 
   @NotNull

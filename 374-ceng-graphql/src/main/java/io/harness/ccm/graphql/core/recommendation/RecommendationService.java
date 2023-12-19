@@ -8,6 +8,7 @@
 package io.harness.ccm.graphql.core.recommendation;
 
 import io.harness.ccm.commons.beans.recommendation.RecommendationOverviewStats;
+import io.harness.ccm.commons.beans.recommendation.RecommendationResourceTypeStats;
 import io.harness.ccm.commons.beans.recommendation.RecommendationState;
 import io.harness.ccm.commons.beans.recommendation.ResourceType;
 import io.harness.ccm.commons.dao.recommendation.K8sRecommendationDAO;
@@ -33,6 +34,12 @@ public class RecommendationService {
   @NonNull
   public RecommendationOverviewStats getStats(@NonNull final String accountId, Condition condition) {
     return k8sRecommendationDAO.fetchRecommendationsOverviewStats(accountId, condition);
+  }
+
+  @NonNull
+  public List<RecommendationResourceTypeStats> getResourceTypeStats(
+      @NonNull final String accountId, Condition condition) {
+    return k8sRecommendationDAO.fetchRecommendationsResourceTypeStats(accountId, condition);
   }
 
   @NonNull

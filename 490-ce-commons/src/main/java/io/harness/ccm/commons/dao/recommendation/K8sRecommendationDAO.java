@@ -38,6 +38,7 @@ import io.harness.ccm.commons.beans.recommendation.K8sServiceProvider;
 import io.harness.ccm.commons.beans.recommendation.NodePoolId;
 import io.harness.ccm.commons.beans.recommendation.NodePoolId.NodePoolIdKeys;
 import io.harness.ccm.commons.beans.recommendation.RecommendationOverviewStats;
+import io.harness.ccm.commons.beans.recommendation.RecommendationResourceTypeStats;
 import io.harness.ccm.commons.beans.recommendation.RecommendationState;
 import io.harness.ccm.commons.beans.recommendation.RecommendationTelemetryStats;
 import io.harness.ccm.commons.beans.recommendation.ResourceId;
@@ -111,6 +112,10 @@ public class K8sRecommendationDAO {
   private static final String SUMMEMORY = "summemory";
   private static final String TIME = "time";
   private static final String ACCOUNT_ID = "accountid";
+  private static final String COUNT = "count";
+  private static final String TOTAL_MONTHLY_COST = "totalMonthlyCost";
+  private static final String TOTAL_MONTHLY_SAVING = "totalMonthlySaving";
+  private static final String RESOURCE_TYPE = "resourceType";
 
   @Inject private HPersistence hPersistence;
   @Inject private DSLContext dslContext;
@@ -175,18 +180,32 @@ public class K8sRecommendationDAO {
   public RecommendationOverviewStats fetchRecommendationsOverviewStats(
       @NonNull String accountId, @Nullable Condition condition) {
     return dslContext
-        .select(sum(CE_RECOMMENDATIONS.MONTHLYCOST).as("totalMonthlyCost"),
-            sum(CE_RECOMMENDATIONS.MONTHLYSAVING).as("totalMonthlySaving"))
+        .select(sum(CE_RECOMMENDATIONS.MONTHLYCOST).as(TOTAL_MONTHLY_COST),
+            sum(CE_RECOMMENDATIONS.MONTHLYSAVING).as(TOTAL_MONTHLY_SAVING))
         .from(CE_RECOMMENDATIONS)
         .where(CE_RECOMMENDATIONS.ACCOUNTID.eq(accountId).and(firstNonNull(condition, DSL.noCondition())))
         .fetchOneInto(RecommendationOverviewStats.class);
   }
 
   @RetryOnException(retryCount = RETRY_COUNT, sleepDurationInMilliseconds = SLEEP_DURATION)
+  public List<RecommendationResourceTypeStats> fetchRecommendationsResourceTypeStats(
+      @NonNull String accountId, @Nullable Condition condition) {
+    return dslContext
+        .select(DSL.count().as(COUNT), sum(CE_RECOMMENDATIONS.MONTHLYCOST).as(TOTAL_MONTHLY_COST),
+            sum(CE_RECOMMENDATIONS.MONTHLYSAVING).as(TOTAL_MONTHLY_SAVING),
+            CE_RECOMMENDATIONS.RESOURCETYPE.as(RESOURCE_TYPE))
+        .from(CE_RECOMMENDATIONS)
+        .where(CE_RECOMMENDATIONS.ACCOUNTID.eq(accountId))
+        .and(firstNonNull(condition, DSL.noCondition()))
+        .groupBy(CE_RECOMMENDATIONS.RESOURCETYPE)
+        .fetchInto(RecommendationResourceTypeStats.class);
+  }
+
+  @RetryOnException(retryCount = RETRY_COUNT, sleepDurationInMilliseconds = SLEEP_DURATION)
   public List<RecommendationTelemetryStats> fetchRecommendationsTelemetry(@NonNull String accountId) {
     return dslContext
-        .select(DSL.count().as("count"), sum(CE_RECOMMENDATIONS.MONTHLYCOST).as("totalMonthlyCost"),
-            sum(CE_RECOMMENDATIONS.MONTHLYSAVING).as("totalMonthlySaving"), CE_RECOMMENDATIONS.RESOURCETYPE.as("type"))
+        .select(DSL.count().as(COUNT), sum(CE_RECOMMENDATIONS.MONTHLYCOST).as(TOTAL_MONTHLY_COST),
+            sum(CE_RECOMMENDATIONS.MONTHLYSAVING).as(TOTAL_MONTHLY_SAVING), CE_RECOMMENDATIONS.RESOURCETYPE.as("type"))
         .from(CE_RECOMMENDATIONS)
         .where(CE_RECOMMENDATIONS.ACCOUNTID.eq(accountId))
         .groupBy(CE_RECOMMENDATIONS.RESOURCETYPE)
@@ -196,8 +215,8 @@ public class K8sRecommendationDAO {
   @RetryOnException(retryCount = RETRY_COUNT, sleepDurationInMilliseconds = SLEEP_DURATION)
   public List<RecommendationTelemetryStats> fetchAppliedRecommendationsTelemetry(@NonNull String accountId) {
     return dslContext
-        .select(DSL.count().as("count"), sum(CE_RECOMMENDATIONS.MONTHLYCOST).as("totalMonthlyCost"),
-            sum(CE_RECOMMENDATIONS.MONTHLYSAVING).as("totalMonthlySaving"), CE_RECOMMENDATIONS.RESOURCETYPE.as("type"))
+        .select(DSL.count().as(COUNT), sum(CE_RECOMMENDATIONS.MONTHLYCOST).as(TOTAL_MONTHLY_COST),
+            sum(CE_RECOMMENDATIONS.MONTHLYSAVING).as(TOTAL_MONTHLY_SAVING), CE_RECOMMENDATIONS.RESOURCETYPE.as("type"))
         .from(CE_RECOMMENDATIONS)
         .where(CE_RECOMMENDATIONS.ACCOUNTID.eq(accountId))
         .and(CE_RECOMMENDATIONS.RECOMMENDATIONSTATE.eq(RecommendationState.APPLIED.toString()))
@@ -706,7 +725,7 @@ public class K8sRecommendationDAO {
 
   @RetryOnException(retryCount = RETRY_COUNT, sleepDurationInMilliseconds = SLEEP_DURATION)
   public Long countNodePoolAggregatedForAccount(@NonNull String accountId) {
-    return dslContext.select(DSL.count().as("count"))
+    return dslContext.select(DSL.count().as(COUNT))
         .from(NODE_POOL_AGGREGATED)
         .where(NODE_POOL_AGGREGATED.ACCOUNTID.eq(accountId))
         .fetchInto(Long.class)
@@ -721,7 +740,7 @@ public class K8sRecommendationDAO {
 
   @RetryOnException(retryCount = RETRY_COUNT, sleepDurationInMilliseconds = SLEEP_DURATION)
   public Long countRecommendationsForAccount(@NonNull String accountId) {
-    return dslContext.select(DSL.count().as("count"))
+    return dslContext.select(DSL.count().as(COUNT))
         .from(CE_RECOMMENDATIONS)
         .where(CE_RECOMMENDATIONS.ACCOUNTID.eq(accountId))
         .fetchInto(Long.class)
