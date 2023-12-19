@@ -381,6 +381,7 @@ image:
   tag: "80212"
   digest: ""
   imagePullSecrets: []
+# init containers
 waitForInitContainer:
   image:
     registry: docker.io
