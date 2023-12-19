@@ -19,6 +19,7 @@ import io.harness.delegate.beans.connector.gcpccm.GcpBillingExportSpecDTO;
 import io.harness.delegate.beans.connector.gcpccm.GcpCloudCostConnectorDTO;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Collections;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -34,7 +35,7 @@ public class GcpConnectorTestHelper {
   String serviceAccountEmail = "serviceAccountEmail";
 
   List<CEFeatures> featuresEnabled =
-      ImmutableList.of(CEFeatures.BILLING, CEFeatures.OPTIMIZATION, CEFeatures.VISIBILITY);
+      ImmutableList.of(CEFeatures.BILLING, CEFeatures.OPTIMIZATION, CEFeatures.VISIBILITY, CEFeatures.GOVERNANCE);
 
   public GcpCloudCostConnectorDTO createGcpCcmConnectorDTO() {
     return GcpCloudCostConnectorDTO.builder()
@@ -55,6 +56,22 @@ public class GcpConnectorTestHelper {
         .projectId(projectId)
         .serviceAccountEmail(serviceAccountEmail)
         .billingExportDetails(GcpBillingExportDetails.builder().datasetId(datasetId).tableId(tableId).build())
+        .build();
+  }
+
+  public GcpCloudCostConnectorDTO createCEGcpConnectorDTOGovernanceOnly() {
+    return GcpCloudCostConnectorDTO.builder()
+        .featuresEnabled(Collections.singletonList(CEFeatures.GOVERNANCE))
+        .projectId(projectId)
+        .serviceAccountEmail(serviceAccountEmail)
+        .build();
+  }
+
+  public GcpCloudCostConfig createCEGcpConfigGovernanceOnly() {
+    return GcpCloudCostConfig.builder()
+        .featuresEnabled(Collections.singletonList(CEFeatures.GOVERNANCE))
+        .projectId(projectId)
+        .serviceAccountEmail(serviceAccountEmail)
         .build();
   }
 }

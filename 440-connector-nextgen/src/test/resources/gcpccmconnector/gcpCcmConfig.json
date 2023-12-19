@@ -15,7 +15,8 @@
       "featuresEnabled": [
         "BILLING",
         "OPTIMIZATION",
-        "VISIBILITY"
+        "VISIBILITY",
+        "GOVERNANCE"
       ],
       "projectId": "projectId",
       "serviceAccountEmail": "serviceAccountEmail",

@@ -8,6 +8,7 @@
 package io.harness.connector.mappers.gcpcloudcost;
 
 import static io.harness.annotations.dev.HarnessTeam.CE;
+import static io.harness.rule.OwnerRule.ANMOL;
 import static io.harness.rule.OwnerRule.UTSAV;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,5 +43,14 @@ public class GcpCloudCostEntityToDTOTest extends CategoryTest {
         entityToDTO.createConnectorDTO(GcpConnectorTestHelper.createGcpCcmConfig());
 
     assertThat(gcpCcmConnectorDTO).isEqualTo(GcpConnectorTestHelper.createGcpCcmConnectorDTO());
+  }
+
+  @Test
+  @Owner(developers = ANMOL)
+  @Category(UnitTests.class)
+  public void testGovernanceOnly() {
+    final GcpCloudCostConnectorDTO gcpCcmConnectorDTO =
+        entityToDTO.createConnectorDTO(GcpConnectorTestHelper.createCEGcpConfigGovernanceOnly());
+    assertThat(gcpCcmConnectorDTO).isEqualTo(GcpConnectorTestHelper.createCEGcpConnectorDTOGovernanceOnly());
   }
 }

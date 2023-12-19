@@ -133,6 +133,9 @@ public class CEGcpConnectorValidator extends io.harness.ccm.connectors.AbstractC
         if (featuresEnabled.contains(CEFeatures.OPTIMIZATION)) {
           requiredPermissions.addAll(getRequiredPermissionsForOptimization());
         }
+        if (featuresEnabled.contains(CEFeatures.GOVERNANCE)) {
+          requiredPermissions.addAll(getRequiredPermissionsForGovernance());
+        }
         ConnectorValidationResult permissionsValidationResult = validatePermissionsList(
             service, projectId, new ArrayList<>(requiredPermissions), impersonatedServiceAccount);
         if (permissionsValidationResult != null) {
@@ -294,6 +297,11 @@ public class CEGcpConnectorValidator extends io.harness.ccm.connectors.AbstractC
         "compute.networks.access", "compute.networks.get", "compute.networks.getEffectiveFirewalls",
         "compute.networks.getRegionEffectiveFirewalls", "compute.networks.list", "compute.networks.mirror",
         "compute.regions.get", "compute.regions.list", "secretmanager.versions.access");
+  }
+
+  public List<String> getRequiredPermissionsForGovernance() {
+    // We can add it later once we decide on recommendation for GCP Governance
+    return Arrays.asList();
   }
 
   public ConnectorValidationResult validateAccessToBillingReport(
