@@ -12,6 +12,7 @@ import static io.harness.rule.OwnerRule.ACHYUTH;
 import static io.harness.rule.OwnerRule.ARVIND;
 import static io.harness.rule.OwnerRule.NAMAN_TALAYCHA;
 import static io.harness.rule.OwnerRule.PIYUSH_BHUWALKA;
+import static io.harness.rule.OwnerRule.PRATYUSH;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +45,7 @@ import io.harness.delegate.beans.instancesync.K8sInstanceSyncPerpetualTaskRespon
 import io.harness.delegate.beans.instancesync.ServerInstanceInfo;
 import io.harness.delegate.beans.instancesync.info.AzureSshWinrmServerInstanceInfo;
 import io.harness.delegate.beans.instancesync.info.K8sServerInstanceInfo;
+import io.harness.delegate.task.helm.HelmChartInfo;
 import io.harness.dtos.DeploymentSummaryDTO;
 import io.harness.dtos.InfrastructureMappingDTO;
 import io.harness.dtos.InstanceDTO;
@@ -573,6 +575,145 @@ public class InstanceSyncServiceImplTest extends InstancesTestBase {
     instanceSyncService.processInstanceSyncForNewDeployment(deploymentEvent);
     ArgumentCaptor<Map<OperationsOnInstances, List<InstanceDTO>>> captor = ArgumentCaptor.forClass(Map.class);
     verify(instanceSyncPerpetualTaskInfoService, times(1)).updatePerpetualTaskIdV1OrV2(any());
+    verify(instanceSyncPerpetualTaskService, times(0)).resetPerpetualTaskV2(any(), any(), any(), any(), any());
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void processInstanceSyncForNewDeploymentWithHelmChartInfoInstanceSyncV2WhenInfoIsPresent() throws IOException {
+    HelmChartInfo helmChartInfo = HelmChartInfo.builder().version("0.1.0").name("helm chart").repoUrl("url").build();
+    HelmChartInfo updatedHelmChartInfo =
+        HelmChartInfo.builder().version("0.1.1").repoUrl("url").name("updated helm chart").build();
+    when(abstractInstanceSyncHandler.isInstanceSyncV2EnabledAndSupported(ACCOUNT_IDENTIFIER)).thenReturn(true);
+    InfrastructureMappingDTO infrastructureMappingDTO = InfrastructureMappingDTO.builder()
+                                                            .accountIdentifier(ACCOUNT_IDENTIFIER)
+                                                            .id(INFRASTRUCTURE_MAPPING_ID)
+                                                            .orgIdentifier(ORG_IDENTIFIER)
+                                                            .projectIdentifier(PROJECT_IDENTIFIER)
+                                                            .envIdentifier(ENV_IDENTIFIER)
+                                                            .serviceIdentifier(SERVICE_IDENTIFIER)
+                                                            .infrastructureKind(InfrastructureKind.KUBERNETES_DIRECT)
+                                                            .connectorRef(CONNECTOR_REF)
+                                                            .infrastructureKey(INFRASTRUCTURE_KEY)
+                                                            .build();
+    LinkedHashSet<String> namespaces = new LinkedHashSet<>();
+    namespaces.add("namespace");
+    DeploymentInfoDTO deploymentInfoDTO = K8sDeploymentInfoDTO.builder()
+                                              .releaseName("releaseName")
+                                              .namespaces(namespaces)
+                                              .helmChartInfo(updatedHelmChartInfo)
+                                              .build();
+    DeploymentSummaryDTO deploymentSummaryDTO =
+        DeploymentSummaryDTO.builder()
+            .instanceSyncKey("K8sDeploymentInfoDTO_namespace_key")
+            .orgIdentifier(ORG_IDENTIFIER)
+            .projectIdentifier(PROJECT_IDENTIFIER)
+            .infrastructureMapping(infrastructureMappingDTO)
+            .deploymentInfoDTO(deploymentInfoDTO)
+            .infrastructureMappingId(INFRASTRUCTURE_MAPPING_ID)
+            .accountIdentifier(ACCOUNT_IDENTIFIER)
+            .serverInstanceInfoList(List.of(
+                K8sServerInstanceInfo.builder().namespace("namespace").name("pod1").releaseName("releaseName").build()))
+            .build();
+    doReturn(Optional.of(deploymentSummaryDTO))
+        .when(deploymentSummaryService)
+        .getLatestByInstanceKey(anyString(), any());
+
+    RollbackInfo rollbackInfo = RollbackInfo.builder().build();
+    InfrastructureOutcome infrastructureOutcome = K8sDirectInfrastructureOutcome.builder().build();
+    DeploymentEvent deploymentEvent = new DeploymentEvent(deploymentSummaryDTO, rollbackInfo, infrastructureOutcome);
+
+    when(persistentLocker.waitToAcquireLock(
+             InstanceSyncConstants.INSTANCE_SYNC_PREFIX + deploymentSummaryDTO.getInfrastructureMappingId(),
+             InstanceSyncConstants.INSTANCE_SYNC_LOCK_TIMEOUT, InstanceSyncConstants.INSTANCE_SYNC_WAIT_TIMEOUT))
+        .thenReturn(acquiredLock);
+    List<DeploymentInfoDetailsDTO> deploymentInfoDetailsDTOS = new ArrayList<>();
+
+    ((K8sDeploymentInfoDTO) deploymentInfoDTO).setHelmChartInfo(helmChartInfo);
+    deploymentInfoDetailsDTOS.add(DeploymentInfoDetailsDTO.builder().deploymentInfoDTO(deploymentInfoDTO).build());
+
+    InstanceSyncPerpetualTaskInfoDTO instanceSyncPerpetualTaskInfoDTO =
+        InstanceSyncPerpetualTaskInfoDTO.builder()
+            .connectorIdentifier(CONNECTOR_REF)
+            .deploymentInfoDetailsDTOList(deploymentInfoDetailsDTOS)
+            .build();
+
+    ConnectorInfoDTO connectorInfoDTO = ConnectorInfoDTO.builder()
+                                            .name(CONNECTOR_REF)
+                                            .identifier(CONNECTOR_REF)
+                                            .description("description")
+                                            .projectIdentifier(PROJECT_IDENTIFIER)
+                                            .orgIdentifier(ORG_IDENTIFIER)
+                                            .connectorType(KUBERNETES_CLUSTER)
+                                            .connectorConfig(KubernetesClusterConfigDTO.builder().build())
+                                            .build();
+    InstanceSyncPerpetualTaskMappingDTO instanceSyncPerpetualTaskMappingDTO =
+        InstanceSyncPerpetualTaskMappingDTO.builder().perpetualTaskId(PERPETUAL_TASK).build();
+    when(instanceSyncPerpetualTaskMappingService.findByConnectorRefAndDeploymentType(
+             infrastructureMappingDTO.getAccountIdentifier(), connectorInfoDTO.getOrgIdentifier(),
+             connectorInfoDTO.getProjectIdentifier(), infrastructureMappingDTO.getConnectorRef(),
+             deploymentInfoDTO.getType()))
+        .thenReturn(Optional.of(instanceSyncPerpetualTaskMappingDTO));
+    when(connectorService.getByRef(anyString(), anyString(), anyString(), anyString()))
+        .thenReturn(Optional.of(ConnectorResponseDTO.builder().connector(connectorInfoDTO).build()));
+    when(instanceSyncPerpetualTaskInfoService.findByInfrastructureMappingId(anyString()))
+        .thenReturn(Optional.of(instanceSyncPerpetualTaskInfoDTO));
+    when(instanceSyncPerpetualTaskInfoService.save(any())).thenReturn(instanceSyncPerpetualTaskInfoDTO);
+    when(instanceSyncHandlerFactoryService.getInstanceSyncHandler(
+             deploymentSummaryDTO.getDeploymentInfoDTO().getType(), infrastructureOutcome.getKind()))
+        .thenReturn(abstractInstanceSyncHandler);
+    Call<RestResponse<Boolean>> request = mock(Call.class);
+    when(request.execute()).thenReturn(Response.success(new RestResponse<>(false)));
+
+    List<InstanceDTO> instanceDTOS = new ArrayList<>();
+    instanceDTOS.add(InstanceDTO.builder()
+                         .instanceInfoDTO(K8sInstanceInfoDTO.builder()
+                                              .namespace("namespace")
+                                              .releaseName("releaseName")
+                                              .helmChartInfo(helmChartInfo)
+                                              .build())
+                         .build());
+
+    doReturn(instanceDTOS)
+        .when(instanceService)
+        .getActiveInstancesByInfrastructureMappingId(infrastructureMappingDTO.getAccountIdentifier(),
+            infrastructureMappingDTO.getOrgIdentifier(), infrastructureMappingDTO.getProjectIdentifier(),
+            infrastructureMappingDTO.getId());
+    when(abstractInstanceSyncHandler.getInstanceSyncHandlerKey(any(InstanceInfoDTO.class))).thenAnswer(invocation -> {
+      InstanceInfoDTO instanceInfoDTO = invocation.getArgument(0);
+      return instanceInfoDTO.prepareInstanceSyncHandlerKey();
+    });
+
+    when(abstractInstanceSyncHandler.getInstanceKey(any(InstanceInfoDTO.class))).thenAnswer(invocation -> {
+      InstanceInfoDTO instanceInfoDTO = invocation.getArgument(0);
+      return instanceInfoDTO.prepareInstanceKey();
+    });
+
+    doAnswer(invocation -> {
+      List<ServerInstanceInfo> instanceInfoList = invocation.getArgument(0, List.class);
+      return instanceInfoList.stream()
+          .map(instanceInfo -> {
+            K8sServerInstanceInfo s = (K8sServerInstanceInfo) instanceInfo;
+            return K8sServerInstanceInfo.builder()
+                .namespace("namespace")
+                .name("Pod1")
+                .releaseName("releaseName")
+                .helmChartInfo(updatedHelmChartInfo)
+                .build();
+          })
+          .collect(Collectors.toCollection(ArrayList::new));
+    })
+        .when(abstractInstanceSyncHandler)
+        .getInstanceDetailsFromServerInstances(deploymentSummaryDTO.getServerInstanceInfoList());
+
+    doReturn(Environment.builder().build()).when(instanceSyncHelper).fetchEnvironment(any());
+    doReturn(ServiceEntity.builder().build()).when(instanceSyncHelper).fetchService(any());
+
+    doReturn(true).when(abstractInstanceSyncHandler).shouldUpdateDeploymentInfoDetails(any(), any());
+    instanceSyncService.processInstanceSyncForNewDeployment(deploymentEvent);
+    verify(instanceSyncPerpetualTaskInfoService, times(1)).updatePerpetualTaskIdV1OrV2(any());
+    verify(abstractInstanceSyncHandler, times(2)).updateDeploymentInfoDetails(any(), any());
   }
 
   @Test

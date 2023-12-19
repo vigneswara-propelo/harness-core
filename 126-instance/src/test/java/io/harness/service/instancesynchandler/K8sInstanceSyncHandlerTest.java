@@ -11,6 +11,7 @@ import static io.harness.beans.FeatureName.CDS_EKS_ADD_REGIONAL_PARAM;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.IVAN;
 import static io.harness.rule.OwnerRule.NAMAN_TALAYCHA;
+import static io.harness.rule.OwnerRule.PRATYUSH;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -200,6 +201,74 @@ public class K8sInstanceSyncHandlerTest extends InstancesTestBase {
     k8sInstanceSyncHandler.updateDeploymentInfoDTO(k8sDeploymentInfoDTO, null);
     k8sInstanceSyncHandler.updateDeploymentInfoDTO(k8sDeploymentInfoDTO, deploymentOutcomeMetadata);
     verifyNoInteractions(k8sDeploymentInfoDTO);
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testIsHelmChartInfoNotUpdatedInInstanceSyncPerpetualTaskInfo() {
+    DeploymentInfoDTO deploymentInfoDTO = mock(DeploymentInfoDTO.class);
+    assertThat(k8sInstanceSyncHandler.shouldUpdateDeploymentInfoDetails(deploymentInfoDTO, Collections.emptyList()))
+        .isFalse();
+
+    HelmChartInfo helmChartInfo = HelmChartInfo.builder().version("0.1.0").name("helm chart").repoUrl("url").build();
+    HelmChartInfo updatedHelmChartInfo =
+        HelmChartInfo.builder().version("0.1.1").repoUrl("url").name("updated helm chart").build();
+    LinkedHashSet<String> namespaces = new LinkedHashSet<>();
+    namespaces.add("namespace1");
+    String releaseName = "releaseName";
+
+    K8sDeploymentInfoDTO k8sDeploymentInfoDTO = getK8sDeploymentInfoDTO(updatedHelmChartInfo, namespaces, releaseName);
+    List<DeploymentInfoDetailsDTO> deploymentInfoDetailsDTOList =
+        getDeploymentInfoDetailsDTOList(helmChartInfo, namespaces, releaseName);
+    assertThat(
+        k8sInstanceSyncHandler.shouldUpdateDeploymentInfoDetails(k8sDeploymentInfoDTO, deploymentInfoDetailsDTOList))
+        .isTrue();
+
+    k8sDeploymentInfoDTO = getK8sDeploymentInfoDTO(helmChartInfo, namespaces, releaseName);
+    deploymentInfoDetailsDTOList = getDeploymentInfoDetailsDTOList(helmChartInfo, namespaces, releaseName);
+    assertThat(
+        k8sInstanceSyncHandler.shouldUpdateDeploymentInfoDetails(k8sDeploymentInfoDTO, deploymentInfoDetailsDTOList))
+        .isFalse();
+  }
+
+  @Test
+  @Owner(developers = PRATYUSH)
+  @Category(UnitTests.class)
+  public void testUpdateHelmChartInfoInInstanceSyncPerpetualTaskInfo() {
+    HelmChartInfo helmChartInfo = HelmChartInfo.builder().version("0.1.0").name("helm chart").repoUrl("url").build();
+    HelmChartInfo updatedHelmChartInfo =
+        HelmChartInfo.builder().version("0.1.1").repoUrl("url").name("updated helm chart").build();
+    LinkedHashSet<String> namespaces = new LinkedHashSet<>();
+    namespaces.add("namespace1");
+    String releaseName = "releaseName";
+
+    K8sDeploymentInfoDTO k8sDeploymentInfoDTO = getK8sDeploymentInfoDTO(updatedHelmChartInfo, namespaces, releaseName);
+    List<DeploymentInfoDetailsDTO> deploymentInfoDetailsDTOList =
+        getDeploymentInfoDetailsDTOList(helmChartInfo, namespaces, releaseName);
+    k8sInstanceSyncHandler.updateDeploymentInfoDetails(k8sDeploymentInfoDTO, deploymentInfoDetailsDTOList);
+    assertThat(((K8sDeploymentInfoDTO) deploymentInfoDetailsDTOList.get(0).getDeploymentInfoDTO()).getHelmChartInfo())
+        .isEqualTo(updatedHelmChartInfo);
+  }
+
+  private K8sDeploymentInfoDTO getK8sDeploymentInfoDTO(
+      HelmChartInfo helmChartInfo, LinkedHashSet<String> namespaces, String releaseName) {
+    return K8sDeploymentInfoDTO.builder()
+        .releaseName(releaseName)
+        .namespaces(namespaces)
+        .helmChartInfo(helmChartInfo)
+        .build();
+  }
+
+  private List<DeploymentInfoDetailsDTO> getDeploymentInfoDetailsDTOList(
+      HelmChartInfo helmChartInfo, LinkedHashSet<String> namespaces, String releaseName) {
+    return Collections.singletonList(DeploymentInfoDetailsDTO.builder()
+                                         .deploymentInfoDTO(K8sDeploymentInfoDTO.builder()
+                                                                .releaseName(releaseName)
+                                                                .namespaces(namespaces)
+                                                                .helmChartInfo(helmChartInfo)
+                                                                .build())
+                                         .build());
   }
 
   private List<K8sContainer> getContainerList() {

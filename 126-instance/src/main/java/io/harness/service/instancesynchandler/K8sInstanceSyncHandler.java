@@ -54,6 +54,7 @@ import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -221,5 +222,34 @@ public class K8sInstanceSyncHandler extends AbstractInstanceSyncHandler {
         .map(K8sServerInstanceInfo.class ::cast)
         .map(K8sServerInstanceInfo::getNamespace)
         .collect(Collectors.toCollection(LinkedHashSet::new));
+  }
+
+  @Override
+  public boolean shouldUpdateDeploymentInfoDetails(
+      DeploymentInfoDTO deploymentInfoDTO, List<DeploymentInfoDetailsDTO> deploymentInfoDetailsDTOList) {
+    if (!(deploymentInfoDTO instanceof K8sDeploymentInfoDTO)) {
+      return false;
+    }
+    K8sDeploymentInfoDTO k8sDeploymentInfoDTO = (K8sDeploymentInfoDTO) deploymentInfoDTO;
+    Optional<DeploymentInfoDetailsDTO> optionalDeploymentInfoDetailsDTO =
+        deploymentInfoDetailsDTOList.stream()
+            .filter(deploymentInfoDetailsDTO
+                -> deploymentInfoDTO.equals(deploymentInfoDetailsDTO.getDeploymentInfoDTO())
+                    && k8sDeploymentInfoDTO.getHelmChartInfo() != null
+                    && k8sDeploymentInfoDTO.getHelmChartInfo().equals(
+                        ((K8sDeploymentInfoDTO) deploymentInfoDetailsDTO.getDeploymentInfoDTO()).getHelmChartInfo()))
+            .findFirst();
+    return optionalDeploymentInfoDetailsDTO.isEmpty() && k8sDeploymentInfoDTO.getHelmChartInfo() != null;
+  }
+
+  @Override
+  public void updateDeploymentInfoDetails(
+      DeploymentInfoDTO deploymentInfoDTO, List<DeploymentInfoDetailsDTO> deploymentInfoDetailsDTOList) {
+    deploymentInfoDetailsDTOList.stream()
+        .filter(deploymentInfoDetailsDTO -> deploymentInfoDTO.equals(deploymentInfoDetailsDTO.getDeploymentInfoDTO()))
+        .findFirst()
+        .ifPresent(deploymentInfoDetailsDTO
+            -> ((K8sDeploymentInfoDTO) deploymentInfoDetailsDTO.getDeploymentInfoDTO())
+                   .setHelmChartInfo(((K8sDeploymentInfoDTO) deploymentInfoDTO).getHelmChartInfo()));
   }
 }

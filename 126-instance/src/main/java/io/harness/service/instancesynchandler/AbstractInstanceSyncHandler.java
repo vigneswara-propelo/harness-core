@@ -17,6 +17,7 @@ import io.harness.delegate.beans.instancesync.ServerInstanceInfo;
 import io.harness.dtos.InstanceDTO;
 import io.harness.dtos.deploymentinfo.DeploymentInfoDTO;
 import io.harness.dtos.instanceinfo.InstanceInfoDTO;
+import io.harness.dtos.instancesyncperpetualtaskinfo.DeploymentInfoDetailsDTO;
 import io.harness.dtos.instancesyncperpetualtaskinfo.InstanceSyncPerpetualTaskInfoDTO;
 import io.harness.entities.InstanceType;
 import io.harness.models.infrastructuredetails.InfrastructureDetails;
@@ -107,4 +108,12 @@ public abstract class AbstractInstanceSyncHandler implements IInstanceSyncHandle
       DeploymentInfoDTO deploymentInfoDTO, DeploymentOutcomeMetadata deploymentOutcomeMetadata) {
     return deploymentInfoDTO;
   }
+
+  public boolean shouldUpdateDeploymentInfoDetails(
+      DeploymentInfoDTO deploymentInfoDTO, List<DeploymentInfoDetailsDTO> deploymentInfoDetailsDTOList) {
+    return false;
+  }
+
+  public void updateDeploymentInfoDetails(
+      DeploymentInfoDTO deploymentInfoDTO, List<DeploymentInfoDetailsDTO> deploymentInfoDetailsDTOList) {}
 }
