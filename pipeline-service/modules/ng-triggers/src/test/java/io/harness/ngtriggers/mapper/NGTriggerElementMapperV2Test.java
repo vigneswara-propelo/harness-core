@@ -203,6 +203,8 @@ public class NGTriggerElementMapperV2Test extends CategoryTest {
 
   private String ngTriggerYaml_gitpolling;
 
+  private String ngTriggerYaml_withOverrideInputs;
+
   private List<TriggerEventDataCondition> payloadConditions;
   private List<TriggerEventDataCondition> headerConditions;
   private static final String inputYaml = "pipeline:\n"
@@ -296,6 +298,10 @@ public class NGTriggerElementMapperV2Test extends CategoryTest {
     ngTriggerYaml_multi_region_artifact =
         Resources.toString(Objects.requireNonNull(classLoader.getResource("ng-trigger-multi-region-artifact.yaml")),
             StandardCharsets.UTF_8);
+
+    ngTriggerYaml_withOverrideInputs = Resources.toString(
+        Objects.requireNonNull(classLoader.getResource("ng-trigger-custom-with-overriden-input-sets.yaml")),
+        StandardCharsets.UTF_8);
 
     payloadConditions = asList(TriggerEventDataCondition.builder().key("k1").operator(EQUALS).value("v1").build(),
         TriggerEventDataCondition.builder().key("k2").operator(NOT_EQUALS).value("v2").build(),
@@ -1366,6 +1372,28 @@ public class NGTriggerElementMapperV2Test extends CategoryTest {
     assertThat(acrSpec.getRegistry()).isEqualTo("test-registry");
     assertThat(acrSpec.getRepository()).isEqualTo("test-repository");
     assertThat(acrSpec.getTag()).isEqualTo("<+trigger.artifact.build>");
+  }
+
+  @Test
+  @Owner(developers = VINICIUS)
+  @Category(UnitTests.class)
+  public void testWithOverrideInputs() throws Exception {
+    NGTriggerConfigV2 ngTriggerConfigV2 = ngTriggerElementMapper.toTriggerConfigV2(ngTriggerYaml_withOverrideInputs);
+
+    assertRootLevelProperties(ngTriggerConfigV2);
+
+    NGTriggerSourceV2 ngTriggerSourceV2 = ngTriggerConfigV2.getSource();
+    assertThat(ngTriggerSourceV2).isNotNull();
+    assertThat(ngTriggerSourceV2.getType()).isEqualTo(WEBHOOK);
+    NGTriggerSpecV2 ngTriggerSpecV2 = ngTriggerSourceV2.getSpec();
+    assertThat(WebhookTriggerConfigV2.class.isAssignableFrom(ngTriggerSpecV2.getClass())).isTrue();
+    WebhookTriggerConfigV2 webhookTriggerConfigV2 = (WebhookTriggerConfigV2) ngTriggerSpecV2;
+    assertThat(webhookTriggerConfigV2.getType()).isEqualTo(WebhookTriggerType.CUSTOM);
+    assertThat(CustomTriggerSpec.class.isAssignableFrom(webhookTriggerConfigV2.getSpec().getClass())).isTrue();
+    CustomTriggerSpec spec = (CustomTriggerSpec) webhookTriggerConfigV2.getSpec();
+    assertThat(spec.fetchPayloadAware().fetchPayloadConditions()).isEmpty();
+    assertThat(spec.fetchPayloadAware().fetchHeaderConditions()).isEmpty();
+    assertThat(spec.fetchPayloadAware().fetchJexlCondition()).isNull();
   }
 
   private void assertCommonPathForArtifactTriggers(NGTriggerSourceV2 ngTriggerSourceV2, ArtifactType artifactType) {

@@ -504,8 +504,9 @@ public class TriggerExecutionHelper {
     NGTriggerEntity ngTriggerEntity = triggerDetails.getNgTriggerEntity();
     NGTriggerConfigV2 triggerConfigV2 = triggerDetails.getNgTriggerConfigV2();
     String pipelineBranch = triggerConfigV2.getPipelineBranchName();
+    String inputYaml = triggerConfigV2.getInputYaml();
     if (isEmpty(triggerConfigV2.getInputSetRefs())) {
-      return triggerConfigV2.getInputYaml();
+      return inputYaml;
     }
 
     String branch = null;
@@ -522,7 +523,11 @@ public class TriggerExecutionHelper {
         NGRestUtils.getResponse(pipelineServiceClient.getMergeInputSetFromPipelineTemplate(
             ngTriggerEntity.getAccountId(), ngTriggerEntity.getOrgIdentifier(), ngTriggerEntity.getProjectIdentifier(),
             ngTriggerEntity.getTargetIdentifier(), branch,
-            MergeInputSetRequestDTOPMS.builder().inputSetReferences(inputSetRefs).getOnlyFileContent(true).build()));
+            MergeInputSetRequestDTOPMS.builder()
+                .inputSetReferences(inputSetRefs)
+                .lastYamlToMerge(inputYaml)
+                .getOnlyFileContent(true)
+                .build()));
 
     return mergeInputSetResponseDTOPMS.getPipelineYaml();
   }

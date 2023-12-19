@@ -92,6 +92,7 @@ import io.harness.pms.contracts.triggers.TriggerPayload;
 import io.harness.pms.contracts.triggers.Type;
 import io.harness.pms.gitsync.PmsGitSyncBranchContextGuard;
 import io.harness.pms.gitsync.PmsGitSyncHelper;
+import io.harness.pms.inputset.MergeInputSetRequestDTOPMS;
 import io.harness.pms.inputset.MergeInputSetResponseDTOPMS;
 import io.harness.pms.pipeline.PipelineEntity;
 import io.harness.pms.pipeline.service.PMSPipelineService;
@@ -385,11 +386,13 @@ public class TriggerExecutionHelperTest extends CategoryTest {
                                                  .version(0L)
                                                  .build();
 
+    List<String> inputSetRefs = Arrays.asList("inputSet1", "inputSet2");
     TriggerDetails triggerDetails = TriggerDetails.builder()
                                         .ngTriggerEntity(ngTriggerEntityGitSync)
                                         .ngTriggerConfigV2(NGTriggerConfigV2.builder()
-                                                               .inputSetRefs(Arrays.asList("inputSet1", "inputSet2"))
+                                                               .inputSetRefs(inputSetRefs)
                                                                .pipelineBranchName("pipelineBranchName")
+                                                               .inputYaml("inputsYaml")
                                                                .build())
                                         .build();
 
@@ -397,7 +400,13 @@ public class TriggerExecutionHelperTest extends CategoryTest {
     when(ngTriggerElementMapper.toTriggerConfigV2(ngTriggerEntityGitSync))
         .thenReturn(triggerDetails.getNgTriggerConfigV2());
 
-    when(pipelineServiceClient.getMergeInputSetFromPipelineTemplate(any(), any(), any(), any(), any(), any()))
+    when(pipelineServiceClient.getMergeInputSetFromPipelineTemplate("ACCOUNT_ID", "ORG_IDENTIFIER", "PROJ_IDENTIFIER",
+             "PIPELINE_IDENTIFIER", "pipelineBranchName",
+             MergeInputSetRequestDTOPMS.builder()
+                 .inputSetReferences(inputSetRefs)
+                 .lastYamlToMerge("inputsYaml")
+                 .getOnlyFileContent(true)
+                 .build()))
         .thenReturn(mergeInputSetResponseDTOPMS);
     when(mergeInputSetResponseDTOPMS.execute())
         .thenReturn(Response.success(ResponseDTO.newResponse(
