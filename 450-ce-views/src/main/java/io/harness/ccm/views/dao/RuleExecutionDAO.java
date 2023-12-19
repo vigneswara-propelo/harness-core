@@ -11,6 +11,9 @@ import static io.harness.beans.FeatureName.CCM_ENABLE_AZURE_CLOUD_ASSET_GOVERNAN
 import static io.harness.persistence.HQuery.excludeValidate;
 import static io.harness.timescaledb.Tables.CE_RECOMMENDATIONS;
 
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
+
 import io.harness.annotations.retry.RetryOnException;
 import io.harness.ccm.commons.beans.recommendation.CCMJiraDetails;
 import io.harness.ccm.commons.beans.recommendation.CCMServiceNowDetails;
@@ -29,6 +32,7 @@ import io.harness.ccm.views.helper.OverviewExecutionDetails;
 import io.harness.ccm.views.helper.RuleCloudProviderType;
 import io.harness.ccm.views.helper.RuleExecutionFilter;
 import io.harness.ccm.views.helper.RuleExecutionList;
+import io.harness.ccm.views.helper.RuleExecutionStatusType;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ff.FeatureFlagService;
 import io.harness.persistence.HPersistence;
@@ -46,11 +50,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.SortOperation;
+import org.springframework.data.mongodb.core.query.Criteria;
 
 @Slf4j
 @Singleton
 public class RuleExecutionDAO {
   @Inject private HPersistence hPersistence;
+  @Inject private MongoTemplate mongoTemplate;
   @Inject private RuleDAO ruleDAO;
   @Inject private RuleEnforcementDAO ruleEnforcementDAO;
   @Inject private DSLContext dslContext;
@@ -155,6 +166,30 @@ public class RuleExecutionDAO {
     ruleExecutionList.setRuleExecution(
         query.limit(ruleExecutionFilter.getLimit()).offset(ruleExecutionFilter.getOffset()).order(sort).asList());
     return ruleExecutionList;
+  }
+
+  public List<RuleExecution> getRuleLastExecution(String accountId, List<String> ruleIds) {
+    Criteria criteria = Criteria.where(RuleExecutionKeys.accountId)
+                            .is(accountId)
+                            .and(RuleExecutionKeys.ruleIdentifier)
+                            .in(ruleIds)
+                            .and(RuleExecutionKeys.executionStatus)
+                            .in(List.of(RuleExecutionStatusType.FAILED.name(), RuleExecutionStatusType.SUCCESS.name()))
+                            .orOperator(Criteria.where(RuleExecutionKeys.executionType).ne("INTERNAL"),
+                                Criteria.where(RuleExecutionKeys.executionType).is(null));
+    if (featureFlagService.isNotEnabled(CCM_ENABLE_AZURE_CLOUD_ASSET_GOVERNANCE_UI, accountId)) {
+      criteria.and(RuleExecutionKeys.cloudProvider).ne(RuleCloudProviderType.AZURE);
+    }
+
+    GroupOperation group = group(RuleExecutionKeys.ruleIdentifier).first("$$ROOT").as("lastExecution");
+    MatchOperation matchStage = Aggregation.match(criteria);
+    SortOperation sortStage = sort(org.springframework.data.domain.Sort.by(
+        org.springframework.data.domain.Sort.Direction.DESC, RuleExecutionKeys.lastUpdatedAt));
+
+    return mongoTemplate
+        .aggregate(Aggregation.newAggregation(matchStage, sortStage, group, Aggregation.replaceRoot("$lastExecution")),
+            "governanceRuleExecution", RuleExecution.class)
+        .getMappedResults();
   }
 
   public OverviewExecutionDetails getOverviewExecutionDetails(

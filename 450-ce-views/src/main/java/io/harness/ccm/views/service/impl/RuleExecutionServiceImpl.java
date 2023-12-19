@@ -50,6 +50,7 @@ import io.harness.exception.InvalidRequestException;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.fabric8.utils.Lists;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -168,6 +169,14 @@ public class RuleExecutionServiceImpl implements RuleExecutionService {
 
   public OverviewExecutionCostDetails getExecutionCostDetails(String accountId, List<String> recommendationIds) {
     return getResourcePotentialCost(accountId, recommendationIds);
+  }
+
+  @Override
+  public List<RuleExecution> getRuleLastExecution(String accountId, List<String> ruleIds) {
+    if (Lists.isNullOrEmpty(ruleIds)) {
+      throw new InvalidRequestException("Rule ids should be provided");
+    }
+    return rulesExecutionDAO.getRuleLastExecution(accountId, ruleIds);
   }
 
   public <T> AggregationResults<T> aggregate(Aggregation aggregation, Class<T> classToFillResultIn) {

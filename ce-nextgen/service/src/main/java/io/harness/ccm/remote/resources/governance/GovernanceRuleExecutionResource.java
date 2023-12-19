@@ -367,4 +367,24 @@ public class GovernanceRuleExecutionResource {
         .offset(0L)
         .build();
   }
+
+  @POST
+  @Path("execution/ruleLastExecution")
+  @ApiOperation(value = "Given rules list find last execution for each rule", nickname = "getRuleLastExecution")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Operation(operationId = "getRuleLastExecution", description = "Given rules list find last execution for each rule",
+      summary = "Given rules list find last execution for each rule",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Returns List of RuleExecutions",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON) })
+      })
+  public ResponseDTO<List<RuleExecution>>
+  getRuleLastExecution(
+      @Parameter(required = true, description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
+          NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @NotNull @Valid String accountId,
+      @RequestBody(
+          required = true, description = "Request body containing list of rule ids") @Valid List<String> ruleIds) {
+    return ResponseDTO.newResponse(ruleExecutionService.getRuleLastExecution(accountId, ruleIds));
+  }
 }
