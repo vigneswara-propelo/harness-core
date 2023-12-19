@@ -12,8 +12,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.spec.server.ssca.v1.model.ComponentDrift;
+import io.harness.spec.server.ssca.v1.model.ComponentDriftSummary;
 import io.harness.spec.server.ssca.v1.model.ComponentSummary;
 import io.harness.spec.server.ssca.v1.model.LicenseDrift;
+import io.harness.spec.server.ssca.v1.model.LicenseDriftSummary;
+import io.harness.spec.server.ssca.v1.model.OrchestrationDriftSummary;
 import io.harness.spec.server.ssca.v1.model.OrchestrationStepDriftRequestBody;
 import io.harness.ssca.beans.drift.ComponentDriftStatus;
 import io.harness.ssca.beans.drift.DriftBase;
@@ -117,5 +120,20 @@ public class SbomDriftMapper {
         .purl(componentSummary.getPurl())
         .packageSupplier(componentSummary.getPackageOriginatorName())
         .packageManager(componentSummary.getPackageManager());
+  }
+
+  public ComponentDriftSummary getComponentDriftSummary(OrchestrationDriftSummary orchestrationDriftSummary) {
+    return new ComponentDriftSummary()
+        .total(orchestrationDriftSummary.getComponentDrifts())
+        .added(orchestrationDriftSummary.getComponentsAdded())
+        .deleted(orchestrationDriftSummary.getComponentsDeleted())
+        .modified(orchestrationDriftSummary.getComponentsModified());
+  }
+
+  public LicenseDriftSummary getLicenseDriftSummary(OrchestrationDriftSummary orchestrationDriftSummary) {
+    return new LicenseDriftSummary()
+        .total(orchestrationDriftSummary.getComponentDrifts())
+        .added(orchestrationDriftSummary.getLicenseAdded())
+        .deleted(orchestrationDriftSummary.getLicenseDeleted());
   }
 }

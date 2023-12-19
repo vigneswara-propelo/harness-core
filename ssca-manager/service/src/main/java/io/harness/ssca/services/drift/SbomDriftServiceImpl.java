@@ -30,6 +30,7 @@ import io.harness.ssca.entities.ArtifactEntity;
 import io.harness.ssca.entities.drift.DriftEntity;
 import io.harness.ssca.entities.drift.DriftEntity.DriftEntityKeys;
 import io.harness.ssca.helpers.SbomDriftCalculator;
+import io.harness.ssca.mapper.SbomDriftMapper;
 import io.harness.ssca.services.ArtifactService;
 import io.harness.ssca.services.BaselineService;
 import io.harness.ssca.services.NormalisedSbomComponentService;
@@ -117,11 +118,15 @@ public class SbomDriftServiceImpl implements SbomDriftService {
                                                    : Date.from(OffsetDateTime.now().plusMonths(6).toInstant()))
               .build());
     }
+    OrchestrationDriftSummary summary = buildDriftSummaryFromEntity(driftEntity);
     return new ArtifactSbomDriftResponse()
         .driftId(driftEntity.getUuid())
         .tag(driftArtifact.getTag())
         .baseTag(baseArtifact.getTag())
-        .artifactName(driftArtifact.getName());
+        .artifactName(driftArtifact.getName())
+        .totalDrifts(summary.getTotalDrifts())
+        .componentDriftSummary(SbomDriftMapper.getComponentDriftSummary(summary))
+        .licenseDriftSummary(SbomDriftMapper.getLicenseDriftSummary(summary));
   }
 
   void validateSbomToolAndFormat(ArtifactEntity driftArtifact, ArtifactEntity baseArtifact) {

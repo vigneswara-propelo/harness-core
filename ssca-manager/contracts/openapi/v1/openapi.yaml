@@ -2219,30 +2219,45 @@ components:
     ArtifactSbomDriftResponse:
       title: ArtifactSbomDriftResponse
       x-stoplight:
-        id: wfmfyq2uzbmz2
+        id: jbjf68bp9m7is
       type: object
+      description: Response body for sbom drift calculation between 2 artifact versions.
       properties:
         drift_id:
           type: string
           x-stoplight:
-            id: xv9kz4ikosxwu
+            id: niqq54ial34uw
           description: Drift ID to get the drift results
         tag:
           type: string
           x-stoplight:
-            id: zcygytnpbg3lk
+            id: 8bfv9f85cltm9
           description: Tag on which drift was calculated
         base_tag:
           type: string
           x-stoplight:
-            id: hiq1vrav9i207
+            id: 3bnnx6tqek1d6
           description: Base tag from which drift was calculated
         artifact_name:
           type: string
           x-stoplight:
-            id: a3e08zn0ikh03
+            id: ef5vhftffci69
           description: Artifact name
-      description: Response body for sbom drift calculation between 2 artifact versions.
+        total_drifts:
+          type: integer
+          x-stoplight:
+            id: vg4mfjezqute0
+          description: Sum total of component and license drifts.
+        component_drift_summary:
+          $ref: '#/components/schemas/ComponentDriftSummary'
+        license_drift_summary:
+          $ref: '#/components/schemas/LicenseDriftSummary'
+      required:
+        - drift_id
+        - tag
+        - base_tag
+        - artifact_name
+        - total_drifts
     LicenseDrift:
       title: LicenseDrift
       x-stoplight:
@@ -2552,6 +2567,64 @@ components:
           format: int64
           default: 0
           description: Number of trackers having the status.
+    ComponentDriftSummary:
+      title: ComponentDriftSummary
+      x-stoplight:
+        id: 05wehmqgklxbz
+      type: object
+      description: Component drift summary
+      properties:
+        total:
+          type: integer
+          x-stoplight:
+            id: w5snt5drjomje
+          description: Total number of component drifts.
+        added:
+          type: integer
+          x-stoplight:
+            id: zvli92cpu97su
+          description: Number of components added.
+        deleted:
+          type: integer
+          x-stoplight:
+            id: x8c3ixudsenfk
+          description: Number of components deleted.
+        modified:
+          type: integer
+          x-stoplight:
+            id: mv2lfhhzps74i
+          description: Number of components modified.
+      required:
+        - total
+        - added
+        - deleted
+        - modified
+    LicenseDriftSummary:
+      title: LicenseDriftSummary
+      x-stoplight:
+        id: ts8yui5klhidv
+      type: object
+      properties:
+        total:
+          type: integer
+          x-stoplight:
+            id: thrkuo49lm4a3
+          description: Total number of license drifts.
+        added:
+          type: integer
+          x-stoplight:
+            id: jicz6jswwcncv
+          description: Total number of licenses added.
+        deleted:
+          type: integer
+          x-stoplight:
+            id: jds3hn17cnb8k
+          description: Total number of licenses deleted
+      required:
+        - total
+        - added
+        - deleted
+      description: Provides License Drift Summary
   parameters:
     OrgParam:
       name: org
