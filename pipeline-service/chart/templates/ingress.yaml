@@ -104,12 +104,14 @@ spec:
                 port:
                   number: 12001
             path: /(v1/orgs/.+/projects/.+/approvals/.+)
+            pathType: ImplementationSpecific
           - backend:
               service:
                 name: pipeline-service
                 port:
                   number: 12001
             path: /(v1/orgs/.+/projects/.+/pipelines/.+/triggers)
+            pathType: ImplementationSpecific
           - backend:
               service:
                 name: pipeline-service
