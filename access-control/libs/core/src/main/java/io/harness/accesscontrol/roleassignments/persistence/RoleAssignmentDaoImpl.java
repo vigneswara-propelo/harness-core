@@ -20,7 +20,6 @@ import io.harness.accesscontrol.roleassignments.RoleAssignmentFilter;
 import io.harness.accesscontrol.roleassignments.persistence.RoleAssignmentDBO.RoleAssignmentDBOKeys;
 import io.harness.accesscontrol.roleassignments.persistence.repositories.RoleAssignmentRepository;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.exception.DuplicateFieldException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.beans.PageRequest;
 import io.harness.ng.beans.PageResponse;
@@ -35,7 +34,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.validation.executable.ValidateOnExecution;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -55,13 +53,7 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDao {
   @Override
   public RoleAssignment create(RoleAssignment roleAssignment) {
     RoleAssignmentDBO roleAssignmentDBO = toDBO(roleAssignment);
-    try {
-      return fromDBO(roleAssignmentRepository.save(roleAssignmentDBO));
-    } catch (DuplicateKeyException e) {
-      throw new DuplicateFieldException(String.format(
-          "A role assignment with the same resource group, role and principal is already present in the scope %s",
-          roleAssignmentDBO.getScopeIdentifier()));
-    }
+    return fromDBO(roleAssignmentRepository.save(roleAssignmentDBO));
   }
 
   @Override
