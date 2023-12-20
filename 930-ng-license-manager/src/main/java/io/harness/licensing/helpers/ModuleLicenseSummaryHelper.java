@@ -14,6 +14,7 @@ import io.harness.licensing.beans.modules.CETModuleLicenseDTO;
 import io.harness.licensing.beans.modules.CFModuleLicenseDTO;
 import io.harness.licensing.beans.modules.CIModuleLicenseDTO;
 import io.harness.licensing.beans.modules.ChaosModuleLicenseDTO;
+import io.harness.licensing.beans.modules.CodeModuleLicenseDTO;
 import io.harness.licensing.beans.modules.IACMModuleLicenseDTO;
 import io.harness.licensing.beans.modules.IDPModuleLicenseDTO;
 import io.harness.licensing.beans.modules.ModuleLicenseDTO;
@@ -27,6 +28,7 @@ import io.harness.licensing.beans.summary.CFLicenseSummaryDTO;
 import io.harness.licensing.beans.summary.CILicenseSummaryDTO;
 import io.harness.licensing.beans.summary.CVLicenseSummaryDTO;
 import io.harness.licensing.beans.summary.ChaosLicenseSummaryDTO;
+import io.harness.licensing.beans.summary.CodeLicenseSummaryDTO;
 import io.harness.licensing.beans.summary.IACMLicenseSummaryDTO;
 import io.harness.licensing.beans.summary.IDPLicenseSummaryDTO;
 import io.harness.licensing.beans.summary.LicensesWithSummaryDTO;
@@ -205,6 +207,19 @@ public class ModuleLicenseSummaryHelper {
           if (current < idpModuleLicenseDTO.getExpiryTime() && idpModuleLicenseDTO.getNumberOfDevelopers() != null) {
             idpLicenseSummaryDTO.setNumberOfDevelopers(ModuleLicenseUtils.computeAdd(
                 idpLicenseSummaryDTO.getNumberOfDevelopers(), idpModuleLicenseDTO.getNumberOfDevelopers()));
+          }
+        };
+        break;
+      case CODE:
+        licensesWithSummaryDTO = CodeLicenseSummaryDTO.builder().build();
+        summaryHandler = (moduleLicenseDTO, summaryDTO, current) -> {
+          CodeModuleLicenseDTO codeModuleLicenseDTO = (CodeModuleLicenseDTO) moduleLicenseDTO;
+          CodeLicenseSummaryDTO codeLicenseSummaryDTO = (CodeLicenseSummaryDTO) summaryDTO;
+          if (current < codeModuleLicenseDTO.getExpiryTime() && codeModuleLicenseDTO.getNumberOfDevelopers() != null) {
+            codeLicenseSummaryDTO.setNumberOfDevelopers(ModuleLicenseUtils.computeAdd(
+                codeLicenseSummaryDTO.getNumberOfDevelopers(), codeModuleLicenseDTO.getNumberOfDevelopers()));
+            codeLicenseSummaryDTO.setNumberOfRepositories(ModuleLicenseUtils.computeAdd(
+                codeLicenseSummaryDTO.getNumberOfRepositories(), codeModuleLicenseDTO.getNumberOfRepositories()));
           }
         };
         break;

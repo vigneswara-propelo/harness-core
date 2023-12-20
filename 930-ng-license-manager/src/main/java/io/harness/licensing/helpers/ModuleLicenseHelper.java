@@ -23,6 +23,7 @@ import io.harness.licensing.entities.modules.CETModuleLicense;
 import io.harness.licensing.entities.modules.CFModuleLicense;
 import io.harness.licensing.entities.modules.CIModuleLicense;
 import io.harness.licensing.entities.modules.ChaosModuleLicense;
+import io.harness.licensing.entities.modules.CodeModuleLicense;
 import io.harness.licensing.entities.modules.IACMModuleLicense;
 import io.harness.licensing.entities.modules.IDPModuleLicense;
 import io.harness.licensing.entities.modules.ModuleLicense;
@@ -345,6 +346,20 @@ public class ModuleLicenseHelper {
             && !updateIdpModuleLicense.getNumberOfDevelopers().equals(
                 currentIdpModuleLicense.getNumberOfDevelopers())) {
           currentIdpModuleLicense.setNumberOfDevelopers(updateIdpModuleLicense.getNumberOfDevelopers());
+        }
+        break;
+      case CODE:
+        CodeModuleLicense updatedCodeModuleLicense = (CodeModuleLicense) update;
+        CodeModuleLicense currentCodeModuleLicense = (CodeModuleLicense) current;
+        if (updatedCodeModuleLicense.getNumberOfDevelopers() != null
+            && !updatedCodeModuleLicense.getNumberOfDevelopers().equals(
+                currentCodeModuleLicense.getNumberOfDevelopers())) {
+          currentCodeModuleLicense.setNumberOfDevelopers(updatedCodeModuleLicense.getNumberOfDevelopers());
+        }
+        if (updatedCodeModuleLicense.getNumberOfRepositories() != null
+            && !updatedCodeModuleLicense.getNumberOfRepositories().equals(
+                currentCodeModuleLicense.getNumberOfRepositories())) {
+          currentCodeModuleLicense.setNumberOfRepositories(updatedCodeModuleLicense.getNumberOfRepositories());
         }
         break;
       default:

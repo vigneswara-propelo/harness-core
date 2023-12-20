@@ -2610,6 +2610,7 @@
 930012:io.harness.licensing.beans.modules.IACMModuleLicenseDTO
 930013:io.harness.licensing.beans.modules.CETModuleLicenseDTO
 930014:io.harness.licensing.beans.modules.IDPModuleLicenseDTO
+930015:io.harness.licensing.beans.modules.CodeModuleLicenseDTO
 955000:io.harness.beans.CommitDetails
 955001:io.harness.beans.Repository
 955002:io.harness.beans.WebhookGitUser
