@@ -80,6 +80,7 @@ import io.harness.lock.PersistentLockModule;
 import io.harness.manage.ManagedScheduledExecutorService;
 import io.harness.mongo.MongoPersistence;
 import io.harness.ng.core.event.MessageListener;
+import io.harness.ngsettings.client.remote.NGSettingsClientModule;
 import io.harness.opaclient.OpaClientModule;
 import io.harness.packages.HarnessPackages;
 import io.harness.persistence.HPersistence;
@@ -375,6 +376,8 @@ public class IACMManagerServiceModule extends AbstractModule {
         iacmManagerConfiguration.getCiExecutionServiceConfig().getGitnessConfig().getHttpClientConfig(),
         iacmManagerConfiguration.getCiExecutionServiceConfig().getGitnessConfig().getJwtSecret(),
         IACM_MANAGER.getServiceId(), ClientMode.PRIVILEGED));
+    install(new NGSettingsClientModule(iacmManagerConfiguration.getNgManagerClientConfig(),
+        iacmManagerConfiguration.getNgManagerServiceSecret(), IACM_MANAGER.getServiceId()));
     bind(CIBuildEnforcer.class).to(IACMBuildEnforcerImpl.class);
   }
 

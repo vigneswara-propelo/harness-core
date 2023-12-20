@@ -27,4 +27,5 @@ public class OrchestrationStepEnvVariables {
   String sscaCoreUrl;
   boolean sscaManagerEnabled;
   String sbomDrift;
+  boolean base64SecretAttestation;
 }

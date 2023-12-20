@@ -43,6 +43,7 @@ public class SscaOrchestrationStepPluginUtils {
   public static final String COSIGN_PRIVATE_KEY = "COSIGN_PRIVATE_KEY";
   public static final String SSCA_MANAGER_ENABLED = "SSCA_MANAGER_ENABLED";
   public static final String PLUGIN_SBOM_DRIFT = "PLUGIN_SBOM_DRIFT";
+  public static final String PLUGIN_BASE64_SECRET = "PLUGIN_BASE64_SECRET";
 
   public Map<String, String> getSScaOrchestrationStepEnvVariables(OrchestrationStepEnvVariables envVariables) {
     Map<String, String> envMap = new HashMap<>();
@@ -61,6 +62,7 @@ public class SscaOrchestrationStepPluginUtils {
     envMap.put(STEP_EXECUTION_ID, envVariables.getStepExecutionId());
     envMap.put(STEP_ID, envVariables.getStepIdentifier());
     envMap.put(PLUGIN_SBOM_DRIFT, envVariables.getSbomDrift());
+    envMap.put(PLUGIN_BASE64_SECRET, String.valueOf(envVariables.isBase64SecretAttestation()));
     envMap.values().removeAll(Collections.singleton(null));
 
     return envMap;

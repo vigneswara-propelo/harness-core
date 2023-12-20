@@ -66,6 +66,7 @@ import io.harness.lock.DistributedLockImplementation;
 import io.harness.lock.PersistentLockModule;
 import io.harness.mongo.MongoConfig;
 import io.harness.mongo.MongoPersistence;
+import io.harness.ngsettings.client.remote.NGSettingsClient;
 import io.harness.persistence.HPersistence;
 import io.harness.pms.sdk.PmsSdkConfiguration;
 import io.harness.pms.sdk.PmsSdkModule;
@@ -182,6 +183,7 @@ public class CIExecutionRule implements MethodRule, InjectorRuleMixin, MongoRule
                     .build());
         bind(IACMServiceClient.class).toProvider(IACMServiceClientFactory.class).in(Scopes.SINGLETON);
         bind(SSCAServiceClient.class).toInstance(mock(SSCAServiceClient.class));
+        bind(NGSettingsClient.class).toInstance(mock(NGSettingsClient.class));
       }
     });
 

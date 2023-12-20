@@ -28,13 +28,17 @@ import io.harness.slsa.beans.verification.verify.CosignSlsaVerifyAttestation;
 import io.harness.ssca.beans.SscaConstants;
 import io.harness.ssca.beans.attestation.AttestationType;
 import io.harness.ssca.beans.stepinfo.SlsaVerificationStepInfo;
+import io.harness.ssca.client.NgSettingsUtils;
 import io.harness.yaml.core.variables.NGVariableType;
 import io.harness.yaml.core.variables.SecretNGVariable;
 
+import com.google.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(HarnessTeam.SSCA)
+@Slf4j
 public class SlsaVerificationPluginHelper {
   private static final String PLUGIN_REPO = "PLUGIN_REPO";
   private static final String COSIGN_PUBLIC_KEY = "COSIGN_PUBLIC_KEY";
@@ -44,6 +48,10 @@ public class SlsaVerificationPluginHelper {
   public static final String STEP_EXECUTION_ID = "STEP_EXECUTION_ID";
   private static final String PLUGIN_REGISTRY_TYPE = "PLUGIN_REGISTRY_TYPE";
   private static final String PLUGIN_REGISTRY = "PLUGIN_REGISTRY";
+
+  public static final String PLUGIN_BASE64_SECRET = "PLUGIN_BASE64_SECRET";
+
+  @Inject private NgSettingsUtils ngSettingsUtils;
 
   public Map<String, String> getSlsaVerificationStepEnvVariables(
       SlsaVerificationStepInfo slsaVerificationStepInfo, String identifier, Ambiance ambiance) {
@@ -62,6 +70,10 @@ public class SlsaVerificationPluginHelper {
     String stepExecutionId = AmbianceUtils.obtainCurrentRuntimeId(ambiance);
     envMap.put(STEP_EXECUTION_ID, stepExecutionId);
     envMap.put(PLUGIN_TYPE, "verify");
+
+    boolean useBase64SecretForAttestation = ngSettingsUtils.getBaseEncodingEnabled(AmbianceUtils.getAccountId(ambiance),
+        AmbianceUtils.getOrgIdentifier(ambiance), AmbianceUtils.getProjectIdentifier(ambiance));
+    envMap.put(PLUGIN_BASE64_SECRET, String.valueOf(useBase64SecretForAttestation));
     return envMap;
   }
 

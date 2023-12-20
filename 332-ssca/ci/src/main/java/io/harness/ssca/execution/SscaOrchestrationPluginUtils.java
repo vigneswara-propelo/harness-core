@@ -14,6 +14,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.sweepingoutputs.StageInfraDetails.Type;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.ngexception.CIStageExecutionUserException;
+import io.harness.ngsettings.client.remote.NGSettingsClient;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.ssca.beans.OrchestrationStepEnvVariables;
@@ -26,6 +27,7 @@ import io.harness.ssca.beans.source.SbomSourceType;
 import io.harness.ssca.beans.stepinfo.SscaOrchestrationStepInfo;
 import io.harness.ssca.beans.tools.SbomOrchestrationToolType;
 import io.harness.ssca.beans.tools.syft.SyftSbomOrchestration;
+import io.harness.ssca.client.NgSettingsUtils;
 import io.harness.ssca.client.SSCAServiceUtils;
 import io.harness.ssca.execution.orchestration.SscaOrchestrationStepPluginUtils;
 import io.harness.yaml.core.variables.SecretNGVariable;
@@ -43,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(HarnessTeam.SSCA)
 public class SscaOrchestrationPluginUtils {
   @Inject private SSCAServiceUtils sscaServiceUtils;
+  @Inject private NgSettingsUtils ngSettingsUtils;
 
   public Map<String, String> getSscaOrchestrationStepEnvVariables(
       SscaOrchestrationStepInfo stepInfo, String identifier, Ambiance ambiance, Type type) {
@@ -74,6 +77,9 @@ public class SscaOrchestrationPluginUtils {
       sbomDrift = stepInfo.getSbomDrift().getBase().toString();
     }
 
+    boolean useBase64SecretForAttestation = ngSettingsUtils.getBaseEncodingEnabled(AmbianceUtils.getAccountId(ambiance),
+        AmbianceUtils.getOrgIdentifier(ambiance), AmbianceUtils.getProjectIdentifier(ambiance));
+
     String runtimeId = AmbianceUtils.obtainCurrentRuntimeId(ambiance);
     OrchestrationStepEnvVariables envVariables =
         OrchestrationStepEnvVariables.builder()
@@ -87,6 +93,7 @@ public class SscaOrchestrationPluginUtils {
             .stepIdentifier(identifier)
             .sscaManagerEnabled(sscaServiceUtils.getSscaServiceConfig().isSscaManagerEnabled())
             .sbomDrift(sbomDrift)
+            .base64SecretAttestation(useBase64SecretForAttestation)
             .build();
     Map<String, String> envMap = SscaOrchestrationStepPluginUtils.getSScaOrchestrationStepEnvVariables(envVariables);
     if (type == Type.VM) {

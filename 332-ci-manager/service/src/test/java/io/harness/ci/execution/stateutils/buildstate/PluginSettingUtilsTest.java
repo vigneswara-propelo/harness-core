@@ -1211,6 +1211,7 @@ public class PluginSettingUtilsTest extends CIExecutionTestBase {
     expected.put("PLUGIN_TYPE", "verify");
     expected.put("STEP_EXECUTION_ID", null);
     expected.put("PLUGIN_REGISTRY_TYPE", "docker");
+    expected.put("PLUGIN_BASE64_SECRET", "false");
     Ambiance ambiance = Ambiance.newBuilder().build();
     Map<String, String> actual = pluginSettingUtils.getPluginCompatibleEnvVariables(
         slsaVerificationStepInfo, "identifier", 100, ambiance, Type.K8, false, true);
@@ -1230,6 +1231,7 @@ public class PluginSettingUtilsTest extends CIExecutionTestBase {
     expected.put("PLUGIN_TYPE", "verify");
     expected.put("PLUGIN_REGISTRY_TYPE", "gcr");
     expected.put("STEP_EXECUTION_ID", null);
+    expected.put("PLUGIN_BASE64_SECRET", "false");
     Ambiance ambiance = Ambiance.newBuilder().build();
     Map<String, String> actual = pluginSettingUtils.getPluginCompatibleEnvVariables(
         slsaVerificationStepInfo, "identifier", 100, ambiance, Type.K8, false, true);
