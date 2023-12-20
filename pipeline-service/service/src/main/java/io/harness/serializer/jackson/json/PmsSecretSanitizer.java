@@ -15,8 +15,14 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 @OwnedBy(HarnessTeam.PIPELINE)
 public class PmsSecretSanitizer {
+  /*
+  The below secret regex is to identify secret expression.
+  The following expression related to secret gets masked:
+  1. "${ngSecretManager.obtain(\"account.docker\", -292012941)}"
+  2. "${ngSecretManager.obtain(\\\"account.docker\\\", -292012941)}"    - refer - CDS-85736
+   */
   private static final String SECRET_REGEX =
-      "\\$\\{ngSecretManager\\.obtain\\(\\\\\"[\\w|.]+\\\\\", [\\w|.|-]+\\)}|\\$\\{sweepingOutputSecrets\\.obtain\\(\\\\\"[\\S|.]+?\\\\\",\\\\\"[\\S|.]+?\"\\)}";
+      "\\$\\{ngSecretManager\\.obtain\\(\\\\\"[\\w|.]+\\\\\", [\\w|.|-]+\\)}|\\$\\{ngSecretManager\\.obtain\\(\\\\\\\\\\\\\"[\\w|.]+\\\\\\\\\\\\\", [\\w|.|-]+\\)}|\\$\\{sweepingOutputSecrets\\.obtain\\(\\\\\"[\\S|.]+?\\\\\",\\\\\"[\\S|.]+?\"\\)}";
   private static final String SECRET_MASK = "*******";
 
   public String sanitize(String json) {

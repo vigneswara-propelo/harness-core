@@ -8,6 +8,7 @@
 package io.harness.serializer.jackson.json;
 
 import static io.harness.rule.OwnerRule.HINGER;
+import static io.harness.rule.OwnerRule.PRASHANTSHARMA;
 import static io.harness.rule.OwnerRule.SAHIL;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -441,5 +442,16 @@ public class PmsSecretSanitizerTest extends CategoryTest {
     String multipleOccurenceMatch =
         "abcd${sweepingOutputSecrets.obtain(\\\"ovar3\\\",\\\"BASE_64\\\")}abcd${sweepingOutputSecrets.obtain(\\\"ovar3\\\",\\\"BASE_64\\\")}";
     assertThat(PmsSecretSanitizer.sanitize(multipleOccurenceMatch)).isEqualTo("abcd*******abcd*******");
+  }
+
+  @Test
+  @Owner(developers = PRASHANTSHARMA)
+  @Category(UnitTests.class)
+  public void testSanitizeWithJson() {
+    String toBeMatched = "${ngSecretManager.obtain(\\\\\\\"account.docker\\\\\\\", -292012941)}";
+    assertThat(PmsSecretSanitizer.sanitize(toBeMatched)).isEqualTo("*******");
+
+    toBeMatched = "${ngSecretManager.obtain(\\\"account.docker\\\", -292012941)}";
+    assertThat(PmsSecretSanitizer.sanitize(toBeMatched)).isEqualTo("*******");
   }
 }
