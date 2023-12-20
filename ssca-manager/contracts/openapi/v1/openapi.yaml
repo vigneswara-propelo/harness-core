@@ -831,7 +831,7 @@ paths:
           in: query
           name: search_term
           description: Search for licenses by name.
-  '/v1/orgs/{org}/projects/{project}/remediation':
+  '/v1/orgs/{org}/projects/{project}/remediations':
     parameters:
       - $ref: '#/components/parameters/OrgParam'
       - $ref: '#/components/parameters/ProjectParam'
@@ -857,7 +857,40 @@ paths:
         - $ref: '#/components/parameters/AccountHeader'
       requestBody:
         $ref: '#/components/requestBodies/RemediationTrackerCreateRequestBody'
-  '/v1/orgs/{org}/projects/{project}/remediation/overall-summary':
+    get:
+      summary: List All Remediation Trackers
+      operationId: listRemediations
+      responses:
+        '200':
+          $ref: '#/components/responses/RemediationListingResponseBody'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      tags:
+        - Remediation
+      description: List all Remediation Trackers.
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Page'
+        - in: query
+          description: Parameter on the basis of which sorting is done.
+          name: sort
+          schema:
+            enum:
+              - component
+              - status
+              - targetDate
+            default: component
+      security:
+        - x-api-key: [ ]
+      requestBody:
+        $ref: '#/components/requestBodies/RemediationListingRequestBody'
+      x-stoplight:
+        id: kg2qzkbtvly31
+  '/v1/orgs/{org}/projects/{project}/remediations/overall-summary':
     parameters:
       - $ref: '#/components/parameters/OrgParam'
       - $ref: '#/components/parameters/ProjectParam'
@@ -910,7 +943,7 @@ paths:
         - $ref: '#/components/parameters/AccountHeader'
       requestBody:
         $ref: '#/components/requestBodies/OrchestrationStepDriftRequestBody'
-  '/v1/orgs/{org}/projects/{project}/remediation/{remediation}/close':
+  '/v1/orgs/{org}/projects/{project}/remediations/{remediation}/close':
     parameters:
       - $ref: '#/components/parameters/OrgParam'
       - $ref: '#/components/parameters/ProjectParam'
@@ -939,7 +972,7 @@ paths:
         - x-api-key: [ ]
       parameters:
         - $ref: '#/components/parameters/AccountHeader'
-  '/v1/orgs/{org}/projects/{project}/remediation/{remediation}/exclude-artifact':
+  '/v1/orgs/{org}/projects/{project}/remediations/{remediation}/exclude-artifact':
     parameters:
       - $ref: '#/components/parameters/OrgParam'
       - $ref: '#/components/parameters/ProjectParam'
@@ -2625,6 +2658,141 @@ components:
         - added
         - deleted
       description: Provides License Drift Summary
+    RemediationListingRequestBody:
+      title: RemediationListingRequestBody
+      x-stoplight:
+        id: npofi0re03m9y
+      type: object
+      properties:
+        component_name_filter:
+          x-stoplight:
+            id: umq3gauef094r
+          type: object
+          description: Filter for Component Name.
+          properties:
+            operator:
+              $ref: '#/components/schemas/NameOperator'
+            component_name:
+              type: string
+              x-stoplight:
+                id: 3xj7522tpgian
+          required:
+            - operator
+            - component_name
+        cve_filter:
+          x-stoplight:
+            id: umq3gauef094r
+          type: object
+          description: Filter for CVE.
+          properties:
+            operator:
+              $ref: '#/components/schemas/NameOperator'
+            cve:
+              type: string
+              x-stoplight:
+                id: 3xj7522tpgiad
+          required:
+            - operator
+            - cve
+    RemediationListingResponse:
+      title: RemediationListingResponse
+      x-stoplight:
+        id: euc2zuns2mxld
+      type: object
+      x-examples: { }
+      properties:
+        id:
+          type: string
+          description: Tracker Id.
+        component:
+          type: string
+          x-stoplight:
+            id: g3r0qmkzg2kj1
+          description: Component Name.
+        version:
+          type: string
+          x-stoplight:
+            id: 46ckietw5tx7t
+          description: Component Version.
+        cve:
+          type: string
+          x-stoplight:
+            id: sf4d7e2fqdygx
+          description: CVE number.
+        artifacts:
+          type: integer
+          x-stoplight:
+            id: 75lxg3zx2jrtd
+          description: Total distinct artifacts included in the tracker.
+          format: int64
+        severity:
+          $ref: '#/components/schemas/VulnerabilitySeverity'
+        deployments_count:
+          $ref: '#/components/schemas/DeploymentsCount'
+        status:
+          $ref: '#/components/schemas/RemediationStatus'
+        contact:
+          $ref: '#/components/schemas/ContactInfo'
+        target_date:
+          type: string
+          x-stoplight:
+            id: 2mbo5odged170
+          description: Target End Date set by the user.
+        schedule_status:
+          type: string
+          x-stoplight:
+            id: nubutw4rjoc3w
+          description: |
+            This indicates how we are going with schedule of target date.
+        remediation_condition:
+          $ref: '#/components/schemas/RemediationCondition'
+      required:
+        - id
+        - component
+        - version
+        - artifacts
+        - severity
+        - deployments_count
+        - status
+    DeploymentsCount:
+      title: DeploymentsCount
+      x-stoplight:
+        id: 0iy89ben1lfk8
+      type: object
+      properties:
+        pending_prod_count:
+          type: integer
+          format: int64
+          description: Pending Prod Deployments to remediate.
+          minimum: 0
+        pending_non_prod_count:
+          type: integer
+          format: int64
+          description: Pending Non Prod Deployments to remediate.
+          minimum: 0
+        patched_prod_count:
+          type: integer
+          format: int64
+          description: Patched Prod Deployments.
+          minimum: 0
+        patched_non_prod_count:
+          type: integer
+          format: int64
+          description: Patched Non Prod Deployments.
+          minimum: 0
+      required:
+        - pending_prod_count
+        - pending_non_prod_count
+        - patched_prod_count
+        - patched_non_prod_count
+    NameOperator:
+      title: NameOperator
+      x-stoplight:
+        id: zpws5w9foy3dh
+      enum:
+        - Equals
+        - StartsWith
+        - Contains
   parameters:
     OrgParam:
       name: org
@@ -2748,6 +2916,11 @@ components:
           schema:
             $ref: '#/components/schemas/OrchestrationStepDriftRequestBody'
       description: Provide the base from which drift has to be calculated.
+    RemediationListingRequestBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RemediationListingRequestBody'
   securitySchemes:
     x-api-key:
       name: x-api-key
@@ -3013,3 +3186,24 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/RemediationTrackersOverallSummaryResponseBody'
+    RemediationListingResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/RemediationListingResponse'
+      headers:
+        X-Total-Elements:
+          schema:
+            type: string
+          description: Total number of elements returned in Paginated response.
+        X-Page-Number:
+          schema:
+            type: string
+          description: Page number in Paginated response.
+        X-Page-Size:
+          schema:
+            type: string
+          description: Maximum page size in Paginated response.

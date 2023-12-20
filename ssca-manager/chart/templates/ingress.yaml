@@ -138,7 +138,7 @@ spec:
                 name: ssca-manager
                 port:
                   number: {{ $.Values.service.port }}
-            path: /(v1/orgs/.+/projects/.+/remediation.*)
+            path: /(v1/orgs/.+/projects/.+/remediations.*)
             pathType: ImplementationSpecific
     {{- end }}
   {{- if .Values.global.ingress.tls.enabled }}
