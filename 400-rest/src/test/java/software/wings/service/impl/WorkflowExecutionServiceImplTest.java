@@ -2182,10 +2182,10 @@ public class WorkflowExecutionServiceImplTest extends WingsBaseTest {
             .build());
   }
 
-  @Ignore
   @Test
   @Owner(developers = {SRINIVAS})
   @Category(UnitTests.class)
+  @Ignore("This test is failing PR and passing locally")
   public void shouldListWaitingOnDeployments() {
     List<WorkflowExecution> waitingOnDeployments = getWorkflowExecutions(false);
     assertThat(waitingOnDeployments).isNotEmpty().hasSize(2);
@@ -2451,10 +2451,10 @@ public class WorkflowExecutionServiceImplTest extends WingsBaseTest {
         .populateArtifactsAndServices(workflowExecution, stdParams, keywords, executionArgs, ACCOUNT_ID);
   }
 
-  @Ignore
   @Test
   @Owner(developers = PRASHANT)
   @Category(UnitTests.class)
+  @Ignore("This test is failing PR and passing locally")
   public void shouldFetchConcurrentExecutions() {
     int count = 0;
     String firstExecutionId = null;
