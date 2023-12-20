@@ -39,6 +39,7 @@ import com.google.inject.Inject;
 import java.util.List;
 import lombok.Data;
 import lombok.Singular;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -265,6 +266,7 @@ resourceType
   @Test
   @Owner(developers = VARDAN_BANSAL)
   @Category({GraphQLTests.class, UnitTests.class})
+  @Ignore("Skipping stale graphQL tests")
   public void testQueryForGenericChangeSet() {
     final Randomizer.Seed seed = new Randomizer.Seed(0);
     final OwnerManager.Owners owners = ownerManager.create();

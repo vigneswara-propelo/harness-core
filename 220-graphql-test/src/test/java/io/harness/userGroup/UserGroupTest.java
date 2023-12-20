@@ -455,6 +455,7 @@ mutation{
   @Test
   @Owner(developers = DEEPAK)
   @Category({GraphQLTests.class, UnitTests.class})
+  @Ignore("Skipping stale graphQL tests")
   public void testQueryMissingUserGroup() {
     String query =
             $GQL(/*

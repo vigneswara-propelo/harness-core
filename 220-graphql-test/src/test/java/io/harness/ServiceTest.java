@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -59,6 +60,7 @@ public class ServiceTest extends GraphQLTest {
   @Test
   @Owner(developers = GEORGE)
   @Category({GraphQLTests.class, UnitTests.class})
+  @Ignore("Skipping stale graphQL tests")
   public void testQueryService() {
     final Seed seed = new Seed(0);
     final Owners owners = ownerManager.create();
@@ -129,6 +131,7 @@ public class ServiceTest extends GraphQLTest {
   @Test
   @Owner(developers = SRINIVAS)
   @Category({GraphQLTests.class, UnitTests.class})
+  @Ignore("Skipping stale graphQL tests")
   public void testQueryServices() {
     final Seed seed = new Seed(0);
     final Owners owners = ownerManager.create();

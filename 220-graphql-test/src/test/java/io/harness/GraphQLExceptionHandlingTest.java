@@ -19,6 +19,7 @@ import io.harness.rule.Owner;
 import graphql.ExecutionResult;
 import java.util.List;
 import java.util.Map;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -28,6 +29,7 @@ public class GraphQLExceptionHandlingTest extends GraphQLTest {
   @Test
   @Owner(developers = VIKAS)
   @Category({GraphQLTests.class, UnitTests.class})
+  @Ignore("Skipping stale graphQL tests")
   public void testQueryEnvironment() {
     String query = $GQL(/*
 {

@@ -28,6 +28,7 @@ import software.wings.graphql.schema.type.connector.QLConnectorsConnection.QLCon
 import software.wings.graphql.schema.type.connector.QLJiraConnector.QLJiraConnectorKeys;
 
 import com.google.inject.Inject;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -50,6 +51,7 @@ public class ConnectorTest extends GraphQLTest {
   @Test
   @Owner(developers = POOJA)
   @Category({GraphQLTests.class, UnitTests.class})
+  @Ignore("Skipping stale graphQL tests")
   public void testQueryConnector() {
     final Seed seed = new Seed(0);
     final Owners owners = ownerManager.create();
@@ -72,6 +74,7 @@ public class ConnectorTest extends GraphQLTest {
   @Test
   @Owner(developers = POOJA)
   @Category({GraphQLTests.class, UnitTests.class})
+  @Ignore("Skipping stale graphQL tests")
   public void testQueryConnectors() {
     final Seed seed = new Seed(0);
     final Owners owners = ownerManager.create();

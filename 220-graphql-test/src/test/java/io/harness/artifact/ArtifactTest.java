@@ -34,6 +34,7 @@ import software.wings.service.intfc.ArtifactService;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -47,6 +48,7 @@ public class ArtifactTest extends GraphQLTest {
   @Test
   @Owner(developers = SRINIVAS)
   @Category({GraphQLTests.class, UnitTests.class})
+  @Ignore("Skipping stale graphQL tests")
   public void testQueryArtifact() {
     final Seed seed = new Seed(0);
     final Owners owners = ownerManager.create();

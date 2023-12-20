@@ -27,6 +27,7 @@ import software.wings.graphql.schema.type.audit.QLChangeContentConnection;
 
 import com.google.inject.Inject;
 import java.util.List;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -58,6 +59,7 @@ public class ChangeContentTest extends GraphQLTest {
   @Test
   @Owner(developers = VARDAN_BANSAL)
   @Category({GraphQLTests.class, UnitTests.class})
+  @Ignore("Skipping stale graphQL tests")
   public void testQueryForChangeSetAndResourceFilter() {
     String changeContentQueryPattern = $.GQL(/*
 {

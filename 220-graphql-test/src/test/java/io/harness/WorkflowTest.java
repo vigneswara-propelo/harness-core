@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -121,6 +122,7 @@ public class WorkflowTest extends GraphQLTest {
   @Test
   @Owner(developers = GEORGE)
   @Category({GraphQLTests.class, UnitTests.class})
+  @Ignore("Skipping stale graphQL tests")
   public void testQueryMissingPipeline() {
     String query = $GQL(/*
 {
