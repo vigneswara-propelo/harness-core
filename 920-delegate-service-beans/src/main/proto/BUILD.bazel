@@ -11,6 +11,7 @@ harness_grpc_library(
     deps = [
         "//920-delegate-service-beans/src/main/proto/io/harness/callback:920_delegate_service_beans_proto",
         "//920-delegate-service-beans/src/main/proto/io/harness/delegate:920_delegate_service_beans_proto",
+        "//920-delegate-service-beans/src/main/proto/io/harness/delegate/scheduling/response:920_delegate_service_beans_proto",
         "//920-delegate-service-beans/src/main/proto/io/harness/delegatedetails:920_delegate_service_beans_proto",
         "//920-delegate-service-beans/src/main/proto/io/harness/delegateprofile:920_delegate_service_beans_proto",
         "//920-delegate-service-beans/src/main/proto/io/harness/owner:920_delegate_service_beans_proto",

@@ -15,6 +15,7 @@ import io.harness.annotations.dev.TargetModule;
 import io.harness.delegate.AccountCheckAndCleanupServiceImpl;
 import io.harness.delegate.DelegateServiceGrpc;
 import io.harness.delegate.ScheduleTaskServiceGrpc;
+import io.harness.delegate.TaskStatusServiceGrpc;
 import io.harness.delegate.authenticator.DelegateTokenAuthenticatorImpl;
 import io.harness.delegatedetails.DelegateDetailsServiceGrpc;
 import io.harness.delegateprofile.DelegateProfileServiceGrpc;
@@ -24,6 +25,7 @@ import io.harness.grpc.exception.GrpcExceptionMapper;
 import io.harness.grpc.exception.WingsExceptionGrpcMapper;
 import io.harness.grpc.pingpong.PingPongService;
 import io.harness.grpc.scheduler.ScheduleTaskServiceGrpcImpl;
+import io.harness.grpc.scheduler.TaskStatusServiceGrpcImpl;
 import io.harness.grpc.server.GrpcServerConfig;
 import io.harness.grpc.server.GrpcServerExceptionHandler;
 import io.harness.grpc.server.GrpcServerModule;
@@ -73,6 +75,7 @@ public class GrpcServiceConfigurationModule extends AbstractModule {
     Multibinder<BindableService> bindableServiceMultibinder = Multibinder.newSetBinder(binder(), BindableService.class);
     bindableServiceMultibinder.addBinding().to(DelegateServiceGrpcImpl.class);
     bindableServiceMultibinder.addBinding().to(ScheduleTaskServiceGrpcImpl.class);
+    bindableServiceMultibinder.addBinding().to(TaskStatusServiceGrpcImpl.class);
     bindableServiceMultibinder.addBinding().to(DelegateProfileServiceGrpcImpl.class);
     bindableServiceMultibinder.addBinding().to(DelegateDetailsServiceGrpcImpl.class);
     bindableServiceMultibinder.addBinding().to(PerpetualTaskServiceGrpc.class);
@@ -88,6 +91,8 @@ public class GrpcServiceConfigurationModule extends AbstractModule {
         .toInstance(ServiceInfo.builder().id("delegate-service").secret(serviceSecret).build());
     stringServiceInfoMapBinder.addBinding(ScheduleTaskServiceGrpc.SERVICE_NAME)
         .toInstance(ServiceInfo.builder().id("schedule-task-service").secret(serviceSecret).build());
+    stringServiceInfoMapBinder.addBinding(TaskStatusServiceGrpc.SERVICE_NAME)
+        .toInstance(ServiceInfo.builder().id("task-status-service").secret(serviceSecret).build());
     stringServiceInfoMapBinder.addBinding(DelegateProfileServiceGrpc.SERVICE_NAME)
         .toInstance(ServiceInfo.builder().id("delegate-profile-service").secret(serviceSecret).build());
     stringServiceInfoMapBinder.addBinding(DelegateDetailsServiceGrpc.SERVICE_NAME)
