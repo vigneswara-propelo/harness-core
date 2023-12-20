@@ -15,6 +15,7 @@ public class ContainerExecutionConstants {
   public static final String ACCOUNT_ID_ATTR = "accountID";
   public static final String ORG_ID_ATTR = "orgID";
   public static final String PROJECT_ID_ATTR = "projectID";
+  public static final String FREE_CI_ATTR = "freeCI";
   public static final String PIPELINE_ID_ATTR = "pipelineID";
   public static final String PIPELINE_EXECUTION_ID_ATTR = "pipelineExecutionID";
   public static final String STEP_VOLUME = "harness";

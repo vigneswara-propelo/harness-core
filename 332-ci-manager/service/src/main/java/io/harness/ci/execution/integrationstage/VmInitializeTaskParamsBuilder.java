@@ -11,6 +11,7 @@ import static io.harness.beans.serializer.RunTimeInputHandler.resolveArchType;
 import static io.harness.beans.serializer.RunTimeInputHandler.resolveMapParameter;
 import static io.harness.beans.serializer.RunTimeInputHandler.resolveOSType;
 import static io.harness.beans.sweepingoutputs.StageInfraDetails.STAGE_INFRA_DETAILS;
+import static io.harness.ci.commonconstants.CIExecutionConstants.FREE_CI_ATTR;
 import static io.harness.data.encoding.EncodingUtils.decodeBase64;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -141,13 +142,18 @@ public class VmInitializeTaskParamsBuilder {
     String poolId;
     List<String> fallbackPoolIds = new ArrayList<>();
     vmInitializeUtils.validateDebug(hostedVmInfraYaml, ambiance);
+    boolean ciFreeLicense = vmInitializeUtils.isCIFreeLicense(accountId);
+
     if (isBareMetalEnabled(accountId, hostedVmInfraYaml.getSpec().getPlatform(), initializeStepInfo)) {
       poolId = getHostedBareMetalPoolId(hostedVmInfraYaml.getSpec().getPlatform());
-      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "fallback"));
-      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, ""));
-      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "east5"));
-      fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "west4"));
-
+      // https://harness.atlassian.net/browse/CI-10749
+      // Free accounts with bare metal enabled will not have a fallback option
+      if (!ciFreeLicense) {
+        fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "fallback"));
+        fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, ""));
+        fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "east5"));
+        fallbackPoolIds.add(getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, true, "west4"));
+      }
     } else {
       poolId = getHostedPoolId(hostedVmInfraYaml.getSpec().getPlatform(), accountId, false, "west-1");
 
@@ -173,6 +179,11 @@ public class VmInitializeTaskParamsBuilder {
     CIVmInitializeTaskParams params =
         getVmInitializeParams(initializeStepInfo, ambiance, poolId, fallbackPoolIds, distributed);
     SetupVmRequest setupVmRequest = convertHostedSetupParams(params, ambiance);
+    if (ciFreeLicense) {
+      // this tag is used in dlite for marking it as a free ci account
+      setupVmRequest.getTags().put(FREE_CI_ATTR, "true");
+    }
+
     List<ExecuteStepRequest> services = new ArrayList<>();
     if (isNotEmpty(params.getServiceDependencies())) {
       for (VmServiceDependency serviceDependency : params.getServiceDependencies()) {

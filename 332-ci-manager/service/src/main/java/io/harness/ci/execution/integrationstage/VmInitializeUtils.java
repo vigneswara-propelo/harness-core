@@ -58,6 +58,7 @@ import static java.lang.String.format;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.FeatureName;
+import io.harness.beans.execution.license.CILicenseService;
 import io.harness.beans.plugin.compatible.PluginCompatibleStep;
 import io.harness.beans.serializer.RunTimeInputHandler;
 import io.harness.beans.steps.CIAbstractStepNode;
@@ -84,6 +85,8 @@ import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.connector.ConnectorConfigDTO;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.ngexception.CIStageExecutionException;
+import io.harness.licensing.Edition;
+import io.harness.licensing.beans.summary.LicensesWithSummaryDTO;
 import io.harness.ng.core.NGAccess;
 import io.harness.ng.core.dto.TunnelResponseDTO;
 import io.harness.plancreator.execution.ExecutionWrapperConfig;
@@ -114,6 +117,7 @@ import org.apache.commons.lang3.tuple.Pair;
 public class VmInitializeUtils {
   @Inject CIFeatureFlagService featureFlagService;
   @Inject TunnelResourceClient tunnelResourceClient;
+  @Inject CILicenseService ciLicenseService;
 
   public void validateStageConfig(IntegrationStageConfig integrationStageConfig, String accountId) {
     for (ExecutionWrapperConfig executionWrapper : integrationStageConfig.getExecution().getSteps()) {
@@ -460,5 +464,17 @@ public class VmInitializeUtils {
           "Running the pipeline in debug mode is not supported for the selected Operating System:" + os.toString());
     }
     return true;
+  }
+
+  public boolean isCIFreeLicense(String accountId) {
+    LicensesWithSummaryDTO licensesWithSummaryDTO = ciLicenseService.getLicenseSummary(accountId);
+
+    if (licensesWithSummaryDTO == null) {
+      throw new CIStageExecutionException("Please enable CI free plan or reach out to support.");
+    }
+    if (licensesWithSummaryDTO != null && licensesWithSummaryDTO.getEdition() == Edition.FREE) {
+      return true;
+    }
+    return false;
   }
 }
