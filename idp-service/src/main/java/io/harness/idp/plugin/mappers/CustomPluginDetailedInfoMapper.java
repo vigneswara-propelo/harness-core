@@ -95,4 +95,15 @@ public class CustomPluginDetailedInfoMapper
         throw new UnsupportedOperationException(String.format("File type %s is not supported", fileType));
     }
   }
+
+  public CustomPluginDetailedInfo toYamlDto(CustomPluginInfoEntity entity, boolean isEnabled) {
+    CustomPluginDetailedInfo info = new CustomPluginDetailedInfo();
+    PluginInfo pluginDetails = new PluginInfo();
+    pluginDetails.setId(entity.getIdentifier());
+    pluginDetails.setName(entity.getName());
+    pluginDetails.setEnabled(isEnabled);
+    info.setPluginDetails(pluginDetails);
+    info.setArtifact(entity.getArtifact());
+    return info;
+  }
 }

@@ -584,6 +584,21 @@ paths:
         - $ref: '#/components/parameters/AccountHeader'
     parameters:
       - $ref: '#/components/parameters/PluginId'
+    delete:
+      summary: Delete custom plugin info
+      operationId: delete-custom-plugin-info
+      responses:
+        '204':
+          description: No Content
+      x-stoplight:
+        id: 1brpcp6chep0j
+      x-internal: true
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      tags:
+        - PluginInfo
   /v1/app-config:
     post:
       summary: Save Or Update Plugin Config

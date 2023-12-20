@@ -38,4 +38,6 @@ public interface PluginInfoService {
       FormDataContentDisposition fileDetail, String harnessAccount);
 
   CustomPluginDetailedInfo deleteFile(String pluginId, String fileType, String fileName, String harnessAccount);
+
+  void deletePluginInfo(String pluginId, String harnessAccount);
 }

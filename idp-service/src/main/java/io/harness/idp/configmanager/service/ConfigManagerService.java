@@ -20,7 +20,9 @@ import java.util.Map;
 @OwnedBy(HarnessTeam.IDP)
 public interface ConfigManagerService {
   Map<String, Boolean> getAllPluginIdsMap(String accountIdentifier);
-  public AppConfig getAppConfig(String accountIdentifier, String configId, ConfigType configType);
+  AppConfig getAppConfig(String accountIdentifier, String configId, ConfigType configType);
+
+  Map<String, AppConfig> getEnabledPluginsAppConfigs(String accountIdentifier);
 
   AppConfig saveConfigForAccount(AppConfig appConfig, String accountIdentifier, ConfigType configType) throws Exception;
 

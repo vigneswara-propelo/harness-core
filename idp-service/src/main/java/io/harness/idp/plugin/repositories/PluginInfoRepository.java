@@ -23,6 +23,9 @@ import org.springframework.data.repository.CrudRepository;
 public interface PluginInfoRepository extends CrudRepository<PluginInfoEntity, String>, PluginInfoRepositoryCustom {
   Optional<PluginInfoEntity> findByIdentifier(String identifier);
   Optional<PluginInfoEntity> findByIdentifierAndAccountIdentifierIn(String identifier, Set<String> accountIdentifiers);
+  Optional<PluginInfoEntity> findByIdentifierAndAccountIdentifierAndType(
+      String identifier, String accountIdentifiers, PluginInfo.PluginTypeEnum type);
   List<PluginInfoEntity> findByIdentifierInAndAccountIdentifierOrTypeAndAccountIdentifier(List<String> identifiers,
       String globalAccountIdentifier, PluginInfo.PluginTypeEnum type, String accountIdentifier);
+  List<PluginInfoEntity> findByAccountIdentifierAndType(String accountIdentifier, PluginInfo.PluginTypeEnum type);
 }

@@ -124,6 +124,16 @@ public class ConfigManagerServiceImpl implements ConfigManagerService {
   }
 
   @Override
+  public Map<String, AppConfig> getEnabledPluginsAppConfigs(String accountIdentifier) {
+    List<AppConfigEntity> allEnabledConfigEntities =
+        appConfigRepository.findAllByAccountIdentifierAndConfigTypeAndEnabled(
+            accountIdentifier, ConfigType.PLUGIN, true);
+
+    return allEnabledConfigEntities.stream().collect(
+        Collectors.toMap(AppConfigEntity::getConfigId, AppConfigMapper::toDTO));
+  }
+
+  @Override
   public AppConfig saveConfigForAccount(AppConfig appConfig, String accountIdentifier, ConfigType configType) {
     AppConfigEntity appConfigEntity = AppConfigMapper.fromDTO(appConfig, accountIdentifier);
     appConfigEntity.setConfigType(configType);

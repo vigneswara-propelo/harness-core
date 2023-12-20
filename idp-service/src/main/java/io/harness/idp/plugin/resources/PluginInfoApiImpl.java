@@ -32,9 +32,7 @@ import io.harness.spec.server.idp.v1.model.PluginInfo;
 import io.harness.spec.server.idp.v1.model.PluginRequestResponseList;
 import io.harness.spec.server.idp.v1.model.RequestPlugin;
 
-import com.google.cloud.storage.StorageException;
 import com.google.inject.Inject;
-import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
@@ -69,6 +67,24 @@ public class PluginInfoApiImpl implements PluginInfoApi {
       return Response.status(Response.Status.OK).entity(response).build();
     } catch (Exception e) {
       log.error("Could not get plugin details", e);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+          .entity(ResponseMessage.builder().message(e.getMessage()).build())
+          .build();
+    }
+  }
+
+  @Override
+  public Response deleteCustomPluginInfo(String pluginId, @AccountIdentifier String harnessAccount) {
+    try {
+      pluginInfoService.deletePluginInfo(pluginId, harnessAccount);
+      return Response.status(Response.Status.NO_CONTENT).build();
+    } catch (NotFoundException e) {
+      log.error("Could not find custom plugin with id {} in account {}", pluginId, harnessAccount, e);
+      return Response.status(Response.Status.NOT_FOUND)
+          .entity(ResponseMessage.builder().message(e.getMessage()).build())
+          .build();
+    } catch (Exception e) {
+      log.error("Could not delete plugin details for plugin: {}, account: {}", pluginId, harnessAccount, e);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity(ResponseMessage.builder().message(e.getMessage()).build())
           .build();

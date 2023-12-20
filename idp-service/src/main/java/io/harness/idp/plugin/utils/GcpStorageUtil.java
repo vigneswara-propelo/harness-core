@@ -35,7 +35,7 @@ public class GcpStorageUtil {
 
   public String uploadFileToGcs(String bucketName, String filePath, String fileName, InputStream fileContent) {
     try {
-      BlobId blobId = BlobId.of(bucketName, filePath + "/" + fileName);
+      BlobId blobId = BlobId.of(bucketName, filePath + PATH_SEPARATOR + fileName);
       Blob blob = storage.create(BlobInfo.newBuilder(blobId).build(), fileContent.readAllBytes());
       log.info("File uploaded to GCS: {}", blob.getName());
       return GCS_BASE_URL + bucketName + PATH_SEPARATOR + blob.getName();
