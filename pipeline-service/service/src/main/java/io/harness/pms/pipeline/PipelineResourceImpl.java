@@ -467,6 +467,16 @@ public class PipelineResourceImpl implements YamlSchemaResource, PipelineResourc
         PipelineSaveResponse.builder().identifier(savedPipelineEntity.getIdentifier()).build());
   }
 
+  @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_CREATE_AND_EDIT)
+  public ResponseDTO<PipelineSaveResponse> importPipelineFromGit(@NotNull @AccountIdentifier String accountId,
+      @NotNull @OrgIdentifier String orgId, @NotNull @ProjectIdentifier String projectId,
+      GitImportInfoDTO gitImportInfoDTO, PipelineImportRequestDTO pipelineImportRequestDTO) {
+    PipelineEntity savedPipelineEntity = pmsPipelineService.importPipelineFromRemote(
+        accountId, orgId, projectId, "", pipelineImportRequestDTO, gitImportInfoDTO.getIsForceImport());
+    return ResponseDTO.newResponse(
+        PipelineSaveResponse.builder().identifier(savedPipelineEntity.getIdentifier()).build());
+  }
+
   @NGAccessControlCheck(resourceType = "PIPELINE", permission = PipelineRbacPermissions.PIPELINE_VIEW)
   @Hidden
   public ResponseDTO<ExpandedPipelineJsonDTO> getExpandedPipelineJson(@NotNull @AccountIdentifier String accountId,

@@ -103,6 +103,7 @@ import io.harness.pms.rbac.PipelineRbacPermissions;
 import io.harness.pms.sdk.PmsSdkInstanceService;
 import io.harness.pms.yaml.HarnessYamlVersion;
 import io.harness.pms.yaml.NGYamlHelper;
+import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.project.remote.ProjectClient;
 import io.harness.remote.client.NGRestUtils;
@@ -861,6 +862,18 @@ public class PMSPipelineServiceImpl implements PMSPipelineService {
     String importedPipelineYAML =
         pmsPipelineServiceHelper.importPipelineFromRemote(accountId, orgIdentifier, projectIdentifier, true);
     String pipelineVersion = pipelineVersion(accountId, importedPipelineYAML);
+    YamlField pipelineRootYamlField = YamlUtils.readYamlTree(importedPipelineYAML).getNode().getField("pipeline");
+    if (EmptyPredicate.isEmpty(pipelineIdentifier)
+        || (!EmptyPredicate.isEmpty(pipelineIdentifier)
+            && pipelineIdentifier.equals(pipelineRootYamlField.getNode().getIdentifier()))) {
+      pipelineIdentifier = pipelineRootYamlField.getNode().getIdentifier();
+    }
+    if (EmptyPredicate.isEmpty(pipelineImportRequest.getPipelineName())) {
+      pipelineImportRequest = PipelineImportRequestDTO.builder()
+                                  .pipelineName(pipelineRootYamlField.getNode().getName())
+                                  .pipelineDescription(pipelineImportRequest.getPipelineDescription())
+                                  .build();
+    }
     PMSPipelineServiceHelper.checkAndThrowMismatchInImportedPipelineMetadata(orgIdentifier, projectIdentifier,
         pipelineIdentifier, pipelineImportRequest, importedPipelineYAML, pipelineVersion);
     PipelineEntity pipelineEntity = PMSPipelineDtoMapper.toPipelineEntity(accountId, orgIdentifier, projectIdentifier,
