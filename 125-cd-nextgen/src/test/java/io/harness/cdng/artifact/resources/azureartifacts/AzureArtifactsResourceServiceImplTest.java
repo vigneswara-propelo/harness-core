@@ -7,9 +7,11 @@
 
 package io.harness.cdng.artifact.resources.azureartifacts;
 
+import static io.harness.rule.OwnerRule.RAKSHIT_AGARWAL;
 import static io.harness.rule.OwnerRule.VED;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,6 +36,7 @@ import io.harness.delegate.task.artifacts.request.ArtifactTaskParameters;
 import io.harness.delegate.task.artifacts.response.ArtifactTaskExecutionResponse;
 import io.harness.delegate.task.artifacts.response.ArtifactTaskResponse;
 import io.harness.encryption.SecretRefData;
+import io.harness.exception.InvalidRequestException;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.rule.Owner;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
@@ -63,8 +66,26 @@ public class AzureArtifactsResourceServiceImplTest extends CategoryTest {
   private static String ACCOUNT_ID = "accountId";
 
   private static String ORG_IDENTIFIER = "orgIdentifier";
+  private static final String IDENTIFIER = "identifier";
+  private static final String PROJECT = "project";
+  private static final String FEED = "feed";
+  private static final String PACKAGE_NAME = "packageName";
+  private static final String PACKAGE_TYPE = "packageType";
+  private static final String VERSION_REGEX = "*";
+  private static final String VERSION = "version";
+  private static final String INPUT = "<+input>-abc";
 
   private static String PROJECT_IDENTIFIER = "projectIdentifier";
+  private static final IdentifierRef CONNECTOR_REF = IdentifierRef.builder()
+                                                         .accountIdentifier(ACCOUNT_ID)
+                                                         .identifier(IDENTIFIER)
+                                                         .projectIdentifier(PROJECT_IDENTIFIER)
+                                                         .orgIdentifier(ORG_IDENTIFIER)
+                                                         .build();
+  private static final String FEED_MESSAGE = "value for feed is empty or not provided";
+  private static final String PACKAGE_NAME_MESSAGE = "value for packageName is empty or not provided";
+  private static final String VERSION_VERSION_REGEX_MESSAGE =
+      "value for version, versionRegex is empty or not provided";
 
   @Mock ConnectorService connectorService;
 
@@ -666,5 +687,72 @@ public class AzureArtifactsResourceServiceImplTest extends CategoryTest {
     ArtifactTaskParameters taskParameters = (ArtifactTaskParameters) request.getTaskParameters();
 
     assertThat(taskParameters.getArtifactTaskType()).isEqualTo(ArtifactTaskType.GET_AZURE_PROJECTS);
+  }
+
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testListVersion_Feed_Null() {
+    assertThatThrownBy(
+        ()
+            -> azureArtifactsResourceService.listVersionsOfAzureArtifactsPackage(CONNECTOR_REF, ACCOUNT_ID,
+                ORG_IDENTIFIER, PROJECT_IDENTIFIER, PROJECT, null, PACKAGE_TYPE, PACKAGE_NAME, VERSION_REGEX))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(FEED_MESSAGE);
+  }
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testListVersion_Feed_Empty() {
+    assertThatThrownBy(
+        ()
+            -> azureArtifactsResourceService.listVersionsOfAzureArtifactsPackage(CONNECTOR_REF, ACCOUNT_ID,
+                ORG_IDENTIFIER, PROJECT_IDENTIFIER, PROJECT, "", PACKAGE_TYPE, PACKAGE_NAME, VERSION_REGEX))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(FEED_MESSAGE);
+  }
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testListVersion_Feed_Input() {
+    assertThatThrownBy(
+        ()
+            -> azureArtifactsResourceService.listVersionsOfAzureArtifactsPackage(CONNECTOR_REF, ACCOUNT_ID,
+                ORG_IDENTIFIER, PROJECT_IDENTIFIER, PROJECT, INPUT, PACKAGE_TYPE, PACKAGE_NAME, VERSION_REGEX))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(FEED_MESSAGE);
+  }
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testListVersion_Package_Name_Null() {
+    assertThatThrownBy(
+        ()
+            -> azureArtifactsResourceService.listVersionsOfAzureArtifactsPackage(CONNECTOR_REF, ACCOUNT_ID,
+                ORG_IDENTIFIER, PROJECT_IDENTIFIER, PROJECT, FEED, PACKAGE_TYPE, null, VERSION_REGEX))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(PACKAGE_NAME_MESSAGE);
+  }
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testListVersion_Package_Name_Empty() {
+    assertThatThrownBy(
+        ()
+            -> azureArtifactsResourceService.listVersionsOfAzureArtifactsPackage(CONNECTOR_REF, ACCOUNT_ID,
+                ORG_IDENTIFIER, PROJECT_IDENTIFIER, PROJECT, FEED, PACKAGE_TYPE, "", VERSION_REGEX))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(PACKAGE_NAME_MESSAGE);
+  }
+  @Test
+  @Owner(developers = RAKSHIT_AGARWAL)
+  @Category(UnitTests.class)
+  public void testListVersion_Package_Name_Input() {
+    assertThatThrownBy(
+        ()
+            -> azureArtifactsResourceService.listVersionsOfAzureArtifactsPackage(CONNECTOR_REF, ACCOUNT_ID,
+                ORG_IDENTIFIER, PROJECT_IDENTIFIER, PROJECT, FEED, PACKAGE_TYPE, INPUT, VERSION_REGEX))
+        .isInstanceOf(InvalidRequestException.class)
+        .hasMessage(PACKAGE_NAME_MESSAGE);
   }
 }

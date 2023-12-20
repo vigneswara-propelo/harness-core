@@ -15,6 +15,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.DelegateTaskRequest;
 import io.harness.beans.IdentifierRef;
+import io.harness.cdng.artifact.NGArtifactConstants;
 import io.harness.cdng.artifact.utils.ArtifactUtils;
 import io.harness.common.NGTaskType;
 import io.harness.connector.ConnectorInfoDTO;
@@ -65,6 +66,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import org.apache.commons.lang3.tuple.MutablePair;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_ARTIFACTS})
 public class AzureArtifactsResourceServiceImpl implements AzureArtifactsResourceService {
@@ -116,6 +118,8 @@ public class AzureArtifactsResourceServiceImpl implements AzureArtifactsResource
   public List<BuildDetails> listVersionsOfAzureArtifactsPackage(IdentifierRef connectorRef, String accountId,
       String orgIdentifier, String projectIdentifier, String project, String feed, String packageType,
       String packageName, String versionRegex) {
+    ArtifactUtils.validateIfAllValuesAssigned(
+        MutablePair.of(NGArtifactConstants.FEED, feed), MutablePair.of(NGArtifactConstants.PACKAGE_NAME, packageName));
     AzureArtifactsConnectorDTO azureArtifactsConnector = getConnector(connectorRef);
 
     BaseNGAccess baseNGAccess = getBaseNGAccess(connectorRef.getAccountIdentifier(), orgIdentifier, projectIdentifier);
