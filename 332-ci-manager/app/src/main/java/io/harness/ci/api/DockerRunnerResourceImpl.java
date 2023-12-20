@@ -19,6 +19,8 @@ import io.harness.security.annotations.NextGenManagerAuth;
 
 import com.google.inject.Inject;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import retrofit2.Call;
 
@@ -27,17 +29,51 @@ import retrofit2.Call;
 @NextGenManagerAuth
 public class DockerRunnerResourceImpl implements DockerRunnerResource {
   @Inject private AccountClient accountClient;
+  final String DELEGATE_TOKEN_PATTERN = "-e DELEGATE_TOKEN=([^\\s]+)";
+  final String DELEGATE_IMAGE_PATTERN = "/delegate:(\\S+)";
+  final String DELEGATE_DEFAULT_VERSION = "23.12.81604";
 
   public RestResponse<String> get(String accountId, String os, String arch) throws Exception {
     Call<RestResponse<Map<String, String>>> req =
         accountClient.getInstallationCommand(accountId, DelegateType.DOCKER, os, arch);
     Map<String, String> res = CGRestUtils.getResponse(req);
-    String command = res.get("command") + " \n ";
-    command +=
-        "wget -q https://github.com/harness/harness-docker-runner/releases/latest/download/harness-docker-runner-linux-amd64 \n "
-        + "sudo chmod +x harness-docker-runner-linux-amd64 \n "
-        + "sudo ./harness-docker-runner-linux-amd64 server";
+    String delegateCommand = res.get("command");
+    String env = System.getProperty("ENV");
+    String scriptUrl = getScriptUrl(env);
+    String token = extractToken(delegateCommand, accountId);
+    String delegateVersion = extractDelegateVersion(delegateCommand);
+    String command = String.format("wget %s -O script.sh\n", scriptUrl)
+        + String.format("sh script.sh %s %s %s", accountId, token, delegateVersion);
 
     return new RestResponse(command);
+  }
+
+  private String getScriptUrl(String env) {
+    return String.format(
+        "https://raw.githubusercontent.com/harness/harness-docker-runner/master/scripts/script-%s.sh", env);
+  }
+
+  private String extractToken(String command, String accountId) {
+    Pattern pattern = Pattern.compile(DELEGATE_TOKEN_PATTERN);
+    Matcher matcher = pattern.matcher(command);
+    String token = "";
+    if (matcher.find()) {
+      token = matcher.group(1);
+    } else {
+      log.error("DELEGATE_TOKEN not found in the input string for account " + accountId);
+    }
+    return token;
+  }
+
+  private String extractDelegateVersion(String command) {
+    Pattern pattern = Pattern.compile(DELEGATE_IMAGE_PATTERN);
+    Matcher matcher = pattern.matcher(command);
+    String version = DELEGATE_DEFAULT_VERSION;
+    if (matcher.find()) {
+      version = matcher.group(1);
+    } else {
+      log.error("DELEGATE_VERSION not found in the command, using default version");
+    }
+    return version;
   }
 }
