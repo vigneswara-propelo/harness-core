@@ -13,6 +13,8 @@ import static io.harness.authorization.AuthorizationServiceHeader.SSCA_SERVICE;
 import static io.harness.lock.DistributedLockImplementation.REDIS;
 import static io.harness.outbox.OutboxSDKConstants.DEFAULT_OUTBOX_POLL_CONFIGURATION;
 
+import static io.serializer.HObjectMapper.NG_DEFAULT_OBJECT_MAPPER;
+
 import io.harness.account.AccountClientModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.app.PrimaryVersionManagerModule;
@@ -111,7 +113,6 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;
@@ -296,9 +297,9 @@ public class SSCAManagerModule extends AbstractModule {
                                   .setDefaultHeaders(new Header[] {new BasicHeader(
                                       "Authorization", "ApiKey " + configuration.getElasticSearchConfig().getApiKey())})
                                   .build();
-      ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-      ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper(objectMapper));
+      ElasticsearchTransport transport =
+          new RestClientTransport(restClient, new JacksonJsonpMapper(NG_DEFAULT_OBJECT_MAPPER));
       return new ElasticsearchClient(transport);
     } catch (Exception e) {
       throw new GeneralException("Failed to create Elasticsearch client", e);
@@ -382,5 +383,11 @@ public class SSCAManagerModule extends AbstractModule {
     MapBinder<String, OutboxEventHandler> outboxEventHandlerMapBinder =
         MapBinder.newMapBinder(binder(), String.class, OutboxEventHandler.class);
     outboxEventHandlerMapBinder.addBinding(SSCA_ARTIFACT).to(SSCAArtifactEventHandler.class);
+  }
+
+  @Provides
+  @Singleton
+  public ObjectMapper getObjectMapper() {
+    return NG_DEFAULT_OBJECT_MAPPER;
   }
 }
