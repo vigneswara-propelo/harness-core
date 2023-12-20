@@ -521,7 +521,7 @@ public class K8sHelmCommonStepHelper {
       GitStoreDelegateConfig gitStoreDelegateConfig = cdStepHelper.getGitStoreDelegateConfig(
           gitStoreConfig, connectorDTO, manifestOutcome, gitFileValuesPaths, ambiance);
       gitFetchFilesConfigList.add(cdStepHelper.getGitFetchFilesConfigFromBuilder(
-          identifier, manifestOutcome.getType(), succeedIfFileNotFound, gitStoreDelegateConfig));
+          identifier, manifestOutcome.getType(), succeedIfFileNotFound, gitStoreDelegateConfig, false));
     }
   }
 
@@ -579,7 +579,7 @@ public class K8sHelmCommonStepHelper {
         cdStepHelper.getGitStoreDelegateConfig(gitStoreConfig, connectorDTO, manifestOutcome, gitFilePaths, ambiance);
 
     return cdStepHelper.getGitFetchFilesConfigFromBuilder(
-        manifestOutcome.getIdentifier(), manifestOutcome.getType(), false, gitStoreDelegateConfig);
+        manifestOutcome.getIdentifier(), manifestOutcome.getType(), false, gitStoreDelegateConfig, false);
   }
 
   public GitFetchFilesConfig getPathsFromInheritFromManifestStoreConfig(

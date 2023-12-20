@@ -196,8 +196,14 @@ public class GitFetchTaskNG extends AbstractDelegateRunnableTask {
       ExceptionMessageSanitizer.storeAllSecretsForSanitizing(
           GitApiAccessDecryptionHelper.getAPIAccessDecryptableEntity(gitStoreDelegateConfig.getGitConfigDTO()),
           gitStoreDelegateConfig.getApiAuthEncryptedDataDetails());
-      gitFetchFilesResult =
-          scmFetchFilesHelper.fetchFilesFromRepoWithScm(identifier, gitStoreDelegateConfig, filePathsToFetch);
+
+      if (gitFetchFilesConfig.isSupportFolders()) {
+        gitFetchFilesResult =
+            scmFetchFilesHelper.fetchFilesAndFoldersContentFromRepoWithScm(gitStoreDelegateConfig, filePathsToFetch);
+      } else {
+        gitFetchFilesResult =
+            scmFetchFilesHelper.fetchFilesFromRepoWithScm(identifier, gitStoreDelegateConfig, filePathsToFetch);
+      }
     } else {
       GitConfigDTO gitConfigDTO = scmConnectorMapperDelegate.toGitConfigDTO(
           gitStoreDelegateConfig.getGitConfigDTO(), gitStoreDelegateConfig.getEncryptedDataDetails());

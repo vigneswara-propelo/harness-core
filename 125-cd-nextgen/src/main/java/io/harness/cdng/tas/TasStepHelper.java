@@ -1484,7 +1484,8 @@ public class TasStepHelper {
     if (isNotEmpty(gitFileValuesPaths)) {
       GitStoreDelegateConfig gitStoreDelegateConfig = cdStepHelper.getGitStoreDelegateConfig(
           gitStoreConfig, connectorDTO, manifestOutcome, gitFileValuesPaths, ambiance);
-      return cdStepHelper.getGitFetchFilesConfigFromBuilder(identifier, manifestType, false, gitStoreDelegateConfig);
+      return cdStepHelper.getGitFetchFilesConfigFromBuilder(
+          identifier, manifestType, false, gitStoreDelegateConfig, true);
     }
     return null;
   }
@@ -1495,7 +1496,8 @@ public class TasStepHelper {
     if (isNotEmpty(gitFileValuesPaths)) {
       GitStoreDelegateConfig gitStoreDelegateConfig = getGitStoreDelegateConfig(
           gitStoreConfig, connectorDTO, gitFileValuesPaths, ambiance, manifestType, identifier);
-      return cdStepHelper.getGitFetchFilesConfigFromBuilder(identifier, manifestType, false, gitStoreDelegateConfig);
+      return cdStepHelper.getGitFetchFilesConfigFromBuilder(
+          identifier, manifestType, false, gitStoreDelegateConfig, true);
     }
     return null;
   }
