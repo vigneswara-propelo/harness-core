@@ -575,7 +575,13 @@ func parseCrudResponse(ctx context.Context, client *scm.Client, body io.Reader, 
 			log.Errorw("parseCrudResponse unable to get commitid from Harness CRUD operation", zap.Error(err))
 			return "", ""
 		}
-		return out.CommitID, ""
+		// for blob id we are making one more call to get latest for the file
+		file, err := FindFile(ctx, &pb.GetFileRequest{Path: request.FilePath, Slug: request.Slug, Provider: &p,Type: &pb.GetFileRequest_Ref{Ref:out.CommitID}}, log)
+		if err != nil {
+			log.Errorw("FindFile error during blob fetch", zap.Error(err))
+			return out.CommitID, ""
+		}
+		return out.CommitID, file.BlobId
 	default:
 		return "", ""
 	}

@@ -400,6 +400,10 @@ func convertHarnessEnumToStrings(enums *pb.HarnessWebhookEvents) (strings []stri
 			strings = append(strings, "tag_updated")
 		case pb.HarnessWebhookEvent_HARNESS_PULLREQ_COMMENT_CREATED:
 			strings = append(strings, "pullreq_comment_created")
+		case pb.HarnessWebhookEvent_HARNESS_PULLREQ_CLOSED:
+			strings = append(strings, "pullreq_closed")
+		case pb.HarnessWebhookEvent_HARNESS_PULLREQ_MERGED:
+			strings = append(strings, "pullreq_merged")
 		}
 	}
 	return strings
@@ -415,6 +419,22 @@ func convertStringsToHarnessEnum(strings []string) (enums pb.NativeEvents_Harnes
 			array = append(array, pb.HarnessWebhookEvent_HARNESS_PULLREQ_CREATED)
 		case "pullreq_reopened":
 			array = append(array, pb.HarnessWebhookEvent_HARNESS_PULLREQ_REOPENED)
+		case "pullreq_closed":
+			array = append(array, pb.HarnessWebhookEvent_HARNESS_PULLREQ_CLOSED)
+		case "pullreq_merged":
+			array = append(array, pb.HarnessWebhookEvent_HARNESS_PULLREQ_MERGED)
+		case "branch_created":
+			array = append(array, pb.HarnessWebhookEvent_HARNESS_BRANCH_CREATED)
+		case "branch_updated":
+			array = append(array, pb.HarnessWebhookEvent_HARNESS_BRANCH_UPDATED)
+		case "branch_deleted":
+			array = append(array, pb.HarnessWebhookEvent_HARNESS_BRANCH_DELETED)
+		case "tag_created":
+			array = append(array, pb.HarnessWebhookEvent_HARNESS_TAG_CREATED)
+		case "tag_deleted":
+			array = append(array, pb.HarnessWebhookEvent_HARNESS_TAG_DELETED)
+		case "tag_updated":
+			array = append(array, pb.HarnessWebhookEvent_HARNESS_TAG_UPDATED)
 		}
 	}
 	enums.Harness = &pb.HarnessWebhookEvents{Events: array}

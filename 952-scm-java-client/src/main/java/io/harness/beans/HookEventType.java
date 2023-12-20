@@ -43,7 +43,7 @@ public enum HookEventType {
           HarnessWebhookEvent.HARNESS_TAG_UPDATED, HarnessWebhookEvent.HARNESS_TAG_CREATED,
           HarnessWebhookEvent.HARNESS_TAG_DELETED, HarnessWebhookEvent.HARNESS_PULLREQ_BRANCH_UPDATED,
           HarnessWebhookEvent.HARNESS_BRANCH_UPDATED, HarnessWebhookEvent.HARNESS_BRANCH_CREATED,
-          HarnessWebhookEvent.HARNESS_PULLREQ_COMMENT_CREATED));
+          HarnessWebhookEvent.HARNESS_PULLREQ_COMMENT_CREATED, HarnessWebhookEvent.HARNESS_PULLREQ_MERGED));
 
   public List<GithubWebhookEvent> githubWebhookEvents;
   public List<GitlabWebhookEvent> gitlabWebhookEvents;
