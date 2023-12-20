@@ -47,16 +47,18 @@ public abstract class BasePipelineSchemaParser extends AbstractStaticSchemaParse
 
   @Override
   public JsonNode getFieldNode(InputFieldMetadata inputFieldMetadata) {
-    String[] fqnParts = inputFieldMetadata.getFqnFromParentNode().split("\\.");
+    String fqnFromParentNode = inputFieldMetadata.getFqnFromParentNode();
     PipelineSchemaRequest pipelineSchemaRequest =
         PipelineSchemaRequest.builder()
-            .individualSchemaMetadata(PipelineSchemaMetadata.builder()
-                                          .nodeGroup(getFormattedNodeGroup(fqnParts[0]))
-                                          .nodeType(inputFieldMetadata.getParentNodeType())
-                                          .build())
+            .individualSchemaMetadata(
+                PipelineSchemaMetadata.builder()
+                    .nodeGroup(getFormattedNodeGroup(inputFieldMetadata.getParentTypeOfNodeGroup()))
+                    .nodeType(inputFieldMetadata.getParentNodeType())
+                    .build())
+            .fqnFromParentNode(fqnFromParentNode)
             .build();
 
-    return super.getFieldNode(inputFieldMetadata.getFieldName(), pipelineSchemaRequest);
+    return super.getFieldNode(pipelineSchemaRequest);
   }
 
   @Override

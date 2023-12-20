@@ -8,12 +8,16 @@
 package io.harness.yaml.schema.inputs;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
+import static io.harness.yaml.individualschema.InputFieldMetadata.parentTypesOfNodeGroups;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.exception.InvalidRequestException;
 import io.harness.jackson.JsonNodeUtils;
 import io.harness.pms.merger.fqn.FQN;
+import io.harness.pms.merger.fqn.FQNNode;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
+import io.harness.pms.yaml.YamlNode;
+import io.harness.pms.yaml.YamlNodeUtils;
 import io.harness.pms.yaml.YamlSchemaFieldConstants;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.yaml.schema.inputs.beans.InputDetails;
@@ -141,5 +145,26 @@ public class YamlInputUtils {
       return JsonFieldUtils.get(yamlJsonNode, YamlSchemaFieldConstants.SPEC);
     }
     return JsonFieldUtils.get(yamlJsonNode, YamlSchemaFieldConstants.PIPELINE);
+  }
+
+  public String getParentNodeTypeForGivenFQNField(JsonNode jsonNode, FQN fqn) {
+    YamlNode yamlNode = new YamlNode(jsonNode);
+    int parentNodeIndex = -1;
+    for (int i = 1; i < fqn.getFqnList().size(); i++) {
+      if (fqn.getFqnList().get(i).getNodeType() == FQNNode.NodeType.UUID
+          && parentTypesOfNodeGroups.contains(fqn.getFqnList().get(i - 1).getKey())) {
+        parentNodeIndex = i;
+      }
+    }
+    if (parentNodeIndex == -1) {
+      return "";
+    }
+    String pathTillParent =
+        FQN.builder().fqnList(fqn.getFqnList().subList(0, parentNodeIndex + 1)).build().getExpressionFqn();
+    YamlNode parentNode = YamlNodeUtils.goToPathUsingFqn(yamlNode, pathTillParent);
+    if (parentNode == null) {
+      return "";
+    }
+    return JsonFieldUtils.getTextOrEmpty(parentNode.getCurrJsonNode(), YamlSchemaFieldConstants.TYPE);
   }
 }

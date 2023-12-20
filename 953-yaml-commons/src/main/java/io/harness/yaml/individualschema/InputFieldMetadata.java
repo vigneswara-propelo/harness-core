@@ -25,7 +25,7 @@ public class InputFieldMetadata {
   String parentNodeType; // eg: JiraCreate, custom etc.
   FQN fqn;
 
-  private static List<String> baseNodeGroups = Arrays.asList("stage", "stages", "step", "steps");
+  public static List<String> parentTypesOfNodeGroups = Arrays.asList("stages", "steps");
 
   // Uses current field fqn to calculate fqn from parent node for a sibling field (from same step)
   public String getFqnForSiblingField(String fieldName) {
@@ -36,15 +36,30 @@ public class InputFieldMetadata {
   public static String getFqnStartingFromParentNode(FQN fqn) {
     String fqnFromParentNode = "";
     for (FQNNode fqnNode : fqn.getFqnList()) {
-      if (baseNodeGroups.contains(fqnNode.getKey())) {
-        fqnFromParentNode = fqnNode.getKey();
+      if (parentTypesOfNodeGroups.contains(fqnNode.getKey())) {
+        fqnFromParentNode = "";
       } else {
         if (fqnNode.getKey() != null) {
           fqnFromParentNode += "." + fqnNode.getKey();
         }
       }
     }
-    return fqnFromParentNode;
+    return fqnFromParentNode.startsWith(".") ? fqnFromParentNode.substring(1) : fqnFromParentNode;
+  }
+
+  /*
+  Returns the type of nodeGroup's parent node.
+  Example: If nodeGroup node is HttpStep node and its parent would be steps node. Then this method will return the
+  steps.
+   */
+  public String getParentTypeOfNodeGroup() {
+    String parentNodeType = "";
+    for (FQNNode fqnNode : fqn.getFqnList()) {
+      if (parentTypesOfNodeGroups.contains(fqnNode.getKey())) {
+        parentNodeType = fqnNode.getKey();
+      }
+    }
+    return parentNodeType;
   }
 
   public String getFqnFromParentNode() {

@@ -14,4 +14,5 @@ import lombok.Data;
 @Builder
 public class PipelineSchemaRequest extends IndividualSchemaRequest {
   private IndividualSchemaMetadata individualSchemaMetadata;
+  private String fqnFromParentNode;
 }

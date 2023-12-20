@@ -14,6 +14,7 @@ import static io.harness.yaml.schema.beans.SchemaConstants.PROPERTIES_NODE;
 import static io.harness.yaml.schema.beans.SchemaConstants.REF_NODE;
 
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.jackson.JsonNodeUtils;
 import io.harness.yaml.schema.beans.SchemaConstants;
 import io.harness.yaml.utils.JsonFieldUtils;
 import io.harness.yaml.utils.JsonPipelineUtils;
@@ -22,8 +23,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /***
@@ -43,6 +46,7 @@ public abstract class AbstractStaticSchemaParser implements SchemaParserInterfac
 
   final long MAX_TIME_TO_REINITIALIZE_PARSER = 900000;
 
+  final int MAX_DEPTH_FOR_RECURSION = 50;
   protected long lastInitializedTime;
 
   Map<String, ObjectNode> nodeToResolvedSchemaMap =
@@ -155,22 +159,70 @@ public abstract class AbstractStaticSchemaParser implements SchemaParserInterfac
     return currentJsonNode;
   }
 
-  JsonNode getFieldNode(String fieldName, IndividualSchemaRequest individualSchemaRequest) {
+  JsonNode getFieldNode(IndividualSchemaRequest individualSchemaRequest) {
     JsonNode parentFieldNode =
         nodeToResolvedSchemaMap.get(individualSchemaRequest.getIndividualSchemaMetadata().generateSchemaKey());
     if (parentFieldNode == null) {
       // return dummy node
       return new ObjectNode(JsonNodeFactory.instance);
     }
-    // if the input-field is directly in the node yaml(parallel to spec) then parentFieldNode properties should have
-    // that field. Else find the field in the spec.
-    if (parentFieldNode.has(PROPERTIES_NODE) && parentFieldNode.get(PROPERTIES_NODE).has(fieldName)) {
-      return parentFieldNode.get(PROPERTIES_NODE).get(fieldName);
+    return getFieldByFQN(parentFieldNode, Arrays.asList(individualSchemaRequest.getFqnFromParentNode().split("\\.")), 0,
+        MAX_DEPTH_FOR_RECURSION);
+  }
+
+  /***
+   * @param jsonNode currentJson node in the schema.
+   * @param fqn FQN list of the path from the parent root node.
+   * @param currentIndex Index of path in fqn list that we need to find in jsonNode.
+   * @param depth It's the available depth for the recursion. If it becomes 0 then we return and don't go deeper.
+   * @return JsonNode Schema for the field with path fqn.
+   */
+  private JsonNode getFieldByFQN(JsonNode jsonNode, List<String> fqn, int currentIndex, int depth) {
+    if (depth <= 0 || currentIndex == fqn.size() || jsonNode == null) {
+      return null;
     }
-    JsonNode allOfNode = JsonFieldUtils.getFieldNode(parentFieldNode, "allOf");
-    JsonNode specNode = JsonFieldUtils.getFieldNode(allOfNode, "spec");
-    ObjectNodeWithMetadata resolvedSpecNode = fqnToNodeMap.get(JsonFieldUtils.getFieldNode(specNode, "$ref").asText());
-    return JsonFieldUtils.getFieldNode((JsonNode) resolvedSpecNode.getObjectNode(), fieldName);
+    if (jsonNode.has(fqn.get(currentIndex))) {
+      if (currentIndex == fqn.size() - 1) {
+        return jsonNode.get(fqn.get(currentIndex));
+      }
+      return getFieldByFQN(jsonNode.get(fqn.get(currentIndex)), fqn, currentIndex + 1, depth - 1);
+    }
+
+    if (jsonNode.has(PROPERTIES_NODE) && jsonNode.get(PROPERTIES_NODE).has(fqn.get(currentIndex))) {
+      if (currentIndex == fqn.size() - 1) {
+        return jsonNode.get(PROPERTIES_NODE).get(fqn.get(currentIndex));
+      }
+      return getFieldByFQN(jsonNode.get(PROPERTIES_NODE).get(fqn.get(currentIndex)), fqn, currentIndex + 1, depth - 1);
+    }
+
+    // If currentNode has $ref then first resolve the ref then find the fqn in resolved node.
+    if (jsonNode.has(REF_NODE)) {
+      return getFieldByFQN(
+          JsonNodeUtils.goToPath(rootSchemaJsonNode, jsonNode.get(REF_NODE).asText()), fqn, currentIndex, depth - 1);
+    }
+
+    if (jsonNode.has(SchemaConstants.ALL_OF_NODE)) {
+      return getFieldByFQNFromAllOfNode(jsonNode, fqn, currentIndex, depth);
+    }
+    return null;
+  }
+
+  private JsonNode getFieldByFQNFromAllOfNode(JsonNode jsonNode, List<String> fqn, int currentIndex, int depth) {
+    JsonNode allOfNode = JsonFieldUtils.getFieldNode(jsonNode, SchemaConstants.ALL_OF_NODE);
+    // If there is allOf in the schema node then we will try to find the fqn in all the elements of allOf array.
+    if (allOfNode != null && allOfNode.isArray()) {
+      for (JsonNode chilJsonNode : allOfNode) {
+        // If schema follows the if-then format then the content of the node would be inside the then.
+        if (chilJsonNode.has(SchemaConstants.THEN_NODE)) {
+          chilJsonNode = chilJsonNode.get(SchemaConstants.THEN_NODE);
+        }
+        JsonNode targetNode = getFieldByFQN(chilJsonNode, fqn, currentIndex, depth - 1);
+        if (targetNode != null) {
+          return targetNode;
+        }
+      }
+    }
+    return null;
   }
 
   /***

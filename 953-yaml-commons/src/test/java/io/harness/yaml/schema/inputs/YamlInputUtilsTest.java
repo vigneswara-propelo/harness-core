@@ -15,6 +15,8 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
+import io.harness.pms.merger.YamlConfig;
+import io.harness.pms.merger.fqn.FQN;
 import io.harness.rule.Owner;
 import io.harness.yaml.schema.inputs.beans.InputDetails;
 import io.harness.yaml.schema.inputs.beans.SchemaInputType;
@@ -22,6 +24,7 @@ import io.harness.yaml.schema.inputs.beans.SchemaInputType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -108,5 +111,61 @@ public class YamlInputUtilsTest extends CategoryTest {
 
     // input with name inputWithValue has the value field. So this will not be present in the inputDetailsMap.
     assertThat(inputDetailsMap.containsKey("inputWithValue")).isFalse();
+  }
+
+  @Test
+  @Owner(developers = BRIJESH)
+  @Category(UnitTests.class)
+  public void testGetParentNodeTypeForGivenFQNField() {
+    String yaml = "version: 1\n"
+        + "kind: pipeline\n"
+        + "spec:\n"
+        + "  inputs:\n"
+        + "    timeout:\n"
+        + "      type: string\n"
+        + "      required: true\n"
+        + "      default: 10m\n"
+        + "    script:\n"
+        + "      type: string\n"
+        + "    jenkinsConnector:\n"
+        + "      type: string\n"
+        + "  stages:\n"
+        + "    - type: custom\n"
+        + "      name: s1\n"
+        + "      spec:\n"
+        + "        steps:\n"
+        + "          - type: shell-script\n"
+        + "            spec:\n"
+        + "              shell: bash\n"
+        + "              onDelegate: true\n"
+        + "              source:\n"
+        + "                type: inline\n"
+        + "                spec:\n"
+        + "                  script: <+inputs.script>\n"
+        + "            timeout: <+inputs.timeout>\n"
+        + "            id: shell_script_1_1\n"
+        + "          - type: JenkinsBuild\n"
+        + "            spec:\n"
+        + "              connectorRef: <+inputs.jenkinsConnector>\n"
+        + "            timeout: 10m\n"
+        + "            id: JenkinsBuild_1_1\n"
+        + "      id: s1_1\n";
+
+    YamlConfig yamlConfig = new YamlConfig(yaml);
+
+    List<InputDetails> inputDetailsList = YamlInputUtils.getYamlInputList(yaml);
+    Map<Set<String>, InputDetails> yamlInputExpressionToYamlInputMap =
+        YamlInputUtils.prepareYamlInputExpressionToYamlInputMap(inputDetailsList);
+    Map<String, List<FQN>> FQNsForAllInputs = YamlInputUtils.parseFQNsForAllInputsInYaml(
+        yamlConfig.getFqnToValueMap(), yamlInputExpressionToYamlInputMap.keySet());
+    assertThat(YamlInputUtils.getParentNodeTypeForGivenFQNField(
+                   yamlConfig.getYamlMap(), FQNsForAllInputs.get("<+inputs.jenkinsConnector>").get(0)))
+        .isEqualTo("JenkinsBuild");
+    assertThat(YamlInputUtils.getParentNodeTypeForGivenFQNField(
+                   yamlConfig.getYamlMap(), FQNsForAllInputs.get("<+inputs.timeout>").get(0)))
+        .isEqualTo("shell-script");
+    assertThat(YamlInputUtils.getParentNodeTypeForGivenFQNField(
+                   yamlConfig.getYamlMap(), FQNsForAllInputs.get("<+inputs.script>").get(0)))
+        .isEqualTo("shell-script");
   }
 }

@@ -6,6 +6,7 @@
  */
 
 package io.harness.yaml.schema.inputs;
+
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.pms.yaml.YamlSchemaFieldConstants.DEPENDS_ON;
 import static io.harness.pms.yaml.YamlSchemaFieldConstants.INPUT_PROPERTIES;
@@ -45,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @OwnedBy(HarnessTeam.PIPELINE)
 @Slf4j
 public class InputsSchemaServiceImpl implements InputsSchemaService {
+  // TODO(BRIJESH): Check for more optimisations.
   @Override
   public List<YamlInputDetails> getInputsSchemaRelations(SchemaParserInterface schemaParser, String yaml) {
     YamlConfig yamlConfig = new YamlConfig(yaml);
@@ -67,7 +69,7 @@ public class InputsSchemaServiceImpl implements InputsSchemaService {
         inputMetadata = new InputMetadata();
         for (FQN fqn : FQNList) {
           // fetch corresponding input-details for the given template yaml
-          String parentNodeType = yamlConfig.getParentNodeTypeForGivenFQNField(fqn);
+          String parentNodeType = YamlInputUtils.getParentNodeTypeForGivenFQNField(yamlConfig.getYamlMap(), fqn);
           InputFieldMetadata inputFieldMetadata =
               InputFieldMetadata.builder().parentNodeType(parentNodeType).fqn(fqn).build();
           specFieldToInputNameMap.put(inputFieldMetadata, inputDetails.getName());

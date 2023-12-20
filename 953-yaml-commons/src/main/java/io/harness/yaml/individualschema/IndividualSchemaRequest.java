@@ -9,4 +9,5 @@ package io.harness.yaml.individualschema;
 
 public abstract class IndividualSchemaRequest {
   abstract IndividualSchemaMetadata getIndividualSchemaMetadata();
+  abstract String getFqnFromParentNode();
 }

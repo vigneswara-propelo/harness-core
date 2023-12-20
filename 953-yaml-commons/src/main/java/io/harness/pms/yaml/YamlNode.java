@@ -6,6 +6,7 @@
  */
 
 package io.harness.pms.yaml;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
@@ -428,7 +429,11 @@ public class YamlNode implements Visitable {
   }
 
   public String getArrayUniqueIdentifier() {
-    return Optional.ofNullable(getIdentifier()).orElse(Optional.ofNullable(getName()).orElse(getKey()));
+    return Optional.ofNullable(getIdentifierOrId()).orElse(Optional.ofNullable(getName()).orElse(getKey()));
+  }
+
+  public String getIdentifierOrId() {
+    return Optional.ofNullable(getIdentifier()).orElse(getId());
   }
 
   public String getStringValue(String name) {
