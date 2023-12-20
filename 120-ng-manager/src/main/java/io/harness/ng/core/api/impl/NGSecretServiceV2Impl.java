@@ -118,6 +118,8 @@ public class NGSecretServiceV2Impl implements NGSecretServiceV2 {
   private static final String DELEGATES_NOT_AVAILABLE_FOR_CREDENTIALS_VALIDATION =
       "Delegates are not available for performing credentials validation.";
   private static final String REALM_NULL = "with realm \"null\"";
+  private static final String PASSWORD_INCORRECT_MESSAGE = "Password incorrect";
+  private static final String CLIENT_UNKNOWN_MESSAGE = ".*Client \\(.*\\) unknown.*";
   private final SecretRepository secretRepository;
   private final DelegateGrpcClientWrapper delegateGrpcClientWrapper;
   private final SshKeySpecDTOHelper sshKeySpecDTOHelper;
@@ -478,6 +480,12 @@ public class NGSecretServiceV2Impl implements NGSecretServiceV2 {
 
       throw NestedExceptionUtils.hintWithExplanationException(HintException.CHECK_CREDENTIALS_ON_CONFIGURATION_PAGE,
           ExplanationException.INVALID_WIN_RM_CREDENTIALS, new InvalidRequestException(errorMessage, USER));
+    } else if (errorMessage.matches(CLIENT_UNKNOWN_MESSAGE)) {
+      throw NestedExceptionUtils.hintWithExplanationException(HintException.CHECK_IF_PRINCIPAL_IS_CORRECT,
+          ExplanationException.VALIDATION_FAILED, new InvalidRequestException(errorMessage, USER));
+    } else if (errorMessage.contains(PASSWORD_INCORRECT_MESSAGE)) {
+      throw NestedExceptionUtils.hintWithExplanationException(HintException.CHECK_IF_PASSWORD_IS_CORRECT,
+          ExplanationException.VALIDATION_FAILED, new InvalidRequestException(errorMessage, USER));
     }
   }
 
