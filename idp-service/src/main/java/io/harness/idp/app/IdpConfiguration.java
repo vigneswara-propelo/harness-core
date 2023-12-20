@@ -158,6 +158,7 @@ public class IdpConfiguration extends Configuration {
   @JsonProperty("harnessCodeGitUrl") private String harnessCodeGitUrl;
   @JsonProperty("segmentConfiguration") private SegmentConfiguration segmentConfiguration;
   @JsonProperty("enableMetrics") private boolean enableMetrics;
+  @JsonProperty("allowedKindsForCatalogSync") private List<String> allowedKindsForCatalogSync;
 
   public static final Collection<Class<?>> HARNESS_RESOURCE_CLASSES = getResourceClasses();
   public static final String IDP_SPEC_PACKAGE = "io.harness.spec.server.idp.v1";

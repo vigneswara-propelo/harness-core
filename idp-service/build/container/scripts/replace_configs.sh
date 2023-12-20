@@ -625,3 +625,8 @@ if [[ "" != "$INTERNAL_ACCOUNTS" ]]; then
   yq -i 'del(.internalAccounts)' $CONFIG_FILE
   export INTERNAL_ACCOUNTS; yq -i '.internalAccounts=(env(INTERNAL_ACCOUNTS) | split(",") | map(trim))' $CONFIG_FILE
 fi
+
+if [[ "" != "$ALLOWED_KINDS_FOR_CATALOG_SYNC" ]]; then
+  yq -i 'del(.allowedKindsForCatalogSync)' $CONFIG_FILE
+  export ALLOWED_KINDS_FOR_CATALOG_SYNC; yq -i '.allowedKindsForCatalogSync=(env(ALLOWED_KINDS_FOR_CATALOG_SYNC) | split(",") | map(trim))' $CONFIG_FILE
+fi

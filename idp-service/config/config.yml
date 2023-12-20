@@ -452,3 +452,13 @@ enforcementClientConfiguration:
 
 harnessCodeGitUrl: ${HARNESS_CODE_GIT_URL:- http://localhost:3000/git}
 enableMetrics: false
+
+allowedKindsForCatalogSync:
+  - API
+  - Component
+  - Domain
+  - Group
+  - Resource
+  - System
+  - Template
+  - User

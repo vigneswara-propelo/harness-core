@@ -1040,4 +1040,11 @@ public class IdpModule extends AbstractModule {
     }
     return gitUrl;
   }
+
+  @Provides
+  @Singleton
+  @Named("allowedKindsForCatalogSync")
+  public List<String> allowedKindsForCatalogSync() {
+    return this.appConfig.getAllowedKindsForCatalogSync();
+  }
 }
