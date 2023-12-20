@@ -982,13 +982,15 @@ public class InfrastructureTaskExecutableStepV2Test extends CategoryTest {
                 .projectIdentifier("projectId")
                 .identifier("infra-id")
                 .type(InfrastructureType.SSH_WINRM_AWS)
-                .spec(SshWinRmAwsInfrastructure.builder()
-                          .connectorRef(ParameterField.createValueField("awsconnector"))
-                          .credentialsRef(ParameterField.createValueField("sshkey"))
-                          .region(ParameterField.createValueField("us-east-2"))
-                          .awsInstanceFilter(AwsInstanceFilter.builder().vpcs(List.of("vpc1")).build())
-                          .hostConnectionType(ParameterField.createValueField(HostConnectionTypeKind.PRIVATE_IP))
-                          .build())
+                .spec(
+                    SshWinRmAwsInfrastructure.builder()
+                        .connectorRef(ParameterField.createValueField("awsconnector"))
+                        .credentialsRef(ParameterField.createValueField("sshkey"))
+                        .region(ParameterField.createValueField("us-east-2"))
+                        .awsInstanceFilter(
+                            AwsInstanceFilter.builder().vpcs(ParameterField.createValueField(List.of("vpc1"))).build())
+                        .hostConnectionType(ParameterField.createValueField(HostConnectionTypeKind.PRIVATE_IP))
+                        .build())
                 .build())
         .build();
   }

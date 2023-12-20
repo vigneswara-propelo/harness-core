@@ -191,7 +191,7 @@ public class InfrastructureTaskExecutableStepTest extends CategoryTest {
           .credentialsRef(ParameterField.createValueField("sshKeyRef"))
           .region(ParameterField.createValueField("regionId"))
           .awsInstanceFilter(AwsInstanceFilter.builder()
-                                 .vpcs(Arrays.asList("vpc1"))
+                                 .vpcs(ParameterField.createValueField(Arrays.asList("vpc1")))
                                  .tags(ParameterField.createValueField(Collections.singletonMap("testTag", "test")))
                                  .build())
           .hostConnectionType(ParameterField.createValueField(HostConnectionTypeKind.HOSTNAME))

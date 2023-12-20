@@ -8,6 +8,7 @@
 package io.harness.cdng.infra.beans;
 
 import static io.harness.annotations.dev.HarnessTeam.CDP;
+import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.expression;
 import static io.harness.yaml.schema.beans.SupportedPossibleFieldTypes.string;
 
 import io.harness.annotations.dev.OwnedBy;
@@ -25,7 +26,9 @@ import lombok.Data;
 @Data
 @Builder
 public class AwsInstanceFilter {
-  private List<String> vpcs;
+  @YamlSchemaTypes({expression})
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_LIST_CLASSPATH)
+  private ParameterField<List<String>> vpcs;
 
   @YamlSchemaTypes({string})
   @ApiModelProperty(dataType = SwaggerConstants.STRING_MAP_CLASSPATH)
