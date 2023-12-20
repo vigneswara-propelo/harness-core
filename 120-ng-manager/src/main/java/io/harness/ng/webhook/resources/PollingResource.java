@@ -21,6 +21,7 @@ import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.webhook.polling.PollingResponseHandler;
 import io.harness.perpetualtask.PerpetualTaskLogContext;
+import io.harness.polling.bean.PollingType;
 import io.harness.polling.contracts.PollingItem;
 import io.harness.polling.contracts.service.PollingDocument;
 import io.harness.polling.service.intfc.PollingService;
@@ -32,6 +33,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -102,5 +105,13 @@ public class PollingResource {
   @ApiOperation(hidden = true, value = "Unsubscribe API for polling framework.", nickname = "unsubscribePolling")
   public Boolean unsubscribe(byte[] pollingItem) {
     return pollingService.unsubscribe((PollingItem) kryoSerializer.asObject(pollingItem));
+  }
+
+  @DELETE
+  @Path("delete-pollingdoc")
+  @ApiOperation(hidden = true, value = "Delete polling docs.", nickname = "delete-pollingdoc")
+  public Boolean delete(@QueryParam("accountId") @NotEmpty String accountId, @QueryParam("orgId") String orgId,
+      @QueryParam("projectId") String projectId, @QueryParam("pollingType") @NotNull PollingType pollingType) {
+    return pollingService.deletePollingDocAndPerpetualTask(accountId, orgId, projectId, pollingType);
   }
 }

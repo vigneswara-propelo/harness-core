@@ -6,6 +6,7 @@
  */
 
 package io.harness.repositories.polling;
+import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.annotations.dev.CodePulse;
@@ -23,6 +24,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -178,6 +180,23 @@ public class PollingRepositoryCustomImpl implements PollingRepositoryCustom {
                                               .and(PollingDocumentKeys.signatures)
                                               .in(signatures));
     return mongoTemplate.findOne(query, PollingDocument.class);
+  }
+
+  @Override
+  public List<PollingDocument> findPollingDocs(
+      String accountId, String orgId, String projectId, PollingType pollingType) {
+    Criteria criteria = new Criteria().and(PollingDocumentKeys.accountId).is(accountId);
+    if (!isEmpty(orgId)) {
+      criteria.and(PollingDocumentKeys.orgIdentifier).is(orgId);
+    }
+    if (!isEmpty(orgId) && !isEmpty(projectId)) {
+      criteria.and(PollingDocumentKeys.projectIdentifier).is(projectId);
+    }
+    if (isNotEmpty(String.valueOf(pollingType))) {
+      criteria.and(PollingDocumentKeys.pollingType).is(pollingType);
+    }
+    Query query = new Query(criteria);
+    return mongoTemplate.find(query, PollingDocument.class);
   }
 
   @Override

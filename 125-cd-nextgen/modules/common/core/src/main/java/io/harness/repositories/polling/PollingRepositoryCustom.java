@@ -40,6 +40,6 @@ public interface PollingRepositoryCustom {
   PollingDocument findByUuidAndAccountIdAndSignature(String pollingDocId, String accountId, List<String> signature);
   List<PollingDocument> findManyByUuidsAndAccountId(List<String> pollingDocIds, String accountId);
   List<PollingDocument> findUuidsBySignaturesAndAccountId(List<String> signatures, String accountId);
-
+  List<PollingDocument> findPollingDocs(String accountId, String orgId, String projectId, PollingType pollingType);
   DeleteResult deleteAll(Criteria criteria);
 }
