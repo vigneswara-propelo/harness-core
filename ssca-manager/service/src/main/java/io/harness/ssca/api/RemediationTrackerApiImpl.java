@@ -7,6 +7,7 @@
 package io.harness.ssca.api;
 
 import io.harness.spec.server.ssca.v1.RemediationApi;
+import io.harness.spec.server.ssca.v1.model.CreateTicketRequestBody;
 import io.harness.spec.server.ssca.v1.model.ExcludeArtifactRequestBody;
 import io.harness.spec.server.ssca.v1.model.RemediationListingRequestBody;
 import io.harness.spec.server.ssca.v1.model.RemediationTrackerCreateRequestBody;
@@ -51,6 +52,12 @@ public class RemediationTrackerApiImpl implements RemediationApi {
     RemediationTrackersOverallSummaryResponseBody response =
         remediationTrackerService.getOverallSummaryForRemediationTrackers(harnessAccount, org, project);
     return Response.ok().entity(response).build();
+  }
+
+  @Override
+  public Response createTicket(
+      String orgId, String projectId, String remediation, @Valid CreateTicketRequestBody body, String harnessAccount) {
+    return null;
   }
 
   @Override
