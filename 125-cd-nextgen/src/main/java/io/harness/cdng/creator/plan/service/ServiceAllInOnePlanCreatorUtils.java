@@ -87,9 +87,11 @@ public class ServiceAllInOnePlanCreatorUtils {
    *      config files
    *      azure settings
    */
+
   public LinkedHashMap<String, PlanCreationResponse> addServiceNode(YamlField specField, KryoSerializer kryoSerializer,
       ServiceYamlV2 serviceYamlV2, EnvironmentYamlV2 environmentYamlV2, String serviceNodeId, String nextNodeId,
-      ServiceDefinitionType serviceType, ParameterField<String> envGroupRef, PlanCreationContext ctx) {
+      ServiceDefinitionType serviceType, ParameterField<String> envGroupRef, PlanCreationContext ctx,
+      boolean allowDifferentInfraForEnvPropagation) {
     if (isConcreteServiceRefUnavailable(serviceYamlV2) && serviceYamlV2.getUseFromStage() == null) {
       throw new InvalidRequestException("At least one of serviceRef and useFromStage fields is required.");
     }
@@ -102,8 +104,9 @@ public class ServiceAllInOnePlanCreatorUtils {
         ? useServiceYamlFromStage(serviceYamlV2.getUseFromStage(), specField)
         : serviceYamlV2;
 
-    final EnvironmentYamlV2 finalEnvironmentYamlV2 =
-        useFromStage(environmentYamlV2) ? useEnvironmentYamlFromStage(environmentYamlV2, specField) : environmentYamlV2;
+    final EnvironmentYamlV2 finalEnvironmentYamlV2 = useFromStage(environmentYamlV2)
+        ? useEnvironmentYamlFromStage(environmentYamlV2, specField, allowDifferentInfraForEnvPropagation)
+        : environmentYamlV2;
 
     final LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap = new LinkedHashMap<>();
 
@@ -460,7 +463,7 @@ public class ServiceAllInOnePlanCreatorUtils {
   }
 
   public static EnvironmentYamlV2 useEnvironmentYamlFromStage(
-      @NotNull EnvironmentYamlV2 environmentYaml, YamlField specField) {
+      @NotNull EnvironmentYamlV2 environmentYaml, YamlField specField, boolean allowDifferentInfraForEnvPropagation) {
     EnvironmentInfraUseFromStage useFromStage = environmentYaml.getUseFromStage();
     final YamlField environmentField = specField.getNode().getField(YamlTypes.ENVIRONMENT_YAML);
     String stage = useFromStage.getStage();
@@ -481,18 +484,20 @@ public class ServiceAllInOnePlanCreatorUtils {
       if (deploymentStage != null) {
         validateEnvironmentInDeploymentStageConfig(deploymentStage, stage, specField);
         EnvironmentYamlV2 useFromStageEnvironmentYaml = deploymentStage.getEnvironment();
-        if ((environmentYaml.getInfrastructureDefinitions() != null)
-            && (isNotEmpty(environmentYaml.getInfrastructureDefinitions().getValue())
-                || (environmentYaml.getInfrastructureDefinitions().isExpression()
-                    && NGExpressionUtils.isStrictlyExpressionField(
-                        environmentYaml.getInfrastructureDefinitions().getExpressionValue())))) {
-          useFromStageEnvironmentYaml.setInfrastructureDefinitions(environmentYaml.getInfrastructureDefinitions());
-        } else if ((environmentYaml.getInfrastructureDefinition() != null)
-            && ((environmentYaml.getInfrastructureDefinition().getValue() != null)
-                || (environmentYaml.getInfrastructureDefinition().isExpression()
-                    && NGExpressionUtils.isStrictlyExpressionField(
-                        environmentYaml.getInfrastructureDefinition().getExpressionValue())))) {
-          useFromStageEnvironmentYaml.setInfrastructureDefinition(environmentYaml.getInfrastructureDefinition());
+        if (allowDifferentInfraForEnvPropagation) {
+          if ((environmentYaml.getInfrastructureDefinitions() != null)
+              && (isNotEmpty(environmentYaml.getInfrastructureDefinitions().getValue())
+                  || (environmentYaml.getInfrastructureDefinitions().isExpression()
+                      && NGExpressionUtils.isStrictlyExpressionField(
+                          environmentYaml.getInfrastructureDefinitions().getExpressionValue())))) {
+            useFromStageEnvironmentYaml.setInfrastructureDefinitions(environmentYaml.getInfrastructureDefinitions());
+          } else if ((environmentYaml.getInfrastructureDefinition() != null)
+              && ((environmentYaml.getInfrastructureDefinition().getValue() != null)
+                  || (environmentYaml.getInfrastructureDefinition().isExpression()
+                      && NGExpressionUtils.isStrictlyExpressionField(
+                          environmentYaml.getInfrastructureDefinition().getExpressionValue())))) {
+            useFromStageEnvironmentYaml.setInfrastructureDefinition(environmentYaml.getInfrastructureDefinition());
+          }
         }
         return useFromStageEnvironmentYaml;
       } else {

@@ -327,7 +327,10 @@ public class DeploymentStageFilterJsonCreatorV2Test extends CategoryTest {
   @Owner(developers = LOVISH_BANSAL)
   @Category(UnitTests.class)
   @Parameters(method = "getDeploymentStageConfigWithFiltersAndEnvUseFromStage")
-  public void getFiltersWithEnvFsilters(DeploymentStageNode node) throws IOException {
+  public void getFiltersWithEnvFiltersEnvUseFromStage(DeploymentStageNode node) throws IOException {
+    doReturn(true)
+        .when(ngFeatureFlagHelperService)
+        .isEnabled("accountId", FeatureName.CDS_SUPPORT_DIFFERENT_INFRA_DURING_ENV_PROPAGATION);
     Environment envEntity2 = Environment.builder()
                                  .accountId("accountId")
                                  .identifier("my-env-prod")

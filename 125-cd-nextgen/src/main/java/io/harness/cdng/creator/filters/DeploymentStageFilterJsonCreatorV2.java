@@ -334,30 +334,34 @@ public class DeploymentStageFilterJsonCreatorV2 extends GenericStageFilterJsonCr
             "stage identifier should be present in stage [%s] when propagating environment from a different stage. Please add it and try again",
             YamlUtils.getFullyQualifiedName(filterCreationContext.getCurrentField().getNode())));
       }
-      try {
-        EnvironmentYamlV2 useFromStageEnvironmentYaml = getUseFromStageEnvironmentYaml(filterCreationContext, env);
-        if (useFromStageEnvironmentYaml == null) {
-          return;
-        }
 
-        Optional<Environment> environmentEntityOptional =
-            environmentService.getMetadata(filterCreationContext.getSetupMetadata().getAccountId(),
-                filterCreationContext.getSetupMetadata().getOrgId(),
-                filterCreationContext.getSetupMetadata().getProjectId(),
-                useFromStageEnvironmentYaml.getEnvironmentRef().getValue(), false);
-        environmentEntityOptional.ifPresent(environment -> {
-          final List<InfraStructureDefinitionYaml> infraList =
-              stageFilterCreatorHelper.getInfraStructureDefinitionYamlsList(env);
-          String envEntityIdentifier = environment.getIdentifier();
-          stageFilterCreatorHelper.addFiltersForInfraYamlList(filterCreationContext, filterBuilder, envEntityIdentifier,
-              infraList, useFromStageEnvironmentYaml.getGitBranch());
-        });
-      } catch (Exception ex) {
-        log.warn(
-            format(
-                "Exception occurred while saving filters for environment propagated from stage [%s] but having a different infrastructure selected.",
-                env.getUseFromStage().getStage()),
-            ex);
+      if (ngFeatureFlagHelperService.isEnabled(filterCreationContext.getSetupMetadata().getAccountId(),
+              FeatureName.CDS_SUPPORT_DIFFERENT_INFRA_DURING_ENV_PROPAGATION)) {
+        try {
+          EnvironmentYamlV2 useFromStageEnvironmentYaml = getUseFromStageEnvironmentYaml(filterCreationContext, env);
+          if (useFromStageEnvironmentYaml == null) {
+            return;
+          }
+
+          Optional<Environment> environmentEntityOptional =
+              environmentService.getMetadata(filterCreationContext.getSetupMetadata().getAccountId(),
+                  filterCreationContext.getSetupMetadata().getOrgId(),
+                  filterCreationContext.getSetupMetadata().getProjectId(),
+                  useFromStageEnvironmentYaml.getEnvironmentRef().getValue(), false);
+          environmentEntityOptional.ifPresent(environment -> {
+            final List<InfraStructureDefinitionYaml> infraList =
+                stageFilterCreatorHelper.getInfraStructureDefinitionYamlsList(env);
+            String envEntityIdentifier = environment.getIdentifier();
+            stageFilterCreatorHelper.addFiltersForInfraYamlList(filterCreationContext, filterBuilder,
+                envEntityIdentifier, infraList, useFromStageEnvironmentYaml.getGitBranch());
+          });
+        } catch (Exception ex) {
+          log.warn(
+              format(
+                  "Exception occurred while saving filters for environment propagated from stage [%s] but having a different infrastructure selected.",
+                  env.getUseFromStage().getStage()),
+              ex);
+        }
       }
       return;
     }

@@ -19,6 +19,7 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
+import io.harness.beans.FeatureName;
 import io.harness.cdng.creator.plan.envGroup.EnvGroupPlanCreatorHelper;
 import io.harness.cdng.creator.plan.infrastructure.InfrastructurePmsPlanCreator;
 import io.harness.cdng.creator.plan.service.ServiceAllInOnePlanCreatorUtils;
@@ -280,7 +281,10 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
           List<AdviserObtainment> adviserObtainments =
               stagePlanCreatorHelper.addResourceConstraintDependencyWithWhenCondition(
                   planCreationResponseMap, specField, ctx, isProjectScopedResourceConstraintQueue);
-          String infraNodeId = addInfrastructureNode(planCreationResponseMap, stageNode, adviserObtainments, specField);
+          boolean allowDifferentInfraForEnvPropagation = featureFlagHelperService.isEnabled(
+              ctx.getAccountIdentifier(), FeatureName.CDS_SUPPORT_DIFFERENT_INFRA_DURING_ENV_PROPAGATION);
+          String infraNodeId = addInfrastructureNode(
+              planCreationResponseMap, stageNode, adviserObtainments, specField, allowDifferentInfraForEnvPropagation);
           Optional<String> provisionerIdOptional =
               addProvisionerNodeIfNeeded(specField, planCreationResponseMap, stageNode, infraNodeId);
           String serviceNextNodeId = provisionerIdOptional.orElse(infraNodeId);
@@ -558,9 +562,11 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
     return stageConfig.getService();
   }
 
-  private EnvironmentYamlV2 getEnvironmentYaml(YamlField specField, DeploymentStageConfig deploymentStageConfig) {
+  private EnvironmentYamlV2 getEnvironmentYaml(
+      YamlField specField, DeploymentStageConfig deploymentStageConfig, boolean allowDifferentInfraForEnvPropagation) {
     return ServiceAllInOnePlanCreatorUtils.useFromStage(deploymentStageConfig.getEnvironment())
-        ? ServiceAllInOnePlanCreatorUtils.useEnvironmentYamlFromStage(deploymentStageConfig.getEnvironment(), specField)
+        ? ServiceAllInOnePlanCreatorUtils.useEnvironmentYamlFromStage(
+            deploymentStageConfig.getEnvironment(), specField, allowDifferentInfraForEnvPropagation)
         : deploymentStageConfig.getEnvironment();
   }
 
@@ -659,8 +665,11 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
       environment = stageNode.getDeploymentStageConfig().getEnvironment();
     }
     String serviceNodeId = service.getUuid();
-    planCreationResponseMap.putAll(ServiceAllInOnePlanCreatorUtils.addServiceNode(
-        specField, kryoSerializer, service, environment, serviceNodeId, nextNodeId, deploymentType, envGroupRef, ctx));
+    boolean allowDifferentInfraForEnvPropagation = featureFlagHelperService.isEnabled(
+        ctx.getAccountIdentifier(), FeatureName.CDS_SUPPORT_DIFFERENT_INFRA_DURING_ENV_PROPAGATION);
+    planCreationResponseMap.putAll(
+        ServiceAllInOnePlanCreatorUtils.addServiceNode(specField, kryoSerializer, service, environment, serviceNodeId,
+            nextNodeId, deploymentType, envGroupRef, ctx, allowDifferentInfraForEnvPropagation));
     return serviceNodeId;
   }
 
@@ -686,16 +695,18 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
           ServiceAllInOnePlanCreatorUtils.addServiceNodeForGitOpsEnvironments(specField, kryoSerializer, service,
               stageNode.deploymentStageConfig.getEnvironments(), serviceNodeId, nextNodeId, deploymentType, ctx));
     } else if (stageNode.deploymentStageConfig.getEnvironment() != null) {
+      boolean allowDifferentInfraForEnvPropagation = featureFlagHelperService.isEnabled(
+          ctx.getAccountIdentifier(), FeatureName.CDS_SUPPORT_DIFFERENT_INFRA_DURING_ENV_PROPAGATION);
       planCreationResponseMap.putAll(ServiceAllInOnePlanCreatorUtils.addServiceNode(specField, kryoSerializer, service,
           stageNode.deploymentStageConfig.getEnvironment(), serviceNodeId, nextNodeId, deploymentType,
-          ParameterField.ofNull(), ctx));
+          ParameterField.ofNull(), ctx, allowDifferentInfraForEnvPropagation));
     }
 
     return serviceNodeId;
   }
   private String addInfrastructureNode(LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap,
-      DeploymentStageNode stageNode, List<AdviserObtainment> adviserObtainments, YamlField specField)
-      throws IOException {
+      DeploymentStageNode stageNode, List<AdviserObtainment> adviserObtainments, YamlField specField,
+      boolean allowDifferentInfraForEnvPropagation) throws IOException {
     EnvironmentYamlV2 environment;
     if (stageNode.getDeploymentStageConfig().getEnvironments() != null
         || stageNode.getDeploymentStageConfig().getEnvironmentGroup() != null) {
@@ -705,7 +716,8 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
     }
 
     final EnvironmentYamlV2 finalEnvironmentYamlV2 = ServiceAllInOnePlanCreatorUtils.useFromStage(environment)
-        ? ServiceAllInOnePlanCreatorUtils.useEnvironmentYamlFromStage(environment, specField)
+        ? ServiceAllInOnePlanCreatorUtils.useEnvironmentYamlFromStage(
+            environment, specField, allowDifferentInfraForEnvPropagation)
         : environment;
 
     PlanNode node = InfrastructurePmsPlanCreator.getInfraTaskExecutableStepV2PlanNode(finalEnvironmentYamlV2,
@@ -1049,6 +1061,8 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
   protected void saveDeploymentStagePlanCreationSummaryForMultiServiceMultiEnv(
       @NotNull PlanCreationContext ctx, DeploymentStageNode stageNode, YamlField specField) {
     try {
+      boolean allowDifferentInfraForEnvPropagation = featureFlagHelperService.isEnabled(
+          ctx.getAccountIdentifier(), FeatureName.CDS_SUPPORT_DIFFERENT_INFRA_DURING_ENV_PROPAGATION);
       deploymentStagePlanCreationInfoService.save(
           DeploymentStagePlanCreationInfo.builder()
               .planExecutionId(ctx.getExecutionUuid())
@@ -1060,12 +1074,12 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
               .deploymentStageDetailsInfo(
                   // saving the expressions as well, so we know in notifications that these fields were expressions
                   MultiServiceEnvDeploymentStageDetailsInfo.builder()
-                      .envIdentifiers(
-                          getEnvironmentRefsForMultiEnvDeployment(stageNode.getDeploymentStageConfig(), specField))
+                      .envIdentifiers(getEnvironmentRefsForMultiEnvDeployment(
+                          stageNode.getDeploymentStageConfig(), specField, allowDifferentInfraForEnvPropagation))
                       .serviceIdentifiers(
                           getServicesRefsForMultiSvcDeployment(stageNode.getDeploymentStageConfig(), specField))
-                      .infraIdentifiers(
-                          getInfraRefsForMultiEnvDeployment(stageNode.getDeploymentStageConfig(), specField))
+                      .infraIdentifiers(getInfraRefsForMultiEnvDeployment(
+                          stageNode.getDeploymentStageConfig(), specField, allowDifferentInfraForEnvPropagation))
                       .envGroup(getEnvGroupsForMultiEnvDeployment(stageNode.getDeploymentStageConfig()))
                       .build())
               .deploymentType(stageNode.getDeploymentStageConfig().getDeploymentType())
@@ -1087,7 +1101,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
   }
 
   private Set<String> getInfraRefsForMultiEnvDeployment(
-      DeploymentStageConfig deploymentStageConfig, YamlField specField) {
+      DeploymentStageConfig deploymentStageConfig, YamlField specField, boolean allowDifferentInfraForEnvPropagation) {
     // InfraRefs can come from either environments(Multi Service), environmentGroup(Multi Service), environment(Single
     // Service)
     if (deploymentStageConfig.getEnvironments() != null) {
@@ -1101,7 +1115,8 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
       return new HashSet<>();
     } else {
       // Making sure useFromStages are handled
-      EnvironmentYamlV2 finalEnvironmentYamlV2 = getEnvironmentYaml(specField, deploymentStageConfig);
+      EnvironmentYamlV2 finalEnvironmentYamlV2 =
+          getEnvironmentYaml(specField, deploymentStageConfig, allowDifferentInfraForEnvPropagation);
       return finalEnvironmentYamlV2.getInfrastructureDefinitions()
           .getValue()
           .stream()
@@ -1138,7 +1153,7 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
   }
 
   private Set<String> getEnvironmentRefsForMultiEnvDeployment(
-      DeploymentStageConfig deploymentStageConfig, YamlField specField) {
+      DeploymentStageConfig deploymentStageConfig, YamlField specField, boolean allowDifferentInfraForEnvPropagation) {
     // EnvironmentRefs can come from either environments(Multi Service), environmentGroup(Multi Service),
     // environment(Single Service)
     if (deploymentStageConfig.getEnvironments() != null) {
@@ -1149,7 +1164,8 @@ public class DeploymentStagePMSPlanCreatorV2 extends AbstractStagePlanCreator<De
       return getEnvironmentRefsForMultiEnvDeployment(environmentGroupYaml.getEnvironments());
     } else {
       // Making sure useFromStages are handled
-      EnvironmentYamlV2 finalEnvironmentYamlV2 = getEnvironmentYaml(specField, deploymentStageConfig);
+      EnvironmentYamlV2 finalEnvironmentYamlV2 =
+          getEnvironmentYaml(specField, deploymentStageConfig, allowDifferentInfraForEnvPropagation);
       return Arrays
           .asList(ParameterFieldHelper.getParameterFieldFinalValueStringOrNullIfBlank(
               finalEnvironmentYamlV2.getEnvironmentRef()))
