@@ -27,9 +27,9 @@ import (
 const authHeader = "X-Harness-Token"
 const authAPIKeyHeader = "x-api-key"
 const authTokenHeader = "Authorization"
-const orgIdentifier = "orgIdentifier"
-const projectIdentifier = "projectIdentifier"
-const pipelineIdentifier = "pipelineIdentifier"
+const orgIdentifier = "orgId"
+const projectIdentifier = "projectId"
+const pipelineIdentifier = "pipelineId"
 
 const routingIDparam = "routingId"
 const regexp1 = "runSequence:[\\d+]"
@@ -126,57 +126,54 @@ func AuthMiddleware(config config.Config, ngClient, aclClient *client.HTTPClient
 			}
 
 			inputApiKey := r.Header.Get(authAPIKeyHeader)
-			// inputAuthToken := r.Header.Get(authTokenHeader)
+			inputAuthToken := r.Header.Get(authTokenHeader)
+			var validated bool
 
 			//Check if Auth token is present in Header and if method is allowed,
 			//then check acl with call to access control, else check for old approach (x-api-key or X-harness-Token)
-			// if inputAuthToken != "" && r.Method == http.MethodGet {
-			// 	if r.FormValue(pipelineIdentifier) == "" || r.FormValue(projectIdentifier) == "" || r.FormValue(orgIdentifier) == "" {
-			// 		WriteBadRequest(w, errors.New("scope pipelineID, projectID and orgID are required for validating access"))
-			// 		return
-			// 	}
-
-			// 	allowed, err := aclClient.ValidateAccessforPipeline(r.Context(), inputAuthToken, accountID, r.FormValue(pipelineIdentifier), r.FormValue(projectIdentifier), r.FormValue(orgIdentifier), resource_pipeline, pipeline_view_permission)
-			// 	if err != nil {
-			// 		logger.FromRequest(r).
-			// 			WithError(err).
-			// 			WithField("pipelineIdentifier", pipelineIdentifier).
-			// 			Errorln("middleware: failed to validate access control")
-			// 		WriteInternalError(w, errors.New("error validating access for resource, unauthorized or expired token"))
-			// 		return
-			// 	}
-			// 	if !allowed {
-			// 		writeError(w, errors.New("user not authorized"), 403)
-			// 		return
-			// 	}
-			// }
-			if inputApiKey != "" {
-				// Try to check token from the header or the URL param
-				err := doApiKeyAuthentication(inputApiKey, r.FormValue(accountIDParam), r.FormValue(routingIDparam), ngClient)
+			if inputAuthToken != "" && r.Method == http.MethodGet {
+				err := validateACL(r, aclClient, accountID, inputAuthToken)
 				if err != nil {
 					logger.FromRequest(r).
 						WithError(err).
-						WithField("accountIDParam", r.FormValue(accountIDParam)).
-						Errorln("middleware: apikey in request not authorized for receiving tokens")
-					writeError(w, errors.New("apikey in request not authorized for receiving tokens"), 403)
-					return
+						WithField("accountID", accountID).
+						Errorln("middleware: failed to validate access control")
+					//Donot return here, as we need to check for old approach (x-api-key or X-harness-Token). this is for release backward compatibility. Will need to remove this later.
+				} else {
+					validated = true
 				}
-			} else {
-				inputToken := r.Header.Get(authHeader)
-				if inputToken == "" {
-					inputToken = r.FormValue(authHeader)
-				}
+			}
 
-				if inputToken == "" {
-					WriteBadRequest(w, errors.New("no token in header"))
-					return
-				}
-				// accountID in token should be same as accountID in URL
-				secret := []byte(config.Auth.LogSecret)
-				login := authcookie.Login(inputToken, secret)
-				if login == "" || login != accountID {
-					writeError(w, errors.New(fmt.Sprintf("operation not permitted for accountID: %s", accountID)), 403)
-					return
+			// Fallback to old approach (x-api-key or X-harness-Token) if not validated by access control
+			if !validated {
+				if inputApiKey != "" {
+					// Try to check token from the header or the URL param
+					err := doApiKeyAuthentication(inputApiKey, r.FormValue(accountIDParam), r.FormValue(routingIDparam), ngClient)
+					if err != nil {
+						logger.FromRequest(r).
+							WithError(err).
+							WithField("accountIDParam", r.FormValue(accountIDParam)).
+							Errorln("middleware: apikey in request not authorized for receiving tokens")
+						writeError(w, errors.New("apikey in request not authorized for receiving tokens"), 403)
+						return
+					}
+				} else {
+					inputToken := r.Header.Get(authHeader)
+					if inputToken == "" {
+						inputToken = r.FormValue(authHeader)
+					}
+
+					if inputToken == "" {
+						WriteBadRequest(w, errors.New("no token in header"))
+						return
+					}
+					// accountID in token should be same as accountID in URL
+					secret := []byte(config.Auth.LogSecret)
+					login := authcookie.Login(inputToken, secret)
+					if login == "" || login != accountID {
+						writeError(w, errors.New(fmt.Sprintf("operation not permitted for accountID: %s", accountID)), 403)
+						return
+					}
 				}
 			}
 
@@ -189,6 +186,23 @@ func AuthMiddleware(config config.Config, ngClient, aclClient *client.HTTPClient
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func validateACL(r *http.Request, aclClient *client.HTTPClient, accountID, inputAuthToken string) error {
+
+	if r.FormValue(pipelineIdentifier) == "" || r.FormValue(projectIdentifier) == "" || r.FormValue(orgIdentifier) == "" {
+		return errors.New("scope pipelineID, projectID and orgID are required for validating access")
+	}
+
+	allowed, err := aclClient.ValidateAccessforPipeline(r.Context(), inputAuthToken, accountID, r.FormValue(pipelineIdentifier), r.FormValue(projectIdentifier), r.FormValue(orgIdentifier), resource_pipeline, pipeline_view_permission)
+	if err != nil {
+		return errors.New("error validating access for resource, unauthorized or expired token")
+	}
+	if !allowed {
+		return errors.New("user not authorized")
+	}
+
+	return nil
 }
 
 func doApiKeyAuthentication(inputApiKey, accountID, routingId string, ngClient *client.HTTPClient) error {
