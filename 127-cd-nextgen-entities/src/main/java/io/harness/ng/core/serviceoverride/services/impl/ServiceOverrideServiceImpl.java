@@ -96,20 +96,20 @@ public class ServiceOverrideServiceImpl implements ServiceOverrideService {
       String accountId, String orgIdentifier, String projectIdentifier, String environmentRef, String serviceRef) {
     checkArgument(isNotEmpty(accountId), "accountId must be present");
 
-    return getByEnvironmentRef(accountId, orgIdentifier, projectIdentifier, environmentRef, serviceRef);
+    return getByEnvironmentRef(accountId, orgIdentifier, projectIdentifier, environmentRef, serviceRef, true);
   }
 
   @Override
   public Optional<NGServiceOverridesEntity> getForV1AndV2(
       String accountId, String orgIdentifier, String projectIdentifier, String environmentRef, String serviceRef) {
     checkArgument(isNotEmpty(accountId), "accountId must be present");
-    return getByEnvironmentRef(accountId, orgIdentifier, projectIdentifier, environmentRef, serviceRef);
+    return getByEnvironmentRef(accountId, orgIdentifier, projectIdentifier, environmentRef, serviceRef, false);
   }
 
   // Todo: This code handles all four cases where request and entity in DB can contain any of environment Ref or
   // identifier. Clean up in future after successful migration
-  private Optional<NGServiceOverridesEntity> getByEnvironmentRef(
-      String accountId, String orgIdentifier, String projectIdentifier, String environmentRef, String serviceRef) {
+  private Optional<NGServiceOverridesEntity> getByEnvironmentRef(String accountId, String orgIdentifier,
+      String projectIdentifier, String environmentRef, String serviceRef, boolean yamlExists) {
     String[] environmentRefSplit = StringUtils.split(environmentRef, ".", MAX_RESULT_THRESHOLD_FOR_SPLIT);
 
     final String environmentIdentifier;
@@ -119,37 +119,40 @@ public class ServiceOverrideServiceImpl implements ServiceOverrideService {
       environmentIdentifier = environmentRef;
       qualifiedEnvironmentRef =
           IdentifierRefHelper.getRefFromIdentifierOrRef(accountId, orgIdentifier, projectIdentifier, environmentRef);
-      Optional<NGServiceOverridesEntity> serviceOverrideUsingQualifiedRef =
-          serviceOverrideRepository
-              .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndEnvironmentRefAndServiceRefAndTypeAndYamlExistsAndYamlNotNull(
-                  accountId, orgIdentifier, projectIdentifier, qualifiedEnvironmentRef, serviceRef,
-                  ServiceOverridesType.ENV_SERVICE_OVERRIDE);
+      Optional<NGServiceOverridesEntity> serviceOverrideUsingQualifiedRef = getOverrideEntity(
+          accountId, orgIdentifier, projectIdentifier, qualifiedEnvironmentRef, serviceRef, yamlExists);
 
       return serviceOverrideUsingQualifiedRef.isPresent()
           ? serviceOverrideUsingQualifiedRef
-          : serviceOverrideRepository
-                .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndEnvironmentRefAndServiceRefAndTypeAndYamlExistsAndYamlNotNull(
-                    accountId, orgIdentifier, projectIdentifier, environmentIdentifier, serviceRef,
-                    ServiceOverridesType.ENV_SERVICE_OVERRIDE);
+          : getOverrideEntity(
+              accountId, orgIdentifier, projectIdentifier, environmentIdentifier, serviceRef, yamlExists);
     } else {
       IdentifierRef envIdentifierRef =
           IdentifierRefHelper.getIdentifierRef(environmentRef, accountId, orgIdentifier, projectIdentifier);
       environmentIdentifier = envIdentifierRef.getIdentifier();
       qualifiedEnvironmentRef = environmentRef;
       Optional<NGServiceOverridesEntity> serviceOverrideUsingQualifiedRef =
-          serviceOverrideRepository
-              .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndEnvironmentRefAndServiceRefAndTypeAndYamlExistsAndYamlNotNull(
-                  envIdentifierRef.getAccountIdentifier(), envIdentifierRef.getOrgIdentifier(),
-                  envIdentifierRef.getProjectIdentifier(), qualifiedEnvironmentRef, serviceRef,
-                  ServiceOverridesType.ENV_SERVICE_OVERRIDE);
+          getOverrideEntity(envIdentifierRef.getAccountIdentifier(), envIdentifierRef.getOrgIdentifier(),
+              envIdentifierRef.getProjectIdentifier(), qualifiedEnvironmentRef, serviceRef, yamlExists);
 
       return serviceOverrideUsingQualifiedRef.isPresent()
           ? serviceOverrideUsingQualifiedRef
-          : serviceOverrideRepository
-                .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndEnvironmentRefAndServiceRefAndTypeAndYamlExistsAndYamlNotNull(
-                    envIdentifierRef.getAccountIdentifier(), envIdentifierRef.getOrgIdentifier(),
-                    envIdentifierRef.getProjectIdentifier(), environmentIdentifier, serviceRef,
-                    ServiceOverridesType.ENV_SERVICE_OVERRIDE);
+          : getOverrideEntity(envIdentifierRef.getAccountIdentifier(), envIdentifierRef.getOrgIdentifier(),
+              envIdentifierRef.getProjectIdentifier(), environmentIdentifier, serviceRef, yamlExists);
+    }
+  }
+
+  private Optional<NGServiceOverridesEntity> getOverrideEntity(String accountIdentifier, String orgIdentifier,
+      String projectIdentifier, String environmentRef, String serviceRef, boolean yamlExists) {
+    if (yamlExists) {
+      return serviceOverrideRepository
+          .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndEnvironmentRefAndServiceRefAndTypeAndYamlExistsAndYamlNotNull(
+              accountIdentifier, orgIdentifier, projectIdentifier, environmentRef, serviceRef,
+              ServiceOverridesType.ENV_SERVICE_OVERRIDE);
+    } else {
+      return serviceOverrideRepository
+          .findByAccountIdAndOrgIdentifierAndProjectIdentifierAndEnvironmentRefAndServiceRefAndType(accountIdentifier,
+              orgIdentifier, projectIdentifier, environmentRef, serviceRef, ServiceOverridesType.ENV_SERVICE_OVERRIDE);
     }
   }
 
