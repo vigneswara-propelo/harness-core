@@ -68,6 +68,24 @@ public class SearchServiceImpl implements SearchService {
   }
 
   @Override
+  public Result upsertArtifact(ArtifactEntity artifactEntity) {
+    String index = elasticSearchIndexManager.getIndex(artifactEntity.getAccountId());
+    try {
+      UpdateResponse upsertResponse = elasticsearchClient.update(u
+          -> u.index(index)
+                 .id(artifactEntity.getOrchestrationId())
+                 .routing(artifactEntity.getAccountId())
+                 .docAsUpsert(true)
+                 .doc(SSCAArtifactMapper.toSSCAArtifact(artifactEntity)),
+          SSCAArtifact.class);
+
+      return upsertResponse.result();
+    } catch (IOException ex) {
+      throw new GeneralException("Could not upsert artifact", ex);
+    }
+  }
+
+  @Override
   public Result updateArtifact(ArtifactEntity artifactEntity) {
     String index = elasticSearchIndexManager.getIndex(artifactEntity.getAccountId());
     try {

@@ -54,6 +54,8 @@ public interface ArtifactService {
 
   void saveArtifactAndInvalidateOldArtifact(ArtifactEntity artifact);
 
+  void saveArtifact(ArtifactEntity artifact);
+
   Page<ArtifactListingResponse> listLatestArtifacts(
       String accountId, String orgIdentifier, String projectIdentifier, Pageable pageable);
 

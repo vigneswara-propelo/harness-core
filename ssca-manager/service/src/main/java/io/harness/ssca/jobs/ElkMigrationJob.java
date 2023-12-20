@@ -74,7 +74,5 @@ public class ElkMigrationJob implements Managed {
       migrationRepo.save(MigrationEntity.builder().name(JOB_NAME).status(FAILURE).build());
       throw new GeneralException("Elk migration failed");
     }
-
-    log.info(ELK_DEBUG_LOG + "ELK migration successful....");
   }
 }

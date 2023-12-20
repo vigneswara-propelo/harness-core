@@ -25,6 +25,8 @@ public interface SearchService {
 
   Result updateArtifact(ArtifactEntity artifactEntity);
 
+  Result upsertArtifact(ArtifactEntity artifactEntity);
+
   Result saveComponent(NormalizedSBOMComponentEntity component);
 
   boolean bulkSaveComponents(String accountId, List<NormalizedSBOMComponentEntity> components);
