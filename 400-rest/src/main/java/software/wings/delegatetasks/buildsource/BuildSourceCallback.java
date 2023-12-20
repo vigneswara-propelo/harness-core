@@ -6,6 +6,7 @@
  */
 
 package software.wings.delegatetasks.buildsource;
+
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -55,7 +56,9 @@ import software.wings.service.intfc.TriggerService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -71,11 +74,15 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Slf4j
 public class BuildSourceCallback implements OldNotifyCallback {
+  private static final Duration THRESHOLD_PROCESS_DURATION = Duration.ofMillis(500);
+  private static final Duration THRESHOLD_TASK_DURATION = Duration.ofMinutes(2);
+
   private String accountId;
   private String artifactStreamId;
   private String permitId;
   private String settingId;
   private List<BuildDetails> builds;
+  private Long startTs;
   private static final int MAX_ARTIFACTS_COLLECTION_FOR_WARN = 100;
   private static final int MAX_LOGS = 2000;
 
@@ -100,6 +107,7 @@ public class BuildSourceCallback implements OldNotifyCallback {
     this.artifactStreamId = artifactStreamId;
     this.permitId = permitId;
     this.settingId = settingId;
+    this.startTs = System.currentTimeMillis();
   }
 
   // token used for exclusion filter for stack driver
@@ -197,21 +205,52 @@ public class BuildSourceCallback implements OldNotifyCallback {
 
   @Override
   public void notify(Map<String, ResponseData> response) {
-    DelegateResponseData notifyResponseData = (DelegateResponseData) response.values().iterator().next();
-    ArtifactStream artifactStream = getArtifactStreamOrThrow();
-    log.debug("In notify for artifact stream id: [{}]", artifactStreamId);
-    try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR);
-         AutoLogContext ignore2 = new ArtifactStreamLogContext(
-             artifactStream.getUuid(), artifactStream.getArtifactStreamType(), OVERRIDE_ERROR)) {
-      if (notifyResponseData instanceof BuildSourceExecutionResponse) {
-        if (SUCCESS == ((BuildSourceExecutionResponse) notifyResponseData).getCommandExecutionStatus()) {
-          handleResponseForSuccess(notifyResponseData, artifactStream);
+    long notifyStartTs = System.currentTimeMillis();
+    try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
+      DelegateResponseData notifyResponseData = (DelegateResponseData) response.values().iterator().next();
+      ArtifactStream artifactStream = getArtifactStreamOrThrow();
+      log.debug("In notify for artifact stream id: [{}]", artifactStreamId);
+      try (AutoLogContext ignore2 = new ArtifactStreamLogContext(
+               artifactStream.getUuid(), artifactStream.getArtifactStreamType(), OVERRIDE_ERROR)) {
+        if (notifyResponseData instanceof BuildSourceExecutionResponse) {
+          if (SUCCESS == ((BuildSourceExecutionResponse) notifyResponseData).getCommandExecutionStatus()) {
+            handleResponseForSuccess(notifyResponseData, artifactStream);
+          } else {
+            log.info("Request failed :[{}]", ((BuildSourceExecutionResponse) notifyResponseData).getErrorMessage());
+            updatePermit(artifactStream, true);
+          }
         } else {
-          log.info("Request failed :[{}]", ((BuildSourceExecutionResponse) notifyResponseData).getErrorMessage());
-          updatePermit(artifactStream, true);
+          notifyError(response);
         }
-      } else {
-        notifyError(response);
+      }
+    } finally {
+      checkAndLogDelays(notifyStartTs);
+    }
+  }
+
+  private void checkAndLogDelays(long currTime) {
+    Map<String, String> logContext = new HashMap<>();
+    logContext.put("accountId", accountId);
+    logContext.put("artifactStreamId", artifactStreamId);
+
+    try (AutoLogContext ignore = new AutoLogContext(logContext, OVERRIDE_ERROR)) {
+      boolean toLog = false;
+      StringBuilder builder = new StringBuilder("[build_source_callback] ");
+      Duration processDuration = Duration.ofMillis(System.currentTimeMillis() - currTime);
+      if (THRESHOLD_PROCESS_DURATION.compareTo(processDuration) < 0) {
+        builder.append("process notify time taken: ").append(processDuration);
+        toLog = true;
+      }
+
+      if (startTs != null) {
+        Duration taskDuration = Duration.ofMillis(System.currentTimeMillis() - startTs);
+        if (toLog || THRESHOLD_PROCESS_DURATION.compareTo(taskDuration) < 0) {
+          builder.append("build_source_task completed in: ").append(taskDuration);
+          toLog = true;
+        }
+      }
+      if (toLog) {
+        log.warn(builder.toString());
       }
     }
   }

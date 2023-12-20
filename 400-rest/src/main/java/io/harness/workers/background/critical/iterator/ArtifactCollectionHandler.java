@@ -6,6 +6,7 @@
  */
 
 package io.harness.workers.background.critical.iterator;
+
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 import static io.harness.beans.FeatureName.CDS_DISABLE_CG_ITERATORS;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
@@ -136,8 +137,9 @@ public class ArtifactCollectionHandler extends IteratorPumpAndRedisModeHandler i
         return;
       }
 
-      int leaseDuration = (int) (TimeUnit.MINUTES.toMillis(2)
-          * PermitServiceImpl.getBackoffMultiplier(artifactStream.getFailedCronAttempts()));
+      var failedAttempts = artifactStream.getFailedCronAttempts();
+      int leaseDuration = (int) (TimeUnit.MINUTES.toMillis(failedAttempts == 0 ? 10 : 2)
+          * PermitServiceImpl.getBackoffMultiplier(failedAttempts));
       String permitId = permitService.acquirePermit(Permit.builder()
                                                         .appId(artifactStream.fetchAppId())
                                                         .group(GROUP)
