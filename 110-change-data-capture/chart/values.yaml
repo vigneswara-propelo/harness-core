@@ -323,6 +323,7 @@ image:
   digest: ""
   imagePullSecrets: []
 # -- Wait-For-App initContainers details
+# init container
 waitForInitContainer:
   ## image version
   ## ref: https://hub.docker.com/r/harness/helm-init-container/tags
