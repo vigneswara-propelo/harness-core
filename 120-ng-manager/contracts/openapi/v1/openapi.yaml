@@ -1957,6 +1957,30 @@ paths:
           name: event_status
       x-internal: true
       description: List GitX webhook Events at project level
+  '/v1/gitx-webhook-events/{gitx-webhook-event}':
+    parameters:
+      - schema:
+          type: string
+        name: gitx-webhook-event
+        in: path
+        required: true
+        description: GitX Webhook Event Identifier
+    patch:
+      summary: Update the Webhook Event status
+      operationId: patch-gitx-webhook-events-gitx-webhook-event
+      responses:
+        '200':
+          $ref: '#/components/responses/UpdateGitXWebhookEventResponse'
+      x-internal: true
+      description: Update the webhook event Status
+      tags:
+        - GitX Webhook Event
+      security:
+        - x-api-key: []
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateGitXWebhookEventRequest'
 components:
   schemas:
     Service:
@@ -2847,7 +2871,7 @@ components:
     MicroserviceVersionInfo:
       title: Microservice Version Info
       x-stoplight:
-        id: 949355wt5fcyx
+        id: zzavijwypang2
       type: object
       properties:
         name:
@@ -2912,7 +2936,7 @@ components:
     IPAllowlistConfig:
       title: IPAllowlistConfig
       x-stoplight:
-        id: v6ozn5wcwdwhg
+        id: 4kc6qh4fzdo3u
       type: object
       description: This contains data for a config set in Harness to allow selected IPs
       properties:
@@ -2955,7 +2979,7 @@ components:
     AllowedSourceType:
       title: AllowedSourceType
       x-stoplight:
-        id: z6z1v0ym6pp0n
+        id: 1h1gbcbijw2e7
       type: string
       enum:
         - UI
@@ -2964,7 +2988,7 @@ components:
     IPAllowlistConfigRequest:
       title: IPAllowlistConfigRequest
       x-stoplight:
-        id: xgbzir9wm0meq
+        id: rwmuk1v0vibf3
       type: object
       description: This is the request spec to create IP Allowlist config in Harness
       properties:
@@ -2973,7 +2997,7 @@ components:
     IPAllowlistConfigResponse:
       title: IPAllowlistConfigResponse
       x-stoplight:
-        id: ykl8b62ijl5wt
+        id: 0kw8buhu20h4v
       type: object
       properties:
         ip_allowlist_config:
@@ -2993,7 +3017,7 @@ components:
     IPAllowlistConfigValidateResponse:
       title: IPAllowlistConfigValidateResponse
       x-stoplight:
-        id: ll7dxdbr3e2yg
+        id: 4f3ukj8lje3yc
       type: object
       properties:
         allowed_for_custom_block:
@@ -3030,7 +3054,7 @@ components:
     CreateGitXWebhookRequest:
       title: CreateGitXWebhookRequest
       x-stoplight:
-        id: v13e7op46ke5k
+        id: 3dp38zgivxdux
       type: object
       description: Contains information about the GitX webhook creation request
       properties:
@@ -3049,7 +3073,7 @@ components:
     CreateGitXWebhookResponse:
       title: CreateGitXWebhookResponse
       x-stoplight:
-        id: c0ggkoxt4yqr1
+        id: 8js3eog9wvwz8
       type: object
       description: 'Contains information about the GitX webhook creation '
       properties:
@@ -3058,7 +3082,7 @@ components:
     UpdateGitXWebhookRequest:
       title: UpdateGitXWebhookRequest
       x-stoplight:
-        id: jpe7hhufol4wp
+        id: wyjatlg41n5nx
       type: object
       description: 'Contains information about the GitX webhook updation '
       properties:
@@ -3077,7 +3101,7 @@ components:
     UpdateGitXWebhookResponse:
       title: UpdateGitXWebhookResponse
       x-stoplight:
-        id: jq7cb085csk3a
+        id: tbcq1lr1fsgvj
       type: object
       description: 'Contains information about the GitX webhook updation '
       properties:
@@ -3086,7 +3110,7 @@ components:
     GitXWebhookResponse:
       title: GitXWebhookResponse
       x-stoplight:
-        id: 6c85c8b3744b5
+        id: 10girpwp12rfn
       type: object
       description: 'Contains information about the GitX webhooks '
       properties:
@@ -3110,7 +3134,7 @@ components:
     GitXWebhookEventResponse:
       title: GitXWebhookEventResponse
       x-stoplight:
-        id: 3axdiau0eh30h
+        id: tkepo90rb5hca
       type: object
       description: Contains information about the GitX webhook Events
       properties:
@@ -3139,7 +3163,7 @@ components:
     ReleaseDetailsResponse:
       title: ReleaseDetailsResponse
       x-stoplight:
-        id: jer5x0wuenbdp
+        id: l0xibpnt74nma
       type: object
       x-examples:
         Example 1:
@@ -3181,7 +3205,7 @@ components:
     BatchReleaseDetailsResponse:
       title: BatchReleaseDetailsResponse
       x-stoplight:
-        id: h5kuwv0xl7r47
+        id: 5lg9lbaez18py
       type: array
       items:
         $ref: '#/components/schemas/ReleaseDetailsResponse'
@@ -3210,7 +3234,7 @@ components:
     ReleaseServiceDetails:
       title: ReleaseServiceDetails
       x-stoplight:
-        id: z6zv3c6d1qrjg
+        id: fkklabspi8rzc
       type: object
       x-examples:
         Example 1:
@@ -3231,7 +3255,7 @@ components:
     ReleaseEnvDetails:
       title: ReleaseEnvDetails
       x-stoplight:
-        id: oz7mvl402rnj0
+        id: hcgyr8vqtaa64
       type: object
       description: Response model of environment release details
       x-examples:
@@ -3264,7 +3288,7 @@ components:
     ReleaseDetailsRequest:
       title: ReleaseDetailsRequest
       x-stoplight:
-        id: 8lzkkdw088lig
+        id: ccc4r2xq55lw0
       type: object
       description: Contains information regarding a single release details required
       x-examples:
@@ -3276,6 +3300,17 @@ components:
           type: string
         release_name:
           type: string
+    UpdateGitXWebhookEventRequest:
+      title: UpdateGitXWebhookEventRequest
+      x-stoplight:
+        id: vm2loic428thf
+      type: object
+      description: Update GitX Webhook Event Request
+      properties:
+        event_status:
+          type: string
+          x-stoplight:
+            id: nrriy895o9ami
   securitySchemes:
     x-api-key:
       name: x-api-key
@@ -3971,6 +4006,12 @@ components:
           schema:
             type: integer
           description: Maximum page size in Paginated response.
+    UpdateGitXWebhookEventResponse:
+      description: Update GitX Webhook Event Response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GitXWebhookEventResponse'
   requestBodies:
     ServiceRequest:
       content:
@@ -4552,6 +4593,12 @@ components:
                 - namespace: default
                   release_name: release-pre-deployment-todolist
       description: Batch Release Details request body
+    UpdateGitXWebhookEventRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateGitXWebhookEventRequest'
+      description: Update GitX Webhook Event Request
   parameters:
     Page:
       name: page

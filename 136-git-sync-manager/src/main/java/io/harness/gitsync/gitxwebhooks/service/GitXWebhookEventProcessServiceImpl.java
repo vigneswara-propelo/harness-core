@@ -10,6 +10,7 @@ package io.harness.gitsync.gitxwebhooks.service;
 import static io.harness.authorization.AuthorizationServiceHeader.NG_MANAGER;
 import static io.harness.data.structure.CollectionUtils.emptyIfNull;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
@@ -132,9 +133,10 @@ public class GitXWebhookEventProcessServiceImpl implements GitXWebhookEventProce
   }
 
   private ProcessingFilePathResponseDTO getFilesToProcess(
-      List<GitXWebhook> gitXWebhookList, GitXWebhookEvent gitXWebhookEvent) {
+      List<GitXWebhook> gitXWebhookList, GitXWebhookEvent gitXWebhookEvent) throws Exception {
     Set<String> modifiedFilePaths = new HashSet<>();
     Set<String> processingFilePaths = new HashSet<>();
+    List<Exception> exceptionList = new ArrayList<>();
     ScmConnector scmConnector = null;
     GitXWebhook gitXWebhookFinal = null;
     for (GitXWebhook gitXWebhook : gitXWebhookList) {
@@ -162,9 +164,14 @@ public class GitXWebhookEventProcessServiceImpl implements GitXWebhookEventProce
                   "Failed to fetch the modifiedFilePaths data from gitXWebhook identifier %s, will be trying with the next connector",
                   gitXWebhook.getIdentifier()),
               exception);
+          exceptionList.add(exception);
         }
       }
     }
+    if (isEmpty(modifiedFilePaths) && isNotEmpty(exceptionList)) {
+      throw exceptionList.get(0);
+    }
+
     return ProcessingFilePathResponseDTO.builder()
         .modifiedFilePaths(new ArrayList<>(modifiedFilePaths))
         .processingFilePaths(new ArrayList<>(processingFilePaths))

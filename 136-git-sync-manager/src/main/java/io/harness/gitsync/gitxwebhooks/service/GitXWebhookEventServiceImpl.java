@@ -136,12 +136,13 @@ public class GitXWebhookEventServiceImpl implements GitXWebhookEventService {
   }
 
   @Override
-  public void updateEvent(
+  public GitXEventDTO updateEvent(
       String accountIdentifier, String eventIdentifier, GitXEventUpdateRequestDTO gitXEventUpdateRequestDTO) {
     Criteria criteria = buildCriteria(accountIdentifier, eventIdentifier);
     Query query = new Query(criteria);
     Update update = buildGitXWebhookEventUpdate(gitXEventUpdateRequestDTO);
-    gitXWebhookEventsRepository.update(query, update);
+    GitXWebhookEvent gitXWebhookEvent = gitXWebhookEventsRepository.update(query, update);
+    return buildGitXEventDTO(gitXWebhookEvent, null);
   }
 
   private Criteria buildCriteria(String accountIdentifier, String eventIdentifier) {

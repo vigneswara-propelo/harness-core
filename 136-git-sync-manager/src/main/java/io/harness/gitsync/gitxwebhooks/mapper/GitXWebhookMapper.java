@@ -16,17 +16,9 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.Scope;
 import io.harness.exception.InvalidRequestException;
-import io.harness.gitsync.gitxwebhooks.dtos.CreateGitXWebhookRequestDTO;
-import io.harness.gitsync.gitxwebhooks.dtos.CreateGitXWebhookResponseDTO;
-import io.harness.gitsync.gitxwebhooks.dtos.DeleteGitXWebhookRequestDTO;
-import io.harness.gitsync.gitxwebhooks.dtos.GetGitXWebhookRequestDTO;
-import io.harness.gitsync.gitxwebhooks.dtos.GetGitXWebhookResponseDTO;
+import io.harness.gitsync.common.beans.GitXWebhookEventStatus;
+import io.harness.gitsync.gitxwebhooks.dtos.*;
 import io.harness.gitsync.gitxwebhooks.dtos.GitXEventsListRequestDTO;
-import io.harness.gitsync.gitxwebhooks.dtos.GitXEventsListResponseDTO;
-import io.harness.gitsync.gitxwebhooks.dtos.ListGitXWebhookRequestDTO;
-import io.harness.gitsync.gitxwebhooks.dtos.ListGitXWebhookResponseDTO;
-import io.harness.gitsync.gitxwebhooks.dtos.UpdateGitXWebhookRequestDTO;
-import io.harness.gitsync.gitxwebhooks.dtos.UpdateGitXWebhookResponseDTO;
 import io.harness.spec.server.ng.v1.model.CreateGitXWebhookRequest;
 import io.harness.spec.server.ng.v1.model.CreateGitXWebhookResponse;
 import io.harness.spec.server.ng.v1.model.GitXWebhookEventResponse;
@@ -211,5 +203,16 @@ public class GitXWebhookMapper {
 
   private List<String> getFolderPaths(List<String> folderPaths) {
     return isEmpty(folderPaths) ? new ArrayList<>() : folderPaths;
+  }
+
+  public GitXWebhookEventResponse buildPatchGitXWebhookEventResponse(GitXEventDTO gitXEventDTO) {
+    GitXWebhookEventResponse gitXWebhookEventResponse = new GitXWebhookEventResponse();
+    gitXWebhookEventResponse.setEventIdentifier(gitXEventDTO.getEventIdentifier());
+    gitXWebhookEventResponse.setWebhookIdentifier(gitXEventDTO.getWebhookIdentifier());
+    gitXWebhookEventResponse.setEventTriggerTime(gitXEventDTO.getEventTriggerTime());
+    gitXWebhookEventResponse.setPayload(gitXEventDTO.getPayload());
+    gitXWebhookEventResponse.setAuthorName(gitXEventDTO.getAuthorName());
+    gitXWebhookEventResponse.setEventStatus(getEventStatus(gitXEventDTO.getEventStatus()));
+    return gitXWebhookEventResponse;
   }
 }

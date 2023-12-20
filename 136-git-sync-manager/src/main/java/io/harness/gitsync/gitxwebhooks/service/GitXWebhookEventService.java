@@ -13,6 +13,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.eventsframework.webhookpayloads.webhookdata.WebhookDTO;
+import io.harness.gitsync.gitxwebhooks.dtos.GitXEventDTO;
 import io.harness.gitsync.gitxwebhooks.dtos.GitXEventUpdateRequestDTO;
 import io.harness.gitsync.gitxwebhooks.dtos.GitXEventsListRequestDTO;
 import io.harness.gitsync.gitxwebhooks.dtos.GitXEventsListResponseDTO;
@@ -24,6 +25,6 @@ public interface GitXWebhookEventService {
 
   GitXEventsListResponseDTO listEvents(GitXEventsListRequestDTO gitXEventsListRequestDTO);
 
-  void updateEvent(
+  GitXEventDTO updateEvent(
       String accountIdentifier, String eventIdentifier, GitXEventUpdateRequestDTO gitXEventUpdateRequestDTO);
 }
