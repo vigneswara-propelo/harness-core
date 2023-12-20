@@ -26,16 +26,15 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.Collections;
 import java.util.stream.Collectors;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Value;
 
 @OwnedBy(PIPELINE)
 @JsonTypeName(StepSpecTypeConstantsV1.HTTP)
-@Builder
+@Value
 public class HttpStepNodeV1 extends PmsAbstractStepNodeV1 {
-  @Getter String type = StepSpecTypeConstantsV1.HTTP;
+  String type = StepSpecTypeConstantsV1.HTTP;
 
-  @Getter @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true) HttpStepInfoV1 spec;
+  @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true) HttpStepInfoV1 spec;
 
   @Override
   public SpecParameters getSpecParameters() {

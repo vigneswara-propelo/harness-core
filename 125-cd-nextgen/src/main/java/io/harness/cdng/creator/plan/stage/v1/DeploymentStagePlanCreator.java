@@ -241,7 +241,7 @@ public class DeploymentStagePlanCreator extends AbstractStagePlanCreator<Deploym
     DeploymentStageStepParametersV1 stepParameters =
         (DeploymentStageStepParametersV1) getSpecParameters(specField.getNode().getUuid(), ctx, stageNode);
 
-    StageElementParametersV1Builder stageParameters = StepParametersUtils.getStageParameters(stageNode);
+    StageElementParametersV1Builder stageParameters = StepParametersUtils.getStageParametersBuilder(stageNode);
     stageParameters.type(YAMLFieldNameConstants.DEPLOYMENT_STAGE_V1);
     stageParameters.spec(stepParameters);
     String name = stageNode.getName();
@@ -301,7 +301,7 @@ public class DeploymentStagePlanCreator extends AbstractStagePlanCreator<Deploym
         addServiceNodeForGitOps(ctx, specField, planCreationResponseMap, stageNode, serviceNextNodeId);
     addSpecNode(planCreationResponseMap, specField, serviceNodeId);
 
-    Map<String, YamlField> dependenciesNodeMap = new HashMap<>();
+    final Map<String, YamlField> dependenciesNodeMap = new HashMap<>();
     dependenciesNodeMap.put(specField.getNode().getUuid(), specField);
 
     Dependency strategyDependency = getDependencyForStrategy(dependenciesNodeMap, field, ctx);

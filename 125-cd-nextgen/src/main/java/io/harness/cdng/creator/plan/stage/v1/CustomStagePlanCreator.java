@@ -63,7 +63,7 @@ public class CustomStagePlanCreator extends AbstractStagePlanCreator<CustomStage
   public LinkedHashMap<String, PlanCreationResponse> createPlanForChildrenNodes(
       PlanCreationContext ctx, CustomStageNodeV1 field) {
     LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap = new LinkedHashMap<>();
-    Map<String, YamlField> dependenciesNodeMap = new HashMap<>();
+    final Map<String, YamlField> dependenciesNodeMap = new HashMap<>();
 
     YamlField specField =
         Preconditions.checkNotNull(ctx.getCurrentField().getNode().getField(YAMLFieldNameConstants.SPEC));
@@ -93,7 +93,8 @@ public class CustomStagePlanCreator extends AbstractStagePlanCreator<CustomStage
   @Override
   public PlanNode createPlanForParentNode(
       PlanCreationContext ctx, CustomStageNodeV1 customStageNode, List<String> childrenNodeIds) {
-    StageElementParametersV1Builder stageParameters = StageParameterUtilsV1.getCommonStageParameters(customStageNode);
+    StageElementParametersV1Builder stageParameters =
+        StageParameterUtilsV1.getCommonStageParametersBuilder(customStageNode);
     stageParameters.type(YAMLFieldNameConstants.CUSTOM_V1);
     stageParameters.spec(CustomStageSpecParams.builder().childNodeID(childrenNodeIds.get(0)).build());
     String name = customStageNode.getName();

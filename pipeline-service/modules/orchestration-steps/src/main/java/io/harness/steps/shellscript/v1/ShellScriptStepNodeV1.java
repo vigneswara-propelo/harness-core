@@ -23,20 +23,17 @@ import io.harness.yaml.utils.v1.NGVariablesUtilsV1;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Value;
 
 @CodePulse(
     module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_COMMON_STEPS})
-@Builder
+@Value
 @JsonTypeName(StepSpecTypeConstantsV1.SHELL_SCRIPT)
 @OwnedBy(PIPELINE)
 public class ShellScriptStepNodeV1 extends PmsAbstractStepNodeV1 {
-  @Getter String type = StepSpecTypeConstantsV1.SHELL_SCRIPT;
+  String type = StepSpecTypeConstantsV1.SHELL_SCRIPT;
 
-  @Getter
-  @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true)
-  ShellScriptStepInfoV1 spec;
+  @JsonTypeInfo(use = NAME, property = "type", include = EXTERNAL_PROPERTY, visible = true) ShellScriptStepInfoV1 spec;
 
   @Override
   public SpecParameters getSpecParameters() {

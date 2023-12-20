@@ -57,7 +57,7 @@ public class ApprovalStagePlanCreator extends AbstractStagePlanCreator<ApprovalS
   public LinkedHashMap<String, PlanCreationResponse> createPlanForChildrenNodes(
       PlanCreationContext ctx, ApprovalStageNodeV1 field) {
     LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap = new LinkedHashMap<>();
-    Map<String, YamlField> dependenciesNodeMap = new HashMap<>();
+    final Map<String, YamlField> dependenciesNodeMap = new HashMap<>();
 
     YamlField specField =
         Preconditions.checkNotNull(ctx.getCurrentField().getNode().getField(YAMLFieldNameConstants.SPEC));
@@ -86,7 +86,7 @@ public class ApprovalStagePlanCreator extends AbstractStagePlanCreator<ApprovalS
   @Override
   public PlanNode createPlanForParentNode(
       PlanCreationContext ctx, ApprovalStageNodeV1 field, List<String> childrenNodeIds) {
-    StageElementParametersV1Builder stageParameters = StageParameterUtilsV1.getCommonStageParameters(field);
+    StageElementParametersV1Builder stageParameters = StageParameterUtilsV1.getCommonStageParametersBuilder(field);
     stageParameters.type(YAMLFieldNameConstants.APPROVAL_V1);
     stageParameters.spec(ApprovalStageSpecParameters.builder().childNodeID(childrenNodeIds.get(0)).build());
     String name = field.getName();

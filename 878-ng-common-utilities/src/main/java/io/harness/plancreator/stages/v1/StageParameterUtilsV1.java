@@ -22,7 +22,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 @OwnedBy(HarnessTeam.PIPELINE)
 public class StageParameterUtilsV1 {
-  public StageElementParametersV1Builder getCommonStageParameters(AbstractStageNodeV1 stageNode) {
+  public StageElementParametersV1Builder getCommonStageParametersBuilder(AbstractStageNodeV1 stageNode) {
     TagUtils.removeUuidFromTags(stageNode.getLabels());
     StageElementParametersV1Builder stageBuilder = StageElementParametersV1.builder();
     stageBuilder.name(stageNode.getName());
