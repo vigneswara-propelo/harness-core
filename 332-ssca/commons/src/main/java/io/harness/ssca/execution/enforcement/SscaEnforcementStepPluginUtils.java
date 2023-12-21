@@ -32,6 +32,7 @@ public class SscaEnforcementStepPluginUtils {
 
   public static final String COSIGN_PUBLIC_KEY = "COSIGN_PUBLIC_KEY";
   public static final String POLICY_SET_REF = "POLICY_SET_REF";
+  public static final String PLUGIN_BASE64_SECRET = "PLUGIN_BASE64_SECRET";
 
   public Map<String, String> getSscaEnforcementStepEnvVariables(EnforcementStepEnvVariables envVariables) {
     Map<String, String> envMap = new HashMap<>();
@@ -45,6 +46,7 @@ public class SscaEnforcementStepPluginUtils {
     if (envVariables.getPolicySetRef() != null) {
       envMap.put(POLICY_SET_REF, envVariables.getPolicySetRef());
     }
+    envMap.put(PLUGIN_BASE64_SECRET, String.valueOf(envVariables.isBase64SecretAttestation()));
     return envMap;
   }
 

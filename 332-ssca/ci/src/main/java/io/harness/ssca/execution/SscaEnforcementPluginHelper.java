@@ -25,6 +25,7 @@ import io.harness.ssca.beans.source.SbomSourceType;
 import io.harness.ssca.beans.stepinfo.SscaEnforcementStepInfo;
 import io.harness.ssca.beans.store.HarnessStore;
 import io.harness.ssca.beans.store.StoreType;
+import io.harness.ssca.client.NgSettingsUtils;
 import io.harness.ssca.client.SSCAServiceUtils;
 import io.harness.ssca.execution.enforcement.SscaEnforcementStepPluginUtils;
 import io.harness.yaml.core.variables.SecretNGVariable;
@@ -39,6 +40,7 @@ import org.apache.commons.collections4.CollectionUtils;
 @OwnedBy(HarnessTeam.SSCA)
 public class SscaEnforcementPluginHelper {
   @Inject private SSCAServiceUtils sscaServiceUtils;
+  @Inject private NgSettingsUtils ngSettingsUtils;
 
   public Map<String, String> getSscaEnforcementStepEnvVariables(
       SscaEnforcementStepInfo stepInfo, String identifier, Ambiance ambiance, Type infraType) {
@@ -65,6 +67,9 @@ public class SscaEnforcementPluginHelper {
     }
     String runtimeId = AmbianceUtils.obtainCurrentRuntimeId(ambiance);
 
+    boolean useBase64SecretForAttestation = ngSettingsUtils.getBaseEncodingEnabled(AmbianceUtils.getAccountId(ambiance),
+        AmbianceUtils.getOrgIdentifier(ambiance), AmbianceUtils.getProjectIdentifier(ambiance));
+
     Map<String, String> envMap = SscaEnforcementStepPluginUtils.getSscaEnforcementStepEnvVariables(
         EnforcementStepEnvVariables.builder()
             .stepExecutionId(runtimeId)
@@ -72,6 +77,7 @@ public class SscaEnforcementPluginHelper {
             .harnessPolicyFileId(policyFile)
             .sscaManagerEnabled(sscaServiceUtils.isSSCAManagerEnabled())
             .policySetRef(policySetRef)
+            .base64SecretAttestation(useBase64SecretForAttestation)
             .build());
     if (infraType == Type.VM) {
       envMap.putAll(getSscaEnforcementSecretEnvMap(stepInfo, identifier, ambiance.getExpressionFunctorToken()));
