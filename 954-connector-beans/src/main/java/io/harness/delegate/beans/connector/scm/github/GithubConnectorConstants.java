@@ -15,4 +15,5 @@ public class GithubConnectorConstants {
   public static final String USERNAME_AND_PASSWORD = "UsernamePassword";
   public static final String USERNAME_AND_TOKEN = "UsernameToken";
   public static final String OAUTH = "OAuth";
+  public static final String ANONYMOUS = "Anonymous";
 }

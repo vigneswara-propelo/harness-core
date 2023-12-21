@@ -9,6 +9,7 @@ package io.harness.connector.mappers.githubconnector;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.connector.entities.embedded.githubconnector.GitHubAnonymous;
 import io.harness.connector.entities.embedded.githubconnector.GithubApiAccess;
 import io.harness.connector.entities.embedded.githubconnector.GithubApp;
 import io.harness.connector.entities.embedded.githubconnector.GithubAppApiAccess;
@@ -121,6 +122,8 @@ public class GithubDTOToEntity implements ConnectorDTOToEntityMapper<GithubConne
             .installationIdRef(SecretRefHelper.getSecretConfigString(githubAppDTO.getInstallationIdRef()))
             .applicationIdRef(SecretRefHelper.getSecretConfigString(githubAppDTO.getApplicationIdRef()))
             .build();
+      case ANONYMOUS:
+        return GitHubAnonymous.builder().build();
       default:
         throw new UnknownEnumTypeException("Github Http Auth Type", type == null ? null : type.getDisplayName());
     }

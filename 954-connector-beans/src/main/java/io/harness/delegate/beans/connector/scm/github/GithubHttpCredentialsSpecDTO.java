@@ -7,6 +7,7 @@
 
 package io.harness.delegate.beans.connector.scm.github;
 
+import static io.harness.delegate.beans.connector.scm.github.GithubConnectorConstants.ANONYMOUS;
 import static io.harness.delegate.beans.connector.scm.github.GithubConnectorConstants.GITHUB_APP;
 import static io.harness.delegate.beans.connector.scm.github.GithubConnectorConstants.OAUTH;
 import static io.harness.delegate.beans.connector.scm.github.GithubConnectorConstants.USERNAME_AND_PASSWORD;
@@ -23,7 +24,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
   @JsonSubTypes.Type(value = GithubUsernamePasswordDTO.class, name = USERNAME_AND_PASSWORD)
   , @JsonSubTypes.Type(value = GithubUsernameTokenDTO.class, name = USERNAME_AND_TOKEN),
       @JsonSubTypes.Type(value = GithubOauthDTO.class, name = OAUTH),
-      @JsonSubTypes.Type(value = GithubAppDTO.class, name = GITHUB_APP)
+      @JsonSubTypes.Type(value = GithubAppDTO.class, name = GITHUB_APP),
+      @JsonSubTypes.Type(value = GithubAnonymousDTO.class, name = ANONYMOUS)
 })
 @Schema(name = "GithubHttpCredentialsSpec",
     description =

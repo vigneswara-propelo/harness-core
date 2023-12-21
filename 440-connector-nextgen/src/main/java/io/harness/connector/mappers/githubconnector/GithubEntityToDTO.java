@@ -22,6 +22,7 @@ import io.harness.connector.entities.embedded.githubconnector.GithubUsernamePass
 import io.harness.connector.entities.embedded.githubconnector.GithubUsernameToken;
 import io.harness.connector.mappers.ConnectorEntityToDTOMapper;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
+import io.harness.delegate.beans.connector.scm.github.GithubAnonymousDTO;
 import io.harness.delegate.beans.connector.scm.github.GithubApiAccessDTO;
 import io.harness.delegate.beans.connector.scm.github.GithubApiAccessSpecDTO;
 import io.harness.delegate.beans.connector.scm.github.GithubApiAccessType;
@@ -130,6 +131,9 @@ public class GithubEntityToDTO implements ConnectorEntityToDTOMapper<GithubConne
                 .applicationIdRef(SecretRefHelper.createSecretRef(githubApp.getApplicationIdRef()))
                 .installationIdRef(SecretRefHelper.createSecretRef(githubApp.getInstallationIdRef()))
                 .build();
+        break;
+      case ANONYMOUS:
+        githubHttpCredentialsSpecDTO = GithubAnonymousDTO.builder().build();
         break;
       default:
         Switch.unhandled(type);

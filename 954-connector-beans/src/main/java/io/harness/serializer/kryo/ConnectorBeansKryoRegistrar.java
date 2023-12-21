@@ -203,6 +203,7 @@ import io.harness.delegate.beans.connector.scm.genericgitconnector.GitAuthentica
 import io.harness.delegate.beans.connector.scm.genericgitconnector.GitConfigDTO;
 import io.harness.delegate.beans.connector.scm.genericgitconnector.GitHTTPAuthenticationDTO;
 import io.harness.delegate.beans.connector.scm.genericgitconnector.GitSSHAuthenticationDTO;
+import io.harness.delegate.beans.connector.scm.github.GithubAnonymousDTO;
 import io.harness.delegate.beans.connector.scm.github.GithubApiAccessDTO;
 import io.harness.delegate.beans.connector.scm.github.GithubApiAccessSpecDTO;
 import io.harness.delegate.beans.connector.scm.github.GithubApiAccessType;
@@ -383,6 +384,7 @@ public class ConnectorBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(GcpKmsConnectorDTO.class, 543238);
     kryo.register(GithubAppDTO.class, 20001000);
     kryo.register(GcpOidcDetailsDTO.class, 20001001);
+    kryo.register(GithubAnonymousDTO.class, 20002015);
 
     kryo.register(AwsKmsConnectorDTO.class, 543286);
     kryo.register(AwsKmsConnectorCredentialDTO.class, 543288);
