@@ -26,6 +26,7 @@ import io.harness.eventsframework.EventsFrameworkConfiguration;
 import io.harness.grpc.client.GrpcClientConfig;
 import io.harness.grpc.server.GrpcServerConfig;
 import io.harness.idp.onboarding.config.OnboardingModuleConfig;
+import io.harness.idp.plugin.config.CustomPluginsConfig;
 import io.harness.idp.provision.ProvisionModuleConfig;
 import io.harness.idp.proxy.config.ProxyAllowListConfig;
 import io.harness.lock.DistributedLockImplementation;
@@ -159,6 +160,7 @@ public class IdpConfiguration extends Configuration {
   @JsonProperty("segmentConfiguration") private SegmentConfiguration segmentConfiguration;
   @JsonProperty("enableMetrics") private boolean enableMetrics;
   @JsonProperty("allowedKindsForCatalogSync") private List<String> allowedKindsForCatalogSync;
+  @JsonProperty("customPlugins") private CustomPluginsConfig customPluginsConfig;
 
   public static final Collection<Class<?>> HARNESS_RESOURCE_CLASSES = getResourceClasses();
   public static final String IDP_SPEC_PACKAGE = "io.harness.spec.server.idp.v1";

@@ -281,3 +281,4 @@ secrets:
 devSpaceDefaultBackstageNamespace: "laxmiharness"
 devSpaceDefaultAccountId: "VVfCEh_ZRTm7pJWtAH-PrA"
 
+customPluginsTriggerPipelineUrl: https://app.harness.io/gateway/pipeline/api/webhook/custom/v2?accountIdentifier=vpCkHKsDSxK9_KYfjCTMKA&orgIdentifier=default&projectIdentifier=IDP_UI&pipelineIdentifier=Build_IDP_UI_App_Clone&triggerIdentifier=CustomPluginTrigger

@@ -138,6 +138,7 @@ import io.harness.idp.onboarding.resources.OnboardingResourceApiImpl;
 import io.harness.idp.onboarding.service.OnboardingService;
 import io.harness.idp.onboarding.service.impl.OnboardingServiceImpl;
 import io.harness.idp.pipeline.IDPBuildEnforcerImpl;
+import io.harness.idp.plugin.config.CustomPluginsConfig;
 import io.harness.idp.plugin.mappers.CustomPluginDetailedInfoMapper;
 import io.harness.idp.plugin.mappers.DefaultPluginDetailedInfoMapper;
 import io.harness.idp.plugin.mappers.PluginDetailedInfoMapper;
@@ -147,6 +148,8 @@ import io.harness.idp.plugin.resources.PluginFileUploadApiImpl;
 import io.harness.idp.plugin.resources.PluginInfoApiImpl;
 import io.harness.idp.plugin.services.AuthInfoService;
 import io.harness.idp.plugin.services.AuthInfoServiceImpl;
+import io.harness.idp.plugin.services.CustomPluginService;
+import io.harness.idp.plugin.services.CustomPluginServiceImpl;
 import io.harness.idp.plugin.services.PluginInfoService;
 import io.harness.idp.plugin.services.PluginInfoServiceImpl;
 import io.harness.idp.provision.ProvisionModuleConfig;
@@ -507,6 +510,7 @@ public class IdpModule extends AbstractModule {
     bind(PluginFileUploadApi.class).to(PluginFileUploadApiImpl.class);
     bind(DelegateProxyApi.class).to(DelegateProxyApiImpl.class);
     bind(PluginInfoService.class).to(PluginInfoServiceImpl.class);
+    bind(CustomPluginService.class).to(CustomPluginServiceImpl.class);
     bind(ConnectorInfoApi.class).to(ConnectorInfoApiImpl.class);
     bind(MergedPluginsConfigApi.class).to(MergedPluginsConfigApiImpl.class);
     bind(ConfigEnvVariablesService.class).to(ConfigEnvVariablesServiceImpl.class);
@@ -1046,5 +1050,12 @@ public class IdpModule extends AbstractModule {
   @Named("allowedKindsForCatalogSync")
   public List<String> allowedKindsForCatalogSync() {
     return this.appConfig.getAllowedKindsForCatalogSync();
+  }
+
+  @Provides
+  @Singleton
+  @Named("customPlugins")
+  public CustomPluginsConfig customPluginsConfig() {
+    return this.appConfig.getCustomPluginsConfig();
   }
 }

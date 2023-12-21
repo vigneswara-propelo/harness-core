@@ -23,6 +23,7 @@ import io.harness.exception.GeneralException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.idp.common.Constants;
 import io.harness.idp.common.IdpCommonService;
+import io.harness.idp.common.PipelineTriggerUtils;
 import io.harness.idp.configmanager.beans.entity.MergedAppConfigEntity;
 import io.harness.idp.configmanager.service.ConfigManagerService;
 import io.harness.idp.envvariable.service.BackstageEnvVariableService;
@@ -200,10 +201,9 @@ public class ProvisionServiceImplTest {
     when(backstagePermissionsService.createPermissions(any(), any())).thenReturn(new BackstagePermissions());
     when(configManagerService.mergeAndSaveAppConfig(any())).thenReturn(MergedAppConfigEntity.builder().build());
     when(provisionModuleConfig.getTriggerPipelineUrl()).thenReturn("https://harness.trigger.com");
-    when(provisionServiceImpl.getOkHttpClient()).thenReturn(client);
-    when(client.newCall(any())).thenReturn(call);
-    when(call.execute()).thenReturn(responseSuccess);
+    MockedStatic<PipelineTriggerUtils> mockRestUtils = Mockito.mockStatic(PipelineTriggerUtils.class);
     provisionServiceImpl.triggerPipelineAndCreatePermissions(ACCOUNT_ID, NAMESPACE);
+    mockRestUtils.close();
   }
 
   @Test(expected = InvalidRequestException.class)
@@ -218,7 +218,6 @@ public class ProvisionServiceImplTest {
     when(backstagePermissionsService.createPermissions(any(), any())).thenThrow(new DuplicateKeyException(""));
     when(configManagerService.mergeAndSaveAppConfig(any())).thenReturn(MergedAppConfigEntity.builder().build());
     when(provisionModuleConfig.getTriggerPipelineUrl()).thenReturn("https://harness.trigger.com");
-    when(provisionServiceImpl.getOkHttpClient()).thenReturn(client);
     when(client.newCall(any())).thenReturn(call);
     when(call.execute()).thenThrow(IOException.class);
     provisionServiceImpl.triggerPipelineAndCreatePermissions(ACCOUNT_ID, NAMESPACE);

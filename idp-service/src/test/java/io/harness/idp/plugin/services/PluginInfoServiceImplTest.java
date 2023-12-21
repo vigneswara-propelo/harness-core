@@ -78,6 +78,7 @@ public class PluginInfoServiceImplTest {
   @Mock private IdpCommonService idpCommonService;
   @Mock private HashMap<String, String> notificationConfigs = new HashMap<>();
   @Mock private GcpStorageUtil gcpStorageUtil;
+  @Mock private CustomPluginService customPluginService;
   private Map<PluginInfo.PluginTypeEnum, PluginDetailedInfoMapper> mapBinder;
   private final ObjectMapper objectMapper = mock(ObjectMapper.class);
 
@@ -100,7 +101,7 @@ public class PluginInfoServiceImplTest {
     mapBinder = Map.of(PluginInfo.PluginTypeEnum.DEFAULT, pluginDetailedInfoMapper);
     pluginInfoServiceImpl = new PluginInfoServiceImpl(pluginInfoRepository, pluginRequestRepository,
         configManagerService, configEnvVariablesService, backstageEnvVariableService, pluginsProxyInfoService,
-        idpCommonService, "", notificationConfigs, mapBinder, gcpStorageUtil);
+        idpCommonService, "", notificationConfigs, mapBinder, gcpStorageUtil, customPluginService);
   }
 
   @Test

@@ -6,8 +6,6 @@
  */
 package io.harness.idp.provision.service;
 
-import static io.harness.idp.provision.ProvisionConstants.ACCOUNT_ID;
-import static io.harness.idp.provision.ProvisionConstants.NAMESPACE;
 import static io.harness.idp.provision.ProvisionConstants.PROVISION_MODULE_CONFIG;
 
 import io.harness.authorization.AuthorizationServiceHeader;
@@ -15,6 +13,7 @@ import io.harness.client.NgConnectorManagerClient;
 import io.harness.exception.GeneralException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.idp.common.Constants;
+import io.harness.idp.common.PipelineTriggerUtils;
 import io.harness.idp.configmanager.service.ConfigManagerService;
 import io.harness.idp.envvariable.service.BackstageEnvVariableService;
 import io.harness.idp.provision.ProvisionModuleConfig;
@@ -23,7 +22,6 @@ import io.harness.ng.core.dto.secrets.SecretDTOV2;
 import io.harness.ng.core.dto.secrets.SecretRequestWrapper;
 import io.harness.ng.core.dto.secrets.SecretResponseWrapper;
 import io.harness.ng.core.dto.secrets.SecretTextSpecDTO;
-import io.harness.retry.RetryHelper;
 import io.harness.secretmanagerclient.SecretType;
 import io.harness.secretmanagerclient.ValueType;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
@@ -34,26 +32,13 @@ import io.harness.spec.server.idp.v1.model.BackstageEnvSecretVariable;
 import io.harness.spec.server.idp.v1.model.BackstageEnvVariable;
 import io.harness.spec.server.idp.v1.model.BackstagePermissions;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import io.github.resilience4j.retry.Retry;
-import java.io.IOException;
-import java.net.ConnectException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.json.JSONObject;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.internal.http2.ConnectionShutdownException;
-import okhttp3.internal.http2.StreamResetException;
 import org.springframework.dao.DuplicateKeyException;
 
 @Slf4j
@@ -64,8 +49,8 @@ public class ProvisionServiceImpl implements ProvisionService {
   static final String ERROR_MESSAGE =
       "HTTP Error Status (400 - Invalid Format) received. Invalid request: Secret with identifier IDP_BACKEND_SECRET already exists in this scope";
   @Inject @Named(PROVISION_MODULE_CONFIG) ProvisionModuleConfig provisionModuleConfig;
-  private final Retry retry = buildRetryAndRegisterListeners();
-  private final MediaType APPLICATION_JSON = MediaType.parse("application/json");
+  private static final Retry retry =
+      PipelineTriggerUtils.buildRetryAndRegisterListeners(ProvisionServiceImpl.class.getSimpleName());
   @Inject NgConnectorManagerClient ngConnectorManagerClient;
 
   @Inject ConfigManagerService configManagerService;
@@ -170,46 +155,8 @@ public class ProvisionServiceImpl implements ProvisionService {
   }
 
   private void makeTriggerApi(String accountIdentifier, String namespace) {
-    Request request = createHttpRequest(accountIdentifier, namespace);
-    OkHttpClient client = getOkHttpClient();
-    Supplier<Response> response = Retry.decorateSupplier(retry, () -> {
-      try {
-        return client.newCall(request).execute();
-      } catch (IOException e) {
-        String errMessage = "Error occurred while reaching pipeline trigger API";
-        log.error(errMessage, e);
-        throw new InvalidRequestException(errMessage);
-      }
-    });
-
-    if (!response.get().isSuccessful()) {
-      throw new InvalidRequestException("Pipeline Trigger http call failed");
-    }
-  }
-
-  @VisibleForTesting
-  OkHttpClient getOkHttpClient() {
-    return new OkHttpClient();
-  }
-
-  private Request createHttpRequest(String accountIdentifier, String namespace) {
     String url = provisionModuleConfig.getTriggerPipelineUrl();
-
-    JSONObject jsonObject = new JSONObject();
-    jsonObject.put(ACCOUNT_ID, accountIdentifier);
-    jsonObject.put(NAMESPACE, namespace);
-
-    RequestBody requestBody = RequestBody.create(jsonObject.toString(), APPLICATION_JSON);
-
-    return new Request.Builder().url(url).post(requestBody).build();
-  }
-
-  private Retry buildRetryAndRegisterListeners() {
-    final Retry exponentialRetry = RetryHelper.getExponentialRetry(this.getClass().getSimpleName(),
-        new Class[] {ConnectException.class, TimeoutException.class, ConnectionShutdownException.class,
-            StreamResetException.class});
-    RetryHelper.registerEventListeners(exponentialRetry);
-    return exponentialRetry;
+    PipelineTriggerUtils.trigger(accountIdentifier, namespace, url, retry);
   }
 
   @Override

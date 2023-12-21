@@ -114,6 +114,7 @@ public class PluginInfoServiceImpl implements PluginInfoService {
   @Inject @Named("notificationConfigs") HashMap<String, String> notificationConfigs;
   Map<PluginInfo.PluginTypeEnum, PluginDetailedInfoMapper> pluginDetailedInfoMapperMap;
   private GcpStorageUtil gcpStorageUtil;
+  private CustomPluginService customPluginService;
   private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
   @Override
@@ -222,6 +223,7 @@ public class PluginInfoServiceImpl implements PluginInfoService {
           String.format("Could not find plugin with identifier %s in account %s", pluginId, accountIdentifier));
     }
     updatePluginsMetadataOnGcs(accountIdentifier);
+    customPluginService.triggerBuildPipeline(accountIdentifier);
     return buildDtoWithAdditionalDetails(updatedEntity, accountIdentifier);
   }
 

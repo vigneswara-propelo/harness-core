@@ -81,5 +81,5 @@ data:
   DEVSPACE_DEFAULT_ACCOUNT_ID: {{.Values.devSpaceDefaultAccountId | quote}}
   PROXY_ALLOW_LIST_CONFIG_SERVICES: |-
 {{ toYaml .Values.proxyAllowListConfigServices | indent 4 }}
-
+  CUSTOM_PLUGINS_TRIGGER_PIPELINE_URL: {{.Values.customPluginsTriggerPipelineUrl}}
 

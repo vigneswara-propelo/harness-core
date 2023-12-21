@@ -462,3 +462,6 @@ allowedKindsForCatalogSync:
   - System
   - Template
   - User
+
+customPlugins:
+  triggerPipelineUrl: ""
