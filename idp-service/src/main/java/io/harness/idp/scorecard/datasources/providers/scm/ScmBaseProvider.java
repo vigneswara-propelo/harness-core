@@ -7,6 +7,7 @@
 
 package io.harness.idp.scorecard.datasources.providers.scm;
 
+import static io.harness.idp.common.Constants.HARNESS_ACCOUNT;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_BRANCH;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_NAME;
 import static io.harness.idp.scorecard.datasourcelocations.constants.DataSourceLocations.REPOSITORY_OWNER;
@@ -47,6 +48,7 @@ public abstract class ScmBaseProvider extends HttpDataSourceProvider {
       Map<String, String> possibleReplaceableUrlBodyPairs) {
     Map<String, String> authHeaders = this.getAuthHeaders(accountIdentifier, configs);
     Map<String, String> replaceableHeaders = new HashMap<>(authHeaders);
+    replaceableHeaders.put(HARNESS_ACCOUNT, accountIdentifier);
 
     Map<String, String> possibleReplaceableRequestBodyPairs = new HashMap<>();
 

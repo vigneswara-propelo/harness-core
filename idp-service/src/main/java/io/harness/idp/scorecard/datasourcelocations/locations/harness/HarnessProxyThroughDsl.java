@@ -49,7 +49,7 @@ public class HarnessProxyThroughDsl extends DataSourceLocationLoop {
       List<InputValue> inputValues = dataFetchDTO.getInputValues();
 
       JSONObject dataPointInputValues = new JSONObject();
-      dataPointInputValues.put("values", inputValues);
+      dataPointInputValues.put("input_values", inputValues);
       dataPointInputValues.put("data_point_identifier", dataPointEntity.getIdentifier());
       dataPointInfoList.add(dataPointInputValues);
     }

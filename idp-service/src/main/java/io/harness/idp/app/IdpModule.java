@@ -169,10 +169,9 @@ import io.harness.idp.scorecard.datapoints.service.DataPointService;
 import io.harness.idp.scorecard.datapoints.service.DataPointServiceImpl;
 import io.harness.idp.scorecard.datapointsdata.resource.HarnessDataPointsApiImpl;
 import io.harness.idp.scorecard.datapointsdata.resource.KubernetesDataPointsApiImpl;
+import io.harness.idp.scorecard.datapointsdata.resource.ScmDataPointsApiImpl;
 import io.harness.idp.scorecard.datapointsdata.service.DataPointDataValueService;
 import io.harness.idp.scorecard.datapointsdata.service.DataPointDataValueServiceImpl;
-import io.harness.idp.scorecard.datapointsdata.service.KubernetesDataPointsService;
-import io.harness.idp.scorecard.datapointsdata.service.KubernetesDataPointsServiceImpl;
 import io.harness.idp.scorecard.datasourcelocations.service.DataSourceLocationService;
 import io.harness.idp.scorecard.datasourcelocations.service.DataSourceLocationServiceImpl;
 import io.harness.idp.scorecard.datasources.resources.DataSourceApiImpl;
@@ -258,6 +257,7 @@ import io.harness.spec.server.idp.v1.NamespaceApi;
 import io.harness.spec.server.idp.v1.OnboardingResourceApi;
 import io.harness.spec.server.idp.v1.PluginInfoApi;
 import io.harness.spec.server.idp.v1.ProvisionApi;
+import io.harness.spec.server.idp.v1.ScmDataPointsApi;
 import io.harness.spec.server.idp.v1.ScorecardsApi;
 import io.harness.spec.server.idp.v1.ScoresApi;
 import io.harness.spec.server.idp.v1.ScoresV2Api;
@@ -537,7 +537,7 @@ public class IdpModule extends AbstractModule {
     bind(HarnessDataPointsApi.class).to(HarnessDataPointsApiImpl.class);
     bind(KubernetesDataPointsApi.class).to(KubernetesDataPointsApiImpl.class);
     bind(DataPointDataValueService.class).to(DataPointDataValueServiceImpl.class);
-    bind(KubernetesDataPointsService.class).to(KubernetesDataPointsServiceImpl.class);
+    bind(ScmDataPointsApi.class).to(ScmDataPointsApiImpl.class);
     bind(CIOverviewDashboardService.class).to(CIOverviewDashboardServiceImpl.class);
     bind(ScheduledExecutorService.class)
         .annotatedWith(Names.named("backstageEnvVariableSyncer"))

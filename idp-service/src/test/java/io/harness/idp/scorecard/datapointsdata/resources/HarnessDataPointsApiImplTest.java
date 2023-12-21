@@ -26,9 +26,12 @@ import io.harness.spec.server.idp.v1.model.DataPointInputValues;
 import io.harness.spec.server.idp.v1.model.DataSourceDataPointInfo;
 import io.harness.spec.server.idp.v1.model.DataSourceDataPointInfoRequest;
 import io.harness.spec.server.idp.v1.model.DataSourceLocationInfo;
+import io.harness.spec.server.idp.v1.model.InputValue;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.Response;
 import lombok.AccessLevel;
@@ -50,6 +53,7 @@ public class HarnessDataPointsApiImplTest extends CategoryTest {
   @InjectMocks HarnessDataPointsApiImpl harnessDataPointsApiImpl;
 
   private static final String TEST_DATA_POINT_IDENTIFIER = "test-data-point-identifier";
+  private static final String TEST_DATA_POINT_KEY = "test-data-point-key";
   private static final String TEST_DATA_POINT_VALUE = "test-data-point-value";
 
   private static final String TEST_ACCOUNT_IDENTIFIER = "test-account-identifier";
@@ -73,7 +77,12 @@ public class HarnessDataPointsApiImplTest extends CategoryTest {
 
     DataPointInputValues dataPointInputValues = new DataPointInputValues();
     dataPointInputValues.setDataPointIdentifier(TEST_DATA_POINT_IDENTIFIER);
-    dataPointInputValues.setValues(Collections.singletonList(TEST_DATA_POINT_VALUE));
+    List<InputValue> inputValues = new ArrayList<>();
+    InputValue inputValue = new InputValue();
+    inputValue.setValue(TEST_DATA_POINT_KEY);
+    inputValue.setValue(TEST_DATA_POINT_VALUE);
+    inputValues.add(inputValue);
+    dataPointInputValues.setInputValues(inputValues);
 
     dataSourceLocationInfo.setDataPoints(Collections.singletonList(dataPointInputValues));
     dataSourceDataPointInfo.setDataSourceLocation(dataSourceLocationInfo);
@@ -104,7 +113,12 @@ public class HarnessDataPointsApiImplTest extends CategoryTest {
 
     DataPointInputValues dataPointInputValues = new DataPointInputValues();
     dataPointInputValues.setDataPointIdentifier(TEST_DATA_POINT_IDENTIFIER);
-    dataPointInputValues.setValues(Collections.singletonList(TEST_DATA_POINT_VALUE));
+    List<InputValue> inputValues = new ArrayList<>();
+    InputValue inputValue = new InputValue();
+    inputValue.setValue(TEST_DATA_POINT_KEY);
+    inputValue.setValue(TEST_DATA_POINT_VALUE);
+    inputValues.add(inputValue);
+    dataPointInputValues.setInputValues(inputValues);
 
     dataSourceLocationInfo.setDataPoints(Collections.singletonList(dataPointInputValues));
     dataSourceDataPointInfo.setDataSourceLocation(dataSourceLocationInfo);

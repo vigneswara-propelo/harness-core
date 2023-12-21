@@ -7,6 +7,7 @@
 
 package io.harness.idp.scorecard.datapointsdata.resources;
 
+import static io.harness.idp.common.Constants.KUBERNETES_IDENTIFIER;
 import static io.harness.rule.OwnerRule.VIKYATH_HAREKAL;
 
 import static junit.framework.TestCase.assertEquals;
@@ -21,7 +22,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.eraro.ResponseMessage;
 import io.harness.idp.scorecard.datapointsdata.resource.KubernetesDataPointsApiImpl;
-import io.harness.idp.scorecard.datapointsdata.service.KubernetesDataPointsService;
+import io.harness.idp.scorecard.datapointsdata.service.DataPointDataValueService;
 import io.harness.rule.Owner;
 import io.harness.spec.server.idp.v1.model.KubernetesConfig;
 import io.harness.spec.server.idp.v1.model.KubernetesRequest;
@@ -40,7 +41,7 @@ import org.mockito.MockitoAnnotations;
 public class KubernetesDataPointsApiImplTest extends CategoryTest {
   public static final String TEST_ACCOUNT = "testAccount";
   AutoCloseable openMocks;
-  @Mock private KubernetesDataPointsService kubernetesDataPointsService;
+  @Mock private DataPointDataValueService dataPointDataValueService;
   @InjectMocks private KubernetesDataPointsApiImpl kubernetesDataPointsApi;
 
   @Before
@@ -56,11 +57,13 @@ public class KubernetesDataPointsApiImplTest extends CategoryTest {
     validRequest.setRequest(new KubernetesConfig().labelSelector("").dataSourceLocation(null));
     Map<String, Object> data = Collections.singletonMap("key", "value");
 
-    when(kubernetesDataPointsService.getDataPointDataValues(eq(TEST_ACCOUNT), any())).thenReturn(data);
+    when(dataPointDataValueService.getDataPointDataValues(eq(TEST_ACCOUNT), eq(KUBERNETES_IDENTIFIER), any()))
+        .thenReturn(data);
 
     Response response = kubernetesDataPointsApi.getK8sDataPointValues(validRequest, TEST_ACCOUNT);
 
-    verify(kubernetesDataPointsService).getDataPointDataValues(TEST_ACCOUNT, validRequest.getRequest());
+    verify(dataPointDataValueService)
+        .getDataPointDataValues(TEST_ACCOUNT, KUBERNETES_IDENTIFIER, validRequest.getRequest());
     assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     assertEquals(data, response.getEntity());
   }
@@ -73,12 +76,13 @@ public class KubernetesDataPointsApiImplTest extends CategoryTest {
     validRequest.setRequest(new KubernetesConfig().labelSelector("").dataSourceLocation(null));
     String errorMessage = "Error message";
 
-    when(kubernetesDataPointsService.getDataPointDataValues(eq(TEST_ACCOUNT), any()))
+    when(dataPointDataValueService.getDataPointDataValues(eq(TEST_ACCOUNT), eq(KUBERNETES_IDENTIFIER), any()))
         .thenThrow(new RuntimeException(errorMessage));
 
     Response response = kubernetesDataPointsApi.getK8sDataPointValues(validRequest, TEST_ACCOUNT);
 
-    verify(kubernetesDataPointsService).getDataPointDataValues(TEST_ACCOUNT, validRequest.getRequest());
+    verify(dataPointDataValueService)
+        .getDataPointDataValues(TEST_ACCOUNT, KUBERNETES_IDENTIFIER, validRequest.getRequest());
     assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
     ResponseMessage responseMessage = (ResponseMessage) response.getEntity();
     assertEquals(errorMessage, responseMessage.getMessage());

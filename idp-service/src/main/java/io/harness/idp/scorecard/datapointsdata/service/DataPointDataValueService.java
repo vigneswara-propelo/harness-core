@@ -6,11 +6,8 @@
  */
 package io.harness.idp.scorecard.datapointsdata.service;
 
-import io.harness.spec.server.idp.v1.model.DataSourceDataPointInfo;
-
 import java.util.Map;
 
 public interface DataPointDataValueService {
-  Map<String, Object> getDataPointDataValues(
-      String accountIdentifier, String datasourceIdentifier, DataSourceDataPointInfo dataSourceDataPointInfo);
+  Map<String, Object> getDataPointDataValues(String accountIdentifier, String datasourceIdentifier, Object config);
 }

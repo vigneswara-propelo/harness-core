@@ -1345,6 +1345,23 @@ paths:
         - $ref: '#/components/parameters/AccountHeader'
       security:
         - x-api-key: []
+  /v1/data-sources/scm/data-point/values:
+    post:
+      summary: Get data points data for scm data source
+      operationId: get-scm-data-point-values
+      tags:
+        - ScmDataPoints
+      responses:
+        '200':
+          $ref: '#/components/responses/DataSourceDataPointInfoResponse'
+      x-stoplight:
+        id: 9fi72j8suwpyn
+      requestBody:
+        $ref: '#/components/requestBodies/ScmConfigRequest'
+      parameters:
+        - $ref: '#/components/parameters/AccountHeader'
+      security:
+        - x-api-key: []
   /v1/license/usage/save:
     post:
       summary: Save IDP module license usage
@@ -3352,14 +3369,16 @@ components:
           type: string
           x-stoplight:
             id: bulmbn2grsz1a
-        values:
+        data_source_identifier:
+          type: string
+          x-stoplight:
+            id: auomnn2gppz9a
+        input_values:
           type: array
           x-stoplight:
             id: ojz53dfz4w06d
           items:
-            x-stoplight:
-              id: puyrizdau54b3
-            type: string
+            $ref: '#/components/schemas/InputValue'
       required:
         - data_point_identifier
         - values
@@ -3384,7 +3403,7 @@ components:
       x-stoplight:
         id: ygs9m3sxopb3z
       type: object
-      description: Resonse for getting the data point data
+      description: Response for getting the data point data
       x-internal: true
       properties:
         resource:
@@ -3501,6 +3520,47 @@ components:
       properties:
         request:
           $ref: '#/components/schemas/KubernetesConfig'
+    ScmConfig:
+      title: ScmConfig
+      x-stoplight:
+        id: 4lnqpy92i93nn
+      type: object
+      description: Scm data source config
+      properties:
+        token:
+          type: string
+          x-stoplight:
+            id: trwbwp52ghvr1
+        repo_scm:
+          type: string
+          x-stoplight:
+            id: ild5tcji7lp79
+        repo_owner:
+          type: string
+          x-stoplight:
+            id: jsd5zcji6lp79
+        repo_name:
+          type: string
+          x-stoplight:
+            id: 4g3czqv7rubhe
+        repo_branch:
+          type: string
+          x-stoplight:
+            id: utj0sh93p6jpf
+        repo_sub_folder:
+          type: string
+          x-stoplight:
+            id: oiao02rw7ueem
+        data_source_location:
+          $ref: '#/components/schemas/DataSourceLocationInfo'
+    ScmRequest:
+      title: ScmRequest
+      x-stoplight:
+        id: qdoqi2ofwsxrr
+      type: object
+      properties:
+        request:
+          $ref: '#/components/schemas/ScmConfig'
     ScorecardRecalibrateIdentifiers:
       title: ScorecardRecalibrateIdentifiers
       x-stoplight:
@@ -4211,6 +4271,15 @@ components:
           schema:
             $ref: '#/components/schemas/KubernetesRequest'
       description: Kubernetes Configuration
+    ScmConfigRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ScmRequest'
+        application/yaml:
+          schema:
+            $ref: '#/components/schemas/ScmRequest'
+      description: Scm Configuration
     LicenseUsageSaveRequest:
       content:
         application/json:

@@ -7,10 +7,11 @@
 
 package io.harness.idp.scorecard.datapoints.parser.scm.bitbucket;
 
-import static io.harness.idp.common.Constants.DSL_RESPONSE;
+import static io.harness.idp.common.Constants.TEXT;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.idp.common.CommonUtils;
 import io.harness.idp.scorecard.datapoints.parser.scm.ScmFileContentsParser;
 
 import java.util.Map;
@@ -19,6 +20,6 @@ import java.util.Map;
 public class BitbucketFileContentsParser extends ScmFileContentsParser {
   @Override
   protected String getFileContent(Map<String, Object> data) {
-    return (String) data.get(DSL_RESPONSE);
+    return (String) CommonUtils.findObjectByName(data, TEXT);
   }
 }

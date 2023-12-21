@@ -105,6 +105,7 @@ public class Constants {
   public static final String ERROR_MESSAGES_KEY = "errorMessages";
   public static final String ERRORS = "errors";
   public static final String MESSAGE_KEY = "message";
+  public static final String TEXT = "text";
   public static final String HARNESS_HOST = "https://%s.harness.io";
 
   public static final String LOCAL_HOST = "http://localhost:12003";

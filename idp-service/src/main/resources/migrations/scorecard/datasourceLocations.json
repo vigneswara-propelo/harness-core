@@ -415,14 +415,16 @@
     "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
     "identifier": "github_file_contents",
     "dataSourceIdentifier": "github",
-    "type": "DirectHttp",
+    "type": "CustomHttp",
     "apiRequestDetails": {
       "method": "POST",
-      "url": "/graphql",
+      "url": "{HOST}/v1/data-sources/scm/data-point/values",
       "headers": {
-        "Content-Type": "application/json"
+        "Authorization": "{SERVICE_TO_SERVICE_AUTH}",
+        "Harness-Account": "{ACCOUNT_IDENTIFIER}",
+        "X-Source-Principal": "{X_SOURCE_PRINCIPAL}"
       },
-      "requestBody": "{\"query\": \"{ repository(owner: \\\"{REPOSITORY_OWNER}\\\", name: \\\"{REPOSITORY_NAME}\\\") { object(expression: \\\"{REPOSITORY_BRANCH}:{REPOSITORY_SUB_FOLDER}{FILE_PATH_REPLACER}\\\") { ... on Blob { text } } } }\"}"
+      "requestBody": "{BODY}"
     }
   },
   {
@@ -430,14 +432,16 @@
     "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
     "identifier": "gitlab_file_contents",
     "dataSourceIdentifier": "gitlab",
-    "type": "DirectHttp",
+    "type": "CustomHttp",
     "apiRequestDetails": {
       "method": "POST",
-      "url": "/api/graphql",
+      "url": "{HOST}/v1/data-sources/scm/data-point/values",
       "headers": {
-        "Content-Type": "application/json"
+        "Authorization": "{SERVICE_TO_SERVICE_AUTH}",
+        "Harness-Account": "{ACCOUNT_IDENTIFIER}",
+        "X-Source-Principal": "{X_SOURCE_PRINCIPAL}"
       },
-      "requestBody": "{\"query\":\"{\\n  project(fullPath: \\\"{REPOSITORY_OWNER}/{REPOSITORY_NAME}\\\") {\\n    repository {\\n      blobs(ref: \\\"{REPOSITORY_BRANCH}\\\", paths: \\\"{REPOSITORY_SUB_FOLDER}{FILE_PATH_REPLACER}\\\") {\\n        nodes {\\n          rawTextBlob\\n        }\\n      }\\n    }\\n  }\\n}\\n\",\"variables\":{}}"
+      "requestBody": "{BODY}"
     }
   },
   {
@@ -447,11 +451,14 @@
     "dataSourceIdentifier": "bitbucket",
     "type": "DirectHttp",
     "apiRequestDetails": {
-      "method": "GET",
-      "url": "/2.0/repositories/{REPOSITORY_OWNER}/{REPOSITORY_NAME}/src/{REPOSITORY_BRANCH}/{REPOSITORY_SUB_FOLDER}{FILE_PATH_REPLACER}",
+      "method": "POST",
+      "url": "{HOST}/v1/data-sources/scm/data-point/values",
       "headers": {
-        "Content-Type": "application/json"
-      }
+        "Authorization": "{SERVICE_TO_SERVICE_AUTH}",
+        "Harness-Account": "{ACCOUNT_IDENTIFIER}",
+        "X-Source-Principal": "{X_SOURCE_PRINCIPAL}"
+      },
+      "requestBody": "{BODY}"
     }
   }
 ]

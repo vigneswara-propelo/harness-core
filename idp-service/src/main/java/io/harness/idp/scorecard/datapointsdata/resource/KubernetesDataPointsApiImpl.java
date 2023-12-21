@@ -7,10 +7,12 @@
 
 package io.harness.idp.scorecard.datapointsdata.resource;
 
+import static io.harness.idp.common.Constants.KUBERNETES_IDENTIFIER;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ResponseMessage;
-import io.harness.idp.scorecard.datapointsdata.service.KubernetesDataPointsService;
+import io.harness.idp.scorecard.datapointsdata.service.DataPointDataValueService;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.spec.server.idp.v1.KubernetesDataPointsApi;
 import io.harness.spec.server.idp.v1.model.KubernetesRequest;
@@ -26,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @NextGenManagerAuth
 @Slf4j
 public class KubernetesDataPointsApiImpl implements KubernetesDataPointsApi {
-  private KubernetesDataPointsService kubernetesDataPointsService;
+  DataPointDataValueService dataPointDataValueService;
   @Override
   public Response getK8sDataPointValues(@Valid KubernetesRequest body, String harnessAccount) {
     try {
@@ -34,10 +36,10 @@ public class KubernetesDataPointsApiImpl implements KubernetesDataPointsApi {
           "Kubernetes API called - request body label_selector {}, request body data_source_location {} account - {}",
           body.getRequest().getLabelSelector(), body.getRequest().getDataSourceLocation(), harnessAccount);
       Map<String, Object> returnData =
-          kubernetesDataPointsService.getDataPointDataValues(harnessAccount, body.getRequest());
+          dataPointDataValueService.getDataPointDataValues(harnessAccount, KUBERNETES_IDENTIFIER, body.getRequest());
       return Response.status(Response.Status.OK).entity(returnData).build();
     } catch (Exception e) {
-      log.error("Error in getting data from kubernetes datasource - {} for account - {}", "harness", harnessAccount, e);
+      log.error("Error in getting data from kubernetes datasource for account - {}", harnessAccount, e);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity(ResponseMessage.builder().message(e.getMessage()).build())
           .build();

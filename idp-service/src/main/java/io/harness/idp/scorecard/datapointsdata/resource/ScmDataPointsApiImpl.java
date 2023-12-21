@@ -4,21 +4,21 @@
  * that can be found in the licenses directory at the root of this repository, also available at
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
-package io.harness.idp.scorecard.datapointsdata.resource;
 
-import static io.harness.idp.common.Constants.HARNESS_IDENTIFIER;
+package io.harness.idp.scorecard.datapointsdata.resource;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.eraro.ResponseMessage;
-import io.harness.idp.annotations.IdpServiceAuthIfHasApiKey;
 import io.harness.idp.scorecard.datapointsdata.service.DataPointDataValueService;
 import io.harness.security.annotations.NextGenManagerAuth;
-import io.harness.spec.server.idp.v1.HarnessDataPointsApi;
-import io.harness.spec.server.idp.v1.model.DataSourceDataPointInfoRequest;
+import io.harness.spec.server.idp.v1.ScmDataPointsApi;
+import io.harness.spec.server.idp.v1.model.ScmConfig;
+import io.harness.spec.server.idp.v1.model.ScmRequest;
 
 import java.util.Map;
 import javax.validation.Valid;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,18 +27,23 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor(onConstructor = @__({ @com.google.inject.Inject }))
 @NextGenManagerAuth
 @Slf4j
-public class HarnessDataPointsApiImpl implements HarnessDataPointsApi {
+public class ScmDataPointsApiImpl implements ScmDataPointsApi {
   DataPointDataValueService dataPointDataValueService;
   @Override
-  @IdpServiceAuthIfHasApiKey
-  public Response getHarnessDataPointValues(@Valid DataSourceDataPointInfoRequest body, String harnessAccount) {
+  public Response getScmDataPointValues(@Valid ScmRequest body, String harnessAccount) {
     try {
-      log.info("Generic API called for harness data source - request body - {}, account - {}", body, harnessAccount);
+      ScmConfig config = body.getRequest();
+      String dataSourceIdentifier = config.getDataSourceLocation().getDataPoints().get(0).getDataSourceIdentifier();
       Map<String, Object> returnData =
-          dataPointDataValueService.getDataPointDataValues(harnessAccount, HARNESS_IDENTIFIER, body.getRequest());
+          dataPointDataValueService.getDataPointDataValues(harnessAccount, dataSourceIdentifier, config);
       return Response.status(Response.Status.OK).entity(returnData).build();
+    } catch (BadRequestException e) {
+      log.error("Error in getting data from scm data source for account - {}", harnessAccount, e);
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity(ResponseMessage.builder().message(e.getMessage()).build())
+          .build();
     } catch (Exception e) {
-      log.error("Error in getting data from harness data source for account - {}", harnessAccount, e);
+      log.error("Error in getting data from scm data source for account - {}", harnessAccount, e);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity(ResponseMessage.builder().message(e.getMessage()).build())
           .build();

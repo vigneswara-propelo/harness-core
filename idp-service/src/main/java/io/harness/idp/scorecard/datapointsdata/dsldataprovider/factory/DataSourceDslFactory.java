@@ -6,6 +6,9 @@
  */
 package io.harness.idp.scorecard.datapointsdata.dsldataprovider.factory;
 
+import static io.harness.idp.common.Constants.BITBUCKET_IDENTIFIER;
+import static io.harness.idp.common.Constants.GITHUB_IDENTIFIER;
+import static io.harness.idp.common.Constants.GITLAB_IDENTIFIER;
 import static io.harness.idp.common.Constants.HARNESS_IDENTIFIER;
 import static io.harness.idp.common.Constants.KUBERNETES_IDENTIFIER;
 
@@ -21,6 +24,9 @@ import lombok.AllArgsConstructor;
 public class DataSourceDslFactory {
   HarnessDslFactory harnessDslFactory;
   KubernetesDslFactory kubernetesDslFactory;
+  GithubDslFactory githubDslFactory;
+  BitbucketDslFactory bitbucketDslFactory;
+  GitlabDslFactory gitlabDslFactory;
 
   public DataSourceDsl getDataSourceDataProvider(String dataSourceIdentifier) {
     switch (dataSourceIdentifier) {
@@ -28,6 +34,12 @@ public class DataSourceDslFactory {
         return harnessDslFactory;
       case KUBERNETES_IDENTIFIER:
         return kubernetesDslFactory;
+      case GITHUB_IDENTIFIER:
+        return githubDslFactory;
+      case BITBUCKET_IDENTIFIER:
+        return bitbucketDslFactory;
+      case GITLAB_IDENTIFIER:
+        return gitlabDslFactory;
       default:
         throw new UnsupportedOperationException(
             String.format("Datasource - %s is not supported ", dataSourceIdentifier));

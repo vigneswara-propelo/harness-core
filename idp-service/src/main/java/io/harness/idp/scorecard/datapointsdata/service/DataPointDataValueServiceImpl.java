@@ -6,6 +6,12 @@
  */
 package io.harness.idp.scorecard.datapointsdata.service;
 
+import static io.harness.idp.common.Constants.BITBUCKET_IDENTIFIER;
+import static io.harness.idp.common.Constants.GITHUB_IDENTIFIER;
+import static io.harness.idp.common.Constants.GITLAB_IDENTIFIER;
+import static io.harness.idp.common.Constants.HARNESS_IDENTIFIER;
+import static io.harness.idp.common.Constants.KUBERNETES_IDENTIFIER;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.idp.scorecard.datapoints.entity.DataPointEntity;
@@ -15,6 +21,8 @@ import io.harness.idp.scorecard.datapointsdata.dsldataprovider.base.DslDataProvi
 import io.harness.idp.scorecard.datapointsdata.dsldataprovider.factory.DataSourceDslFactory;
 import io.harness.spec.server.idp.v1.model.DataPointInputValues;
 import io.harness.spec.server.idp.v1.model.DataSourceDataPointInfo;
+import io.harness.spec.server.idp.v1.model.KubernetesConfig;
+import io.harness.spec.server.idp.v1.model.ScmConfig;
 
 import com.google.inject.Inject;
 import java.util.ArrayList;
@@ -32,22 +40,47 @@ public class DataPointDataValueServiceImpl implements DataPointDataValueService 
   DataPointService dataPointService;
 
   public Map<String, Object> getDataPointDataValues(
-      String accountIdentifier, String datasourceIdentifier, DataSourceDataPointInfo dataSourceDataPointInfo) {
+      String accountIdentifier, String datasourceIdentifier, Object config) {
     DataSourceDsl dataSourceDataProvider =
         dataSourceDataProviderFactory.getDataSourceDataProvider(datasourceIdentifier);
 
-    Map<String, List<DataPointEntity>> dataToFetch = dataPointService.getDslDataPointsInfo(accountIdentifier,
-        dataSourceDataPointInfo.getDataSourceLocation()
+    Map<String, List<DataPointEntity>> dataToFetch = dataPointService.getDslDataPointsInfo(
+        accountIdentifier, getDataPointIdentifiers(datasourceIdentifier, config), datasourceIdentifier);
+
+    List<String> dslIdentifiers = new ArrayList<>(dataToFetch.keySet());
+    log.info("Mapped DSL identifier for data points - {}", dslIdentifiers.get(0));
+
+    DslDataProvider dslDataProvider = dataSourceDataProvider.getDslDataProvider(dslIdentifiers.get(0));
+    return dslDataProvider.getDslData(accountIdentifier, config);
+  }
+
+  List<String> getDataPointIdentifiers(String dataSourceIdentifier, Object config) {
+    switch (dataSourceIdentifier) {
+      case HARNESS_IDENTIFIER:
+        return ((DataSourceDataPointInfo) config)
+            .getDataSourceLocation()
             .getDataPoints()
             .stream()
             .map(DataPointInputValues::getDataPointIdentifier)
-            .collect(Collectors.toList()),
-        datasourceIdentifier);
-
-    List<String> dslIdentifiers = new ArrayList<>(dataToFetch.keySet());
-    log.info("Mapped DSL identifier for datapoints - {}", dslIdentifiers.get(0));
-
-    DslDataProvider dslDataProvider = dataSourceDataProvider.getDslDataProvider(dslIdentifiers.get(0));
-    return dslDataProvider.getDslData(datasourceIdentifier, dataSourceDataPointInfo);
+            .collect(Collectors.toList());
+      case KUBERNETES_IDENTIFIER:
+        return ((KubernetesConfig) config)
+            .getDataSourceLocation()
+            .getDataPoints()
+            .stream()
+            .map(DataPointInputValues::getDataPointIdentifier)
+            .collect(Collectors.toList());
+      case GITHUB_IDENTIFIER:
+      case BITBUCKET_IDENTIFIER:
+      case GITLAB_IDENTIFIER:
+        return ((ScmConfig) config)
+            .getDataSourceLocation()
+            .getDataPoints()
+            .stream()
+            .map(DataPointInputValues::getDataPointIdentifier)
+            .collect(Collectors.toList());
+      default:
+        throw new UnsupportedOperationException(String.format("%s data source is not supported", dataSourceIdentifier));
+    }
   }
 }
