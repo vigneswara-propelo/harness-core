@@ -4,7 +4,7 @@
       "type" : "section",
       "text" : {
         "type" : "mrkdwn",
-        "text" : "*Approval Required for pipeline <${pipelineExecutionLink}|${pipelineName}> triggered by ${triggeredBy}*\n\n*Approval message:*\n${approvalMessage}"
+        "text" : "*Approval Required for pipeline <${pipelineExecutionLink}|${pipelineName}>in stage: ${currentStageName} triggered by ${triggeredBy}*\n\n*Approval message:*\n${approvalMessage}"
       },
       "fields" : [
         {"type" : "mrkdwn", "text" : "*Organization:*\n${orgName}"},

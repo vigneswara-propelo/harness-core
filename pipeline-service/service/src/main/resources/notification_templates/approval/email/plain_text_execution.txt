@@ -1,4 +1,4 @@
-subject: "Approval required for pipeline ${pipelineName} triggered by ${triggeredBy}"
+subject: "Approval required for pipeline ${pipelineName} in stage: ${currentStageName} triggered by ${triggeredBy}"
 body: "
 <html>
 <b>Pipeline waiting for approval: <a href=\"${pipelineExecutionLink}\">${pipelineName}</a></b><br><br>
