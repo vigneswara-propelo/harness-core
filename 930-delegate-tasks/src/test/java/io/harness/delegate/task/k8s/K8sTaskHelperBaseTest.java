@@ -83,6 +83,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -258,6 +259,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import junitparams.JUnitParamsRunner;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -2869,6 +2871,57 @@ public class K8sTaskHelperBaseTest extends CategoryTest {
     verify(spyHelperBase, times(1))
         .getHelmCommandForRender(
             "helm", "manifest", "release", "namespace", "", "file.yaml", HelmVersion.V3, commandFlag, "config");
+  }
+
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
+  @SneakyThrows
+  public void testRenderTemplateForHelmChartFilesDependencyUpdate() {
+    final List<String> chartFiles = Arrays.asList("templates/file.yaml");
+    final String helmOutput = "Some random output\n"
+        + "From Helm output\n";
+    final String templateOutput = "---\n"
+        + "# Source: chart/templates/file.yaml\n"
+        + "apiVersion: v1\n"
+        + "...other chart data";
+
+    K8sTaskHelperBase spyHelperBase = Mockito.spy(k8sTaskHelperBase);
+    ProcessResult processResult = new ProcessResult(0, new ProcessOutput((helmOutput + templateOutput).getBytes()));
+    doReturn(processResult).when(spyHelperBase).executeShellCommand(any(), any(), any(), anyLong());
+    doCallRealMethod().when(helmTaskHelperBase).checkForDependencyUpdateFlag(anyMap(), eq(helmOutput + templateOutput));
+
+    final List<FileData> manifestFiles =
+        spyHelperBase.renderTemplateForHelmChartFiles("helm", "manifest", chartFiles, new ArrayList<>(), "release",
+            "namespace", executionLogCallback, HelmVersion.V3, 9000, HELM_DEPENDENCY_UPDATE, "config");
+
+    assertThat(manifestFiles).hasSize(1);
+    assertThat(manifestFiles.get(0).getFileContent()).isEqualTo(templateOutput);
+  }
+
+  @Test
+  @Owner(developers = ABOSII)
+  @Category(UnitTests.class)
+  @SneakyThrows
+  public void testRenderTemplateForHelmChartFilesDependencyUpdateNoHelmOutput() {
+    final List<String> chartFiles = Arrays.asList("templates/file.yaml");
+    final String templateOutput = "---\n"
+        + "# Source: chart/templates/file.yaml\n"
+        + "apiVersion: v1\n"
+        + "...other chart data";
+    final HelmCommandFlag flags =
+        HelmCommandFlag.builder().valueMap(ImmutableMap.of(TEMPLATE, "--dependency-update")).build();
+
+    K8sTaskHelperBase spyHelperBase = Mockito.spy(k8sTaskHelperBase);
+    ProcessResult processResult = new ProcessResult(0, new ProcessOutput(templateOutput.getBytes()));
+    doReturn(processResult).when(spyHelperBase).executeShellCommand(any(), any(), any(), anyLong());
+    doCallRealMethod().when(helmTaskHelperBase).checkForDependencyUpdateFlag(anyMap(), eq(templateOutput));
+
+    final List<FileData> manifestFiles = spyHelperBase.renderTemplateForHelmChartFiles("helm", "manifest", chartFiles,
+        new ArrayList<>(), "release", "namespace", executionLogCallback, HelmVersion.V3, 9000, flags, "config");
+
+    assertThat(manifestFiles).hasSize(1);
+    assertThat(manifestFiles.get(0).getFileContent()).isEqualTo(templateOutput);
   }
 
   @Test

@@ -2950,7 +2950,14 @@ public class K8sTaskHelperBase {
                     USER, HelmCliCommandType.RENDER_CHART));
           }
 
-          result.add(FileData.builder().fileName(chartFile).fileContent(processResult.outputUTF8()).build());
+          int index = (helmCommandFlag == null) ? -1
+                                                : helmTaskHelperBase.checkForDependencyUpdateFlag(
+                                                    helmCommandFlag.getValueMap(), processResult.outputUTF8());
+          result.add(
+              FileData.builder()
+                  .fileName(chartFile)
+                  .fileContent(index == -1 ? processResult.outputUTF8() : processResult.outputUTF8().substring(index))
+                  .build());
         }
       } else {
         executionLogCallback.saveExecutionLog(
