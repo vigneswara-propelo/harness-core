@@ -629,7 +629,6 @@ public class ProvisionService {
       cloneUrl = "https://" + userName + ":" + input.getPassword() + "@" + cloneUrl;
     }
 
-    log.info("Generated clone url: " + cloneUrl);
     return cloneUrl;
   }
 }
