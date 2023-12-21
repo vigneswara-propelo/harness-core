@@ -5,11 +5,11 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.oidc.gcp;
+package io.harness.oidc.gcp.constants;
 
-import static io.harness.oidc.gcp.GcpOidcIdTokenConstants.DELEGATES;
-import static io.harness.oidc.gcp.GcpOidcIdTokenConstants.LIFETIME;
-import static io.harness.oidc.gcp.GcpOidcIdTokenConstants.SCOPE;
+import static io.harness.oidc.gcp.constants.GcpOidcIdTokenConstants.DELEGATES;
+import static io.harness.oidc.gcp.constants.GcpOidcIdTokenConstants.LIFETIME;
+import static io.harness.oidc.gcp.constants.GcpOidcIdTokenConstants.SCOPE;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;

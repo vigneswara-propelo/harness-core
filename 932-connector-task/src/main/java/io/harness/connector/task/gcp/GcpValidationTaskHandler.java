@@ -31,7 +31,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.exception.exceptionmanager.ExceptionManager;
 import io.harness.exception.sanitizer.ExceptionMessageSanitizer;
 import io.harness.gcp.client.GcpClient;
-import io.harness.oidc.gcp.GcpOidcConnectorValidatorUtility;
+import io.harness.oidc.gcp.connector.GcpOidcConnectorValidatorUtility;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import com.google.inject.Inject;

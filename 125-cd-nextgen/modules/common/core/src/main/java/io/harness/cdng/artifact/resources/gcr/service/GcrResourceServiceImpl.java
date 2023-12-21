@@ -22,11 +22,11 @@ import io.harness.cdng.artifact.resources.gcr.dtos.GcrRequestDTO;
 import io.harness.cdng.artifact.resources.gcr.dtos.GcrResponseDTO;
 import io.harness.cdng.artifact.resources.gcr.mappers.GcrResourceMapper;
 import io.harness.cdng.artifact.utils.ArtifactUtils;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.common.NGTaskType;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.services.ConnectorService;
-import io.harness.data.structure.EmptyPredicate;
 import io.harness.delegate.beans.DelegateResponseData;
 import io.harness.delegate.beans.ErrorNotifyResponseData;
 import io.harness.delegate.beans.connector.ConnectorType;
@@ -49,6 +49,7 @@ import io.harness.exception.exceptionmanager.ExceptionManager;
 import io.harness.exception.exceptionmanager.exceptionhandler.DocumentLinksConstants;
 import io.harness.ng.core.BaseNGAccess;
 import io.harness.ng.core.NGAccess;
+import io.harness.oidc.gcp.delegate.GcpOidcTokenExchangeDetailsForDelegate;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.service.DelegateGrpcClientWrapper;
@@ -78,6 +79,7 @@ public class GcrResourceServiceImpl implements GcrResourceService {
   private final DelegateGrpcClientWrapper delegateGrpcClientWrapper;
   @VisibleForTesting static final int timeoutInSecs = 30;
   @Inject ExceptionManager exceptionManager;
+  @Inject OidcHelperUtility oidcHelperUtility;
 
   @Inject
   public GcrResourceServiceImpl(@Named(DEFAULT_CONNECTOR_SERVICE) ConnectorService connectorService,
@@ -96,6 +98,9 @@ public class GcrResourceServiceImpl implements GcrResourceService {
     BaseNGAccess baseNGAccess =
         getBaseNGAccess(gcrConnectorRef.getAccountIdentifier(), orgIdentifier, projectIdentifier);
     List<EncryptedDataDetail> encryptionDetails = getEncryptionDetails(connector, baseNGAccess);
+    // Get the OIDC credentials if credential type is OIDC.
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(gcrConnectorRef.getAccountIdentifier(), connector);
     GcrArtifactDelegateRequest gcrRequest = ArtifactDelegateRequestUtils.getGcrDelegateRequest(
         imagePath, null, null, null, registryHostname, null, connector, encryptionDetails, ArtifactSourceType.GCR);
     try {
@@ -120,6 +125,9 @@ public class GcrResourceServiceImpl implements GcrResourceService {
     BaseNGAccess baseNGAccess =
         getBaseNGAccess(gcrConnectorRef.getAccountIdentifier(), orgIdentifier, projectIdentifier);
     List<EncryptedDataDetail> encryptionDetails = getEncryptionDetails(connector, baseNGAccess);
+    // Get the OIDC credentials if credential type is OIDC.
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(gcrConnectorRef.getAccountIdentifier(), connector);
     GcrArtifactDelegateRequest gcrRequest = ArtifactDelegateRequestUtils.getGcrDelegateRequest(imagePath,
         gcrRequestDTO.getTag(), gcrRequestDTO.getTagRegex(), null, gcrRequestDTO.getRegistryHostname(), null, connector,
         encryptionDetails, ArtifactSourceType.GCR);
@@ -140,6 +148,9 @@ public class GcrResourceServiceImpl implements GcrResourceService {
     BaseNGAccess baseNGAccess =
         getBaseNGAccess(gcrConnectorRef.getAccountIdentifier(), orgIdentifier, projectIdentifier);
     List<EncryptedDataDetail> encryptionDetails = getEncryptionDetails(connector, baseNGAccess);
+    // Get the OIDC credentials if credential type is OIDC.
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(gcrConnectorRef.getAccountIdentifier(), connector);
     GcrArtifactDelegateRequest gcrRequest = ArtifactDelegateRequestUtils.getGcrDelegateRequest(
         imagePath, null, null, null, registryHostname, null, connector, encryptionDetails, ArtifactSourceType.GCR);
     ArtifactTaskExecutionResponse artifactTaskExecutionResponse =
@@ -155,6 +166,9 @@ public class GcrResourceServiceImpl implements GcrResourceService {
     BaseNGAccess baseNGAccess =
         getBaseNGAccess(gcrConnectorRef.getAccountIdentifier(), orgIdentifier, projectIdentifier);
     List<EncryptedDataDetail> encryptionDetails = getEncryptionDetails(connector, baseNGAccess);
+    // Get the OIDC credentials if credential type is OIDC.
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(gcrConnectorRef.getAccountIdentifier(), connector);
     GcrArtifactDelegateRequest gcrRequest = ArtifactDelegateRequestUtils.getGcrDelegateRequest(
         imagePath, null, null, null, registryHostname, null, connector, encryptionDetails, ArtifactSourceType.GCR);
     ArtifactTaskExecutionResponse artifactTaskExecutionResponse =

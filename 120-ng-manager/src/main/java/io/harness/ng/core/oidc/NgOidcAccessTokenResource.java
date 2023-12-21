@@ -14,9 +14,9 @@ import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.oidc.accesstoken.OidcWorkloadAccessTokenResponse;
-import io.harness.oidc.gcp.GcpOidcAccessTokenRequestDTO;
-import io.harness.oidc.gcp.GcpOidcServiceAccountAccessTokenResponse;
-import io.harness.oidc.gcp.GcpOidcTokenUtility;
+import io.harness.oidc.gcp.constants.GcpOidcServiceAccountAccessTokenResponse;
+import io.harness.oidc.gcp.dto.GcpOidcAccessTokenRequestDTO;
+import io.harness.oidc.gcp.utility.GcpOidcTokenUtility;
 import io.harness.security.annotations.NextGenManagerAuth;
 
 import com.google.inject.Inject;

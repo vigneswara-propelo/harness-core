@@ -10,8 +10,9 @@ package io.harness.ng;
 import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.oidc.config.OidcConfigurationUtility;
-import io.harness.oidc.gcp.GcpOidcTokenUtility;
+import io.harness.oidc.gcp.utility.GcpOidcTokenUtility;
 import io.harness.oidc.jwks.OidcJwksUtility;
 import io.harness.oidc.rsa.OidcRsaKeyService;
 
@@ -36,5 +37,6 @@ public class NGOidcModule extends AbstractModule {
     bind(OidcJwksUtility.class).toInstance(new OidcJwksUtility());
     bind(OidcRsaKeyService.class).toInstance(new OidcRsaKeyService());
     bind(GcpOidcTokenUtility.class).toInstance(new GcpOidcTokenUtility());
+    bind(OidcHelperUtility.class).toInstance(new OidcHelperUtility());
   }
 }

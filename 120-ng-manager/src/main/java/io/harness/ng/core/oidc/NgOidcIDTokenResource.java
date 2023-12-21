@@ -13,8 +13,8 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
-import io.harness.oidc.gcp.GcpOidcTokenRequestDTO;
-import io.harness.oidc.gcp.GcpOidcTokenUtility;
+import io.harness.oidc.gcp.dto.GcpOidcTokenRequestDTO;
+import io.harness.oidc.gcp.utility.GcpOidcTokenUtility;
 import io.harness.security.annotations.NextGenManagerAuth;
 
 import com.google.inject.Inject;

@@ -5,44 +5,42 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.oidc.gcp;
+package io.harness.oidc.gcp.utility;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.oidc.accesstoken.OidcAccessTokenUtility.getOidcWorkloadAccessToken;
-import static io.harness.oidc.gcp.GcpOidcIdTokenConstants.BEARER_TOKEN_TYPE;
-import static io.harness.oidc.gcp.GcpOidcIdTokenConstants.GCP_PROJECT_ID;
-import static io.harness.oidc.gcp.GcpOidcIdTokenConstants.PROVIDER_ID;
-import static io.harness.oidc.gcp.GcpOidcIdTokenConstants.WORKLOAD_POOL_ID;
+import static io.harness.oidc.gcp.accesstoken.GcpOidcAccessTokenUtility.getOidcServiceAccountAccessToken;
+import static io.harness.oidc.gcp.constants.GcpOidcIdTokenConstants.BEARER_TOKEN_TYPE;
+import static io.harness.oidc.gcp.constants.GcpOidcIdTokenConstants.GCP_PROJECT_ID;
+import static io.harness.oidc.gcp.constants.GcpOidcIdTokenConstants.PROVIDER_ID;
+import static io.harness.oidc.gcp.constants.GcpOidcIdTokenConstants.SERVICE_ACCOUNT_EMAIL;
+import static io.harness.oidc.gcp.constants.GcpOidcIdTokenConstants.WORKLOAD_POOL_ID;
 import static io.harness.oidc.idtoken.OidcIdTokenConstants.ACCOUNT_ID;
 import static io.harness.oidc.idtoken.OidcIdTokenUtility.capturePlaceholderContents;
 import static io.harness.oidc.idtoken.OidcIdTokenUtility.generateOidcIdToken;
 
 import static java.lang.System.currentTimeMillis;
 
-import io.harness.network.Http;
 import io.harness.oidc.accesstoken.OidcWorkloadAccessTokenRequest;
 import io.harness.oidc.accesstoken.OidcWorkloadAccessTokenResponse;
 import io.harness.oidc.config.OidcConfigurationUtility;
 import io.harness.oidc.entities.OidcJwks;
 import io.harness.oidc.exception.OidcException;
+import io.harness.oidc.gcp.constants.GcpOidcServiceAccountAccessTokenRequest;
+import io.harness.oidc.gcp.constants.GcpOidcServiceAccountAccessTokenResponse;
+import io.harness.oidc.gcp.dto.GcpOidcAccessTokenRequestDTO;
+import io.harness.oidc.gcp.dto.GcpOidcTokenRequestDTO;
 import io.harness.oidc.idtoken.OidcIdTokenHeaderStructure;
 import io.harness.oidc.idtoken.OidcIdTokenPayloadStructure;
 import io.harness.oidc.jwks.OidcJwksUtility;
 import io.harness.oidc.rsa.OidcRsaKeyService;
 
 import com.google.inject.Inject;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 @Slf4j
 public class GcpOidcTokenUtility {
@@ -79,6 +77,42 @@ public class GcpOidcTokenUtility {
   }
 
   /**
+   * Utility function to return STS endpoint for Workload Access Token exchange.
+   *
+   * @return STS Endpoint.
+   */
+  public String getOidcAccessTokenStsEndpoint() {
+    return oidcConfigurationUtility.getGcpOidcTokenStructure().getOidcAccessTokenStsEndpoint();
+  }
+
+  /**
+   * Utility function to return IAM endpoint for Service Account Access Token exchange.
+   *
+   * @return IAM SA Endpoint.
+   */
+  public String getOidcAccessTokenIamEndpoint(GcpOidcTokenRequestDTO gcpOidcTokenRequestDTO) {
+    return updateBaseClaims(
+        oidcConfigurationUtility.getGcpOidcTokenStructure().getOidcAccessTokenIamSaEndpoint(), gcpOidcTokenRequestDTO);
+  }
+
+  /**
+   * Utility function to return the finalized Workload Access Token Request.
+   *
+   * @param gcpOidcAccessTokenRequestDTO Base Workload Access Token Request structure from config
+   * @return Finalized Workload Access Token Request
+   */
+  public OidcWorkloadAccessTokenRequest getOidcWorkloadAccessTokenRequest(
+      GcpOidcAccessTokenRequestDTO gcpOidcAccessTokenRequestDTO) {
+    // Get the base OIDC Access Token structure.
+    OidcWorkloadAccessTokenRequest baseOidcAccessTokenRequest =
+        oidcConfigurationUtility.getGcpOidcTokenStructure().getOidcWorkloadAccessTokenRequestStructure();
+
+    // parse the base token structure and generate appropriate values
+    return parseOidcAccessTokenRequestPayload(baseOidcAccessTokenRequest, gcpOidcAccessTokenRequestDTO.getOidcIdToken(),
+        gcpOidcAccessTokenRequestDTO.getGcpOidcTokenRequestDTO());
+  }
+
+  /**
    * Utility function to exchange for the OIDC GCP Workload Access Token.
    *
    * @param gcpOidcAccessTokenRequestDTO GCP metadata needed to exchange for Access token
@@ -86,17 +120,9 @@ public class GcpOidcTokenUtility {
    */
   public OidcWorkloadAccessTokenResponse exchangeOidcWorkloadAccessToken(
       GcpOidcAccessTokenRequestDTO gcpOidcAccessTokenRequestDTO) {
-    // Get the base OIDC Access Token structure.
-    String oidcAccessTokenExchangeEndpoint =
-        oidcConfigurationUtility.getGcpOidcTokenStructure().getOidcAccessTokenStsEndpoint();
-    OidcWorkloadAccessTokenRequest baseOidcAccessTokenRequest =
-        oidcConfigurationUtility.getGcpOidcTokenStructure().getOidcWorkloadAccessTokenRequestStructure();
-
-    // parse the base token structure and generate appropriate values
+    String oidcAccessTokenExchangeEndpoint = getOidcAccessTokenStsEndpoint();
     OidcWorkloadAccessTokenRequest finalOidcAccessTokenRequest =
-        parseOidcAccessTokenRequestPayload(baseOidcAccessTokenRequest, gcpOidcAccessTokenRequestDTO.getOidcIdToken(),
-            gcpOidcAccessTokenRequestDTO.getGcpOidcTokenRequestDTO());
-
+        getOidcWorkloadAccessTokenRequest(gcpOidcAccessTokenRequestDTO);
     return getOidcWorkloadAccessToken(oidcAccessTokenExchangeEndpoint, finalOidcAccessTokenRequest);
   }
 
@@ -114,60 +140,17 @@ public class GcpOidcTokenUtility {
         GcpOidcServiceAccountAccessTokenRequest.builder()
             .scope(new ArrayList<>(Arrays.asList("https://www.googleapis.com/auth/cloud-platform")))
             .build();
-    return getOidcServiceAccountAccessToken(
-        oidcIamSaTokenExchangeEndpoint, gcpOidcServiceAccountAccessTokenRequest, accessToken);
-  }
-
-  /**
-   * Utility function to exchange for the OIDC GCP Service Account Access Token.
-   *
-   * @param gcpOidcIamSaApiEndpoint The GCP IAM endpoint to make the token exchange with.
-   * @param gcpOidcServiceAccountAccessTokenRequest The Token exchange request body.
-   * @param workloadAccessToken The OIDC Workload Access Token which will be used as Authorization bearer.
-   * @return Service Account Access Token
-   */
-  public GcpOidcServiceAccountAccessTokenResponse getOidcServiceAccountAccessToken(String gcpOidcIamSaApiEndpoint,
-      GcpOidcServiceAccountAccessTokenRequest gcpOidcServiceAccountAccessTokenRequest, String workloadAccessToken) {
-    // Create an OkHttpClient with any desired configurations (e.g., timeouts, interceptors)
-    OkHttpClient httpClient = new OkHttpClient.Builder()
-                                  .connectionPool(Http.connectionPool)
-                                  .readTimeout(60, TimeUnit.SECONDS)
-                                  .retryOnConnectionFailure(true)
-                                  .addInterceptor(new GcpOidcAccessTokenIamSaApiInterceptor(workloadAccessToken))
-                                  .build();
-
-    // Create a Retrofit client with the base URL
-    Retrofit retrofit = new Retrofit.Builder()
-                            .baseUrl(String.valueOf(gcpOidcIamSaApiEndpoint))
-                            .addConverterFactory(GsonConverterFactory.create())
-                            .client(httpClient)
-                            .build();
-
-    // Create an instance of the API interface
-    GcpOidcAccessTokenIamSaApi gcpOidcAccessTokenIamSaAPI = retrofit.create(GcpOidcAccessTokenIamSaApi.class);
-
-    // Make the POST request and handle the response
-    Call<GcpOidcServiceAccountAccessTokenResponse> call =
-        gcpOidcAccessTokenIamSaAPI.exchangeServiceAccountAccessToken(gcpOidcServiceAccountAccessTokenRequest);
-
     try {
-      Response<GcpOidcServiceAccountAccessTokenResponse> response = call.execute();
-      if (response.isSuccessful()) {
-        GcpOidcServiceAccountAccessTokenResponse gcpOidcServiceAccountAccessTokenResponse = response.body();
-        return gcpOidcServiceAccountAccessTokenResponse;
-      } else {
-        log.error("Error encountered while obtaining OIDC Access Token from STS for {}",
-            gcpOidcServiceAccountAccessTokenRequest);
-      }
-    } catch (IOException e) {
-      log.error("Exception encountered while exchanging OIDC Service Account Access Token {} ", e);
+      return getOidcServiceAccountAccessToken(
+          oidcIamSaTokenExchangeEndpoint, gcpOidcServiceAccountAccessTokenRequest, accessToken);
+    } catch (OidcException ex) {
+      log.error("OIDC error received while exchanging for access token {} ", ex);
+      return null;
     }
-
-    return null;
   }
 
   /**
-   * Utility function to generate OIDC ID Token and exchange it for Federal token.
+   * Utility function to generate OIDC ID Token and exchange it for Federated token.
    * If the token exchange happens successfully then do nothing else throw an exception.
    *
    * @param workloadPoolId - Workload Identity Pool ID
@@ -188,7 +171,7 @@ public class GcpOidcTokenUtility {
     // 1. Generate the OIDC ID Token
     String idToken = generateGcpOidcIdToken(gcpOidcTokenRequestDTO);
 
-    // 2. Exchange the OIDC ID Token for a Federal Token
+    // 2. Exchange the OIDC ID Token for a Federated Token
     GcpOidcAccessTokenRequestDTO gcpOidcAccessTokenRequestDTO = new GcpOidcAccessTokenRequestDTO();
     gcpOidcAccessTokenRequestDTO.setOidcIdToken(idToken);
     gcpOidcAccessTokenRequestDTO.setGcpOidcTokenRequestDTO(gcpOidcTokenRequestDTO);
@@ -319,6 +302,8 @@ public class GcpOidcTokenUtility {
         case GCP_PROJECT_ID:
           replaceValue = gcpOidcTokenRequestDTO.getGcpProjectId();
           break;
+        case SERVICE_ACCOUNT_EMAIL:
+          replaceValue = gcpOidcTokenRequestDTO.getServiceAccountEmail();
       }
       // Include {} in the captured placeholder while replacing values.
       claim = claim.replace("{" + placeholder + "}", replaceValue);

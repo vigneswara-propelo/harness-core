@@ -12,7 +12,7 @@ import io.harness.NGResourceFilterConstants;
 import io.harness.delegate.beans.connector.ConnectorValidationParameterResponse;
 import io.harness.ng.beans.PageResponse;
 import io.harness.ng.core.dto.ResponseDTO;
-import io.harness.oidc.gcp.GcpOidcTokenRequestDTO;
+import io.harness.oidc.gcp.dto.GcpOidcTokenRequestDTO;
 import io.harness.serializer.kryo.KryoResponse;
 
 import java.util.List;

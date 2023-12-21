@@ -5,9 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.oidc.gcp;
+package io.harness.oidc.gcp.connector;
 
 import io.harness.oidc.exception.OidcException;
+import io.harness.oidc.gcp.connector.GcpOidcConnectorValidatorUtility;
 
 public class GcpOidcDelegateConnectorValidatorUtility implements GcpOidcConnectorValidatorUtility {
   @Override

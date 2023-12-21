@@ -43,6 +43,7 @@ import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryNugetConfig
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryRawConfig;
 import io.harness.cdng.expressionEvaluator.CustomScriptSecretExpressionEvaluator;
 import io.harness.cdng.expressionEvaluator.NgCustomSecretExpressionEvaluator;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.common.ParameterFieldHelper;
 import io.harness.data.algorithm.HashGenerator;
 import io.harness.data.structure.EmptyPredicate;
@@ -85,6 +86,7 @@ import io.harness.exception.InvalidRequestException;
 import io.harness.expression.common.ExpressionMode;
 import io.harness.metrics.intfc.DelegateMetricsService;
 import io.harness.ng.core.NGAccess;
+import io.harness.oidc.gcp.delegate.GcpOidcTokenExchangeDetailsForDelegate;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.execution.utils.AmbianceUtils;
 import io.harness.pms.yaml.ParameterField;
@@ -113,10 +115,13 @@ public class ArtifactConfigToDelegateReqMapper {
   private final String LAST_PUBLISHED_EXPRESSION = "<+lastPublished.tag>";
   private final long TIME_OUT = 600000L;
   private final ArtifactSourceInstrumentationHelper instrumentationHelper;
+  private final OidcHelperUtility oidcHelperUtility;
 
   @Inject
-  public ArtifactConfigToDelegateReqMapper(ArtifactSourceInstrumentationHelper instrumentationHelper) {
+  public ArtifactConfigToDelegateReqMapper(
+      ArtifactSourceInstrumentationHelper instrumentationHelper, OidcHelperUtility oidcHelperUtility) {
     this.instrumentationHelper = instrumentationHelper;
+    this.oidcHelperUtility = oidcHelperUtility;
   }
 
   public DockerArtifactDelegateRequest getDockerDelegateRequest(DockerHubArtifactConfig artifactConfig,
@@ -588,6 +593,11 @@ public class ArtifactConfigToDelegateReqMapper {
         && tagHasInputValidator(gcrArtifactConfig.getTag().getInputSetValidator(), tag)) {
       tagRegex = gcrArtifactConfig.getTag().getInputSetValidator().getParameters();
     }
+
+    // Get the OIDC credentials if credential type is OIDC.
+    String accountId = AmbianceUtils.getAccountId(ambiance);
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(accountId, gcpConnectorDTO);
 
     return ArtifactDelegateRequestUtils.getGcrDelegateRequest(
         (String) gcrArtifactConfig.getImagePath().fetchFinalValue(), tag, tagRegex, null,

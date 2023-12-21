@@ -15,6 +15,7 @@ import static io.harness.rule.OwnerRule.vivekveman;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -27,6 +28,7 @@ import io.harness.category.element.UnitTests;
 import io.harness.cdng.artifact.resources.gcr.dtos.GcrBuildDetailsDTO;
 import io.harness.cdng.artifact.resources.gcr.dtos.GcrRequestDTO;
 import io.harness.cdng.artifact.resources.gcr.dtos.GcrResponseDTO;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.services.ConnectorService;
@@ -90,11 +92,13 @@ public class GcrResourceServiceImplTest extends CategoryTest {
   @Mock SecretManagerClientService secretManagerClientService;
   @Mock DelegateGrpcClientWrapper delegateGrpcClientWrapper;
   @Mock ExceptionManager exceptionManager;
+  @Mock OidcHelperUtility oidcHelperUtility;
   @Spy @InjectMocks GcrResourceServiceImpl gcrResourceService;
 
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
+    when(oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(anyString(), any())).thenReturn(null);
   }
 
   private ConnectorResponseDTO getConnector() {

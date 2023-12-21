@@ -19,6 +19,7 @@ import static io.harness.rule.OwnerRule.vivekveman;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -53,6 +54,7 @@ import io.harness.cdng.artifact.bean.yaml.nexusartifact.Nexus2RegistryArtifactCo
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryDockerConfig;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryMavenConfig;
 import io.harness.cdng.artifact.bean.yaml.nexusartifact.NexusRegistryNpmConfig;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.delegate.beans.connector.artifactoryconnector.ArtifactoryConnectorDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.beans.connector.azureartifacts.AzureArtifactsConnectorDTO;
@@ -130,12 +132,15 @@ public class ArtifactConfigToDelegateReqMapperTest extends CategoryTest {
   @Mock SecretManagerClientService ngSecretService;
   @Mock ExceptionManager exceptionManager;
   @Mock ArtifactSourceInstrumentationHelper instrumentationHelper;
+  @Mock OidcHelperUtility oidcHelperUtility;
 
   @Before
   public void setUp() {
     MockitoAnnotations.openMocks(this);
     when(instrumentationHelper.sendLastPublishedTagExpressionEvent(any(), any(), any(), any())).thenReturn(null);
-    artifactConfigToDelegateReqMapper = spy(new ArtifactConfigToDelegateReqMapper(instrumentationHelper));
+    when(oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(anyString(), any())).thenReturn(null);
+    artifactConfigToDelegateReqMapper =
+        spy(new ArtifactConfigToDelegateReqMapper(instrumentationHelper, oidcHelperUtility));
   }
 
   @Test

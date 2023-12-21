@@ -69,6 +69,7 @@ import io.harness.cdng.common.beans.SetupAbstractionKeys;
 import io.harness.cdng.common.beans.StepDelegateInfo;
 import io.harness.cdng.execution.service.StageExecutionInfoService;
 import io.harness.cdng.expressions.CDExpressionResolver;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.cdng.service.beans.KubernetesServiceSpec;
 import io.harness.cdng.service.beans.ServiceDefinition;
 import io.harness.cdng.service.beans.ServiceDefinitionType;
@@ -189,8 +190,9 @@ public class ArtifactsStepV2Test extends CDNGTestBase {
   @Mock private NGFeatureFlagHelperService ngFeatureFlagHelperService;
   @Mock ServiceEntityService serviceEntityService;
   @Mock ArtifactSourceInstrumentationHelper instrumentationHelper;
+  @Mock OidcHelperUtility oidcHelperUtility;
   private ArtifactConfigToDelegateReqMapper artifactConfigToDelegateReqMapper =
-      new ArtifactConfigToDelegateReqMapper(instrumentationHelper);
+      new ArtifactConfigToDelegateReqMapper(instrumentationHelper, oidcHelperUtility);
   private final EmptyStepParameters stepParameters = new EmptyStepParameters();
   private EmptyStepParameters stepParametersWithDelegateSelector = new EmptyStepParameters();
   private final StepInputPackage inputPackage = StepInputPackage.builder().build();

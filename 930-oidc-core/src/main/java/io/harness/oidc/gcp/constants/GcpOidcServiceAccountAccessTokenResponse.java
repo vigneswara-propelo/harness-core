@@ -5,10 +5,10 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.oidc.gcp;
+package io.harness.oidc.gcp.constants;
 
-import static io.harness.oidc.gcp.GcpOidcIdTokenConstants.SA_ACCESS_TOKEN;
-import static io.harness.oidc.gcp.GcpOidcIdTokenConstants.SA_ACCESS_TOKEN_EXPIRY;
+import static io.harness.oidc.gcp.constants.GcpOidcIdTokenConstants.SA_ACCESS_TOKEN;
+import static io.harness.oidc.gcp.constants.GcpOidcIdTokenConstants.SA_ACCESS_TOKEN_EXPIRY;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;

@@ -5,12 +5,15 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.oidc.gcp;
+package io.harness.oidc.gcp.connector;
 
-import static io.harness.oidc.gcp.GcpOidcIdTokenConstants.BEARER_TOKEN_TYPE;
+import static io.harness.oidc.gcp.constants.GcpOidcIdTokenConstants.BEARER_TOKEN_TYPE;
 
 import io.harness.oidc.accesstoken.OidcWorkloadAccessTokenResponse;
 import io.harness.oidc.exception.OidcException;
+import io.harness.oidc.gcp.dto.GcpOidcAccessTokenRequestDTO;
+import io.harness.oidc.gcp.dto.GcpOidcTokenRequestDTO;
+import io.harness.oidc.gcp.utility.GcpOidcTokenUtility;
 
 import com.google.inject.Inject;
 

@@ -11,7 +11,7 @@ import io.harness.connector.ConnectorResourceClient;
 import io.harness.delegate.beans.ci.pod.EnvVariableEnum;
 import io.harness.delegate.beans.connector.gcpconnector.GcpOidcDetailsDTO;
 import io.harness.ng.core.dto.ResponseDTO;
-import io.harness.oidc.gcp.GcpOidcTokenRequestDTO;
+import io.harness.oidc.gcp.dto.GcpOidcTokenRequestDTO;
 
 import com.google.inject.Inject;
 import java.io.IOException;
