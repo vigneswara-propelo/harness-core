@@ -9,10 +9,13 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/harness/harness-core/product/log-service/logger"
 	"github.com/harness/harness-core/product/log-service/metric"
@@ -20,6 +23,11 @@ import (
 	"github.com/harness/harness-core/product/log-service/stream"
 
 	"golang.org/x/sync/errgroup"
+)
+
+const (
+	defaultKeyExpiryTimeSeconds = 5 * 60 * 60   // 5*60*60 seconds = 5 hours
+	maximumKeyExpiryTimeSeconds = 24 * 60 * 60 // 24*60*60 seconds = 24 hours
 )
 
 var pingInterval = time.Second * 30
@@ -48,7 +56,32 @@ func HandleOpen(stream stream.Stream) http.HandlerFunc {
 		accountID := r.FormValue(accountIDParam)
 		key := CreateAccountSeparatedKey(accountID, r.FormValue(keyParam))
 
-		if err := stream.Create(ctx, key); err != nil {
+		keyExpiryTimeSecondsString := r.URL.Query().Get("timeout_seconds")
+		var keyExpiryTimeSeconds int
+
+		if keyExpiryTimeSecondsString == "" {
+			keyExpiryTimeSeconds = defaultKeyExpiryTimeSeconds
+		} else {
+			var err error
+			keyExpiryTimeSeconds, err = strconv.Atoi(keyExpiryTimeSecondsString)
+
+			if err != nil {
+				WriteBadRequest(w, fmt.Errorf("unable to parse timeout_secs: %w", err))
+				return
+			}
+
+			if keyExpiryTimeSeconds < 0 {
+				WriteBadRequest(w, errors.New("key expiry timeout cannot be negative"))
+				return
+			}
+		}
+
+		//Here our maximum keyExpiryTime is of 1 day, so setting keyExpiryTime more than that will set it to 1 day automatically
+		if keyExpiryTimeSeconds > maximumKeyExpiryTimeSeconds {
+			keyExpiryTimeSeconds = maximumKeyExpiryTimeSeconds
+		}
+
+		if err := stream.Create(ctx, key, keyExpiryTimeSeconds); err != nil {
 			WriteInternalError(w, err)
 			logger.FromRequest(r).
 				WithError(err).
@@ -192,10 +225,6 @@ func HandleWrite(s stream.Stream, metrics *metric.Metrics) http.HandlerFunc {
 			return
 		}
 
-		// write to stream only if it exists
-		if err := s.Exists(ctx, key); err != nil {
-			return
-		}
 		if err := s.Write(ctx, key, in...); err != nil {
 			if err == stream.ErrNotFound {
 				WriteBadRequest(w, err)

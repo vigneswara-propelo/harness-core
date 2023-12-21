@@ -22,7 +22,7 @@ const Prefix = "log-service"
 // Stream defines the live log streaming interface.
 type Stream interface {
 	// Create creates the log stream for the string key.
-	Create(context.Context, string) error
+	Create(ctx context.Context, key string, timeoutInSeconds int) error
 
 	// Delete deletes the log stream for the string key.
 	Delete(context.Context, string) error

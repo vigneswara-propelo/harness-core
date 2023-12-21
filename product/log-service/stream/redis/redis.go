@@ -71,7 +71,7 @@ func NewWithClient(
 }
 
 // Create creates a redis stream and sets an expiry on it.
-func (r *Redis) Create(ctx context.Context, key string) error {
+func (r *Redis) Create(ctx context.Context, key string, keyExpiryTimeSeconds int) error {
 	// Delete if a stream already exists with the same key
 	r.Delete(ctx, key)
 	key = createLogStreamPrefixedKey(key)
@@ -93,7 +93,7 @@ func (r *Redis) Create(ctx context.Context, key string) error {
 		return errors.Wrap(err, fmt.Sprintf("could not create stream with key: %s", key))
 	}
 
-	r.setExpiry(key, defaultKeyExpiryTimeSeconds*time.Second)
+	r.setExpiry(key, time.Duration(keyExpiryTimeSeconds)*time.Second)
 	return nil
 }
 

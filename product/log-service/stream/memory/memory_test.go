@@ -23,6 +23,7 @@ import (
 type BufioWriterCloser struct {
 	*bufio.Writer
 }
+var mockKeyExpiryTimeSeconds = 5 * 60 * 60
 
 func (bwc *BufioWriterCloser) Close() error {
 	if err := bwc.Flush(); err != nil {
@@ -33,7 +34,7 @@ func (bwc *BufioWriterCloser) Close() error {
 
 func TestStreamer(t *testing.T) {
 	s := New()
-	err := s.Create(context.Background(), "1")
+	err := s.Create(context.Background(), "1", mockKeyExpiryTimeSeconds)
 	if err != nil {
 		t.Error(err)
 	}
@@ -73,7 +74,7 @@ func TestStreamer(t *testing.T) {
 
 func TestStreamerDelete(t *testing.T) {
 	s := New()
-	err := s.Create(context.Background(), "1")
+	err := s.Create(context.Background(), "1", mockKeyExpiryTimeSeconds)
 	if err != nil {
 		t.Error(err)
 	}
@@ -124,7 +125,7 @@ func TestStreamCopy(t *testing.T) {
 	bytes2, _ := json.Marshal(&line2)
 	bytes2 = append(bytes2, []byte("\n")...)
 
-	err = s.Create(context.Background(), "1")
+	err = s.Create(context.Background(), "1", mockKeyExpiryTimeSeconds)
 	assert.Nil(t, err)
 	err = s.Write(context.Background(), "1", line1)
 	assert.Nil(t, err)
@@ -161,7 +162,7 @@ func TestStreamKeyExists(t *testing.T) {
 	ctx := context.Background()
 	s := New()
 	key := "key"
-	err := s.Create(ctx, key)
+	err := s.Create(ctx, key, mockKeyExpiryTimeSeconds)
 	if err != nil {
 		t.Error(err)
 	}
@@ -185,11 +186,11 @@ func TestStreamListPrefixes(t *testing.T) {
 	key1 := "key1"
 	key2 := "key2"
 	key3 := "differentKey"
-	err := s.Create(ctx, key1)
+	err := s.Create(ctx, key1, mockKeyExpiryTimeSeconds)
 	assert.Nil(t, err)
-	err = s.Create(ctx, key2)
+	err = s.Create(ctx, key2, mockKeyExpiryTimeSeconds)
 	assert.Nil(t, err)
-	err = s.Create(ctx, key3)
+	err = s.Create(ctx, key3, mockKeyExpiryTimeSeconds)
 	assert.Nil(t, err)
 	l, err := s.ListPrefix(ctx, "key", 1)
 	assert.Nil(t, err)

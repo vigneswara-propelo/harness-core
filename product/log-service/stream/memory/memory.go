@@ -31,7 +31,7 @@ func New() *Streamer {
 	}
 }
 
-func (s *Streamer) Create(ctx context.Context, key string) error {
+func (s *Streamer) Create(ctx context.Context, key string, keyExpiryTimeSeconds int) error {
 	s.Lock()
 	s.streams[key] = newStream()
 	s.Unlock()

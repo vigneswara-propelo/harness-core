@@ -62,6 +62,7 @@ func TestCreate(t *testing.T) {
 	ctx := context.Background()
 	key := "key"
 
+	mockKeyExpiryTimeout := 5 * 60 * 60
 	mr, err := miniredis.Run()
 	if err != nil {
 		log.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -74,7 +75,7 @@ func TestCreate(t *testing.T) {
 
 	rdb := NewWithClient(client, true, 1000, maxLineLimit, maxStreamSize)
 
-	rdb.Create(ctx, key)
+	rdb.Create(ctx, key, mockKeyExpiryTimeout)
 
 	assert.Equal(t, mr.Exists(stream.Prefix+key), true)
 }
@@ -84,6 +85,7 @@ func TestCreate_Error(t *testing.T) {
 	ctx := context.Background()
 	key := "key"
 
+	mockKeyExpiryTimeout := 5 * 60 * 60
 	client, mock := redismock.NewClientMock()
 	args := &redis.XAddArgs{
 		Stream: createLogStreamPrefixedKey(key),
@@ -96,7 +98,7 @@ func TestCreate_Error(t *testing.T) {
 	mock.ExpectXAdd(args).SetErr(errors.New("err"))
 
 	rdb := NewWithClient(client, true, 1000, maxLineLimit, maxStreamSize)
-	err := rdb.Create(ctx, key)
+	err := rdb.Create(ctx, key, mockKeyExpiryTimeout)
 	assert.NotEqual(t, err, nil)
 }
 
