@@ -17,8 +17,10 @@ import io.harness.utils.RecastReflectionUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(HarnessTeam.PIPELINE)
+@Slf4j
 public class MapRecastTransformer extends RecastTransformer implements SimpleValueTransformer {
   @Override
   public Object decode(Class<?> targetClass, Object fromObject, CastedField castedField) {
@@ -62,7 +64,16 @@ public class MapRecastTransformer extends RecastTransformer implements SimpleVal
     if (!map.isEmpty() || getRecaster().getOptions().isStoreEmpties()) {
       final Map<String, Object> mapToEncode = new LinkedHashMap<>();
       for (final Map.Entry<?, ?> entry : map.entrySet()) {
-        final String strKey = getRecaster().getTransformer().encode(entry.getKey()).toString();
+        if (entry.getKey() == null) {
+          log.warn("MapRecastTransformer: Null key found");
+          continue;
+        }
+        Object encodedObject = getRecaster().getTransformer().encode(entry.getKey());
+        if (encodedObject == null) {
+          log.warn(String.format("MapRecastTransformer: Encoded value found null for key {%s}", entry.getKey()));
+          continue;
+        }
+        final String strKey = encodedObject.toString();
         if (getRecaster().getTransformer().hasSimpleValueTransformer(entry.getValue())) {
           mapToEncode.put(strKey, getRecaster().getTransformer().encode(entry.getValue()));
         } else {
