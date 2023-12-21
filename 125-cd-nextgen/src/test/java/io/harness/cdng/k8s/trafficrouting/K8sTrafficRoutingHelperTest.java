@@ -79,11 +79,11 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testSmiHttpURISpec() {
-    K8sTrafficRouting k8sTrafficRouting =
-        getK8sTrafficRouting(K8sTrafficRouting.ProviderType.SMI, getUriRuleSpec(null));
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.SMI, getUriRuleSpec(null));
 
     Optional<K8sTrafficRoutingConfig> k8sTrafficRoutingConfig =
-        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
     K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
@@ -98,11 +98,12 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testSmiHttpMethodSpec() {
-    K8sTrafficRouting k8sTrafficRouting = getK8sTrafficRouting(
-        K8sTrafficRouting.ProviderType.SMI, getMethodRuleSpec(K8sTrafficRoutingMethodRuleSpec.Method.GET, null));
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.SMI,
+            getMethodRuleSpec(K8sTrafficRoutingMethodRuleSpec.Method.GET, null));
 
     Optional<K8sTrafficRoutingConfig> k8sTrafficRoutingConfig =
-        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
     K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
@@ -118,11 +119,11 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testSmiHttpHeaderSpec() {
-    K8sTrafficRouting k8sTrafficRouting =
-        getK8sTrafficRouting(K8sTrafficRouting.ProviderType.SMI, getHeaderRuleSpec(null));
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.SMI, getHeaderRuleSpec(null));
 
     Optional<K8sTrafficRoutingConfig> k8sTrafficRoutingConfig =
-        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
     K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
@@ -137,11 +138,11 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testIstioHttpUriSpec() {
-    K8sTrafficRouting k8sTrafficRouting =
-        getK8sTrafficRouting(K8sTrafficRouting.ProviderType.ISTIO, getUriRuleSpec(MatchType.PREFIX));
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.ISTIO, getUriRuleSpec(MatchType.PREFIX));
 
     Optional<K8sTrafficRoutingConfig> k8sTrafficRoutingConfig =
-        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
     K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
@@ -157,11 +158,11 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testIstioHttpSchemeSpec() {
-    K8sTrafficRouting k8sTrafficRouting =
-        getK8sTrafficRouting(K8sTrafficRouting.ProviderType.ISTIO, getSchemeRuleSpec());
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.ISTIO, getSchemeRuleSpec());
 
     Optional<K8sTrafficRoutingConfig> k8sTrafficRoutingConfig =
-        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
     K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
@@ -177,11 +178,12 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testIstioHttpMethodSpec() {
-    K8sTrafficRouting k8sTrafficRouting = getK8sTrafficRouting(K8sTrafficRouting.ProviderType.ISTIO,
-        getMethodRuleSpec(K8sTrafficRoutingMethodRuleSpec.Method.GET, MatchType.EXACT));
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.ISTIO,
+            getMethodRuleSpec(K8sTrafficRoutingMethodRuleSpec.Method.GET, MatchType.EXACT));
 
     Optional<K8sTrafficRoutingConfig> k8sTrafficRoutingConfig =
-        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
     K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
@@ -197,11 +199,11 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testIstioHttpAuthoritySpec() {
-    K8sTrafficRouting k8sTrafficRouting =
-        getK8sTrafficRouting(K8sTrafficRouting.ProviderType.ISTIO, getAuthorityRuleSpec());
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.ISTIO, getAuthorityRuleSpec());
 
     Optional<K8sTrafficRoutingConfig> k8sTrafficRoutingConfig =
-        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
     K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
@@ -217,11 +219,11 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testIstioHttpHeaderSpec() {
-    K8sTrafficRouting k8sTrafficRouting =
-        getK8sTrafficRouting(K8sTrafficRouting.ProviderType.ISTIO, getHeaderRuleSpec(MatchType.EXACT));
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.ISTIO, getHeaderRuleSpec(MatchType.EXACT));
 
     Optional<K8sTrafficRoutingConfig> k8sTrafficRoutingConfig =
-        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
     K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
@@ -237,10 +239,11 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testIstioHttpPortSpec() {
-    K8sTrafficRouting k8sTrafficRouting = getK8sTrafficRouting(K8sTrafficRouting.ProviderType.ISTIO, getPortRuleSpec());
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.ISTIO, getPortRuleSpec());
 
     Optional<K8sTrafficRoutingConfig> k8sTrafficRoutingConfig =
-        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+        k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
 
     assertThat(k8sTrafficRoutingConfig.isPresent()).isTrue();
     K8sTrafficRoutingConfig k8sTrafficRoutingConfigResponse = k8sTrafficRoutingConfig.get();
@@ -256,38 +259,40 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testSmiHttpPortSpec() {
-    K8sTrafficRouting k8sTrafficRouting = getK8sTrafficRouting(K8sTrafficRouting.ProviderType.SMI, getPortRuleSpec());
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.SMI, getPortRuleSpec());
 
-    k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+    k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
   }
 
   @Test(expected = InvalidArgumentsException.class)
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testSmiHttpAuthoritySpec() {
-    K8sTrafficRouting k8sTrafficRouting =
-        getK8sTrafficRouting(K8sTrafficRouting.ProviderType.SMI, getAuthorityRuleSpec());
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.SMI, getAuthorityRuleSpec());
 
-    k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+    k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
   }
 
   @Test(expected = InvalidArgumentsException.class)
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testSmiHttpSchemeSpec() {
-    K8sTrafficRouting k8sTrafficRouting = getK8sTrafficRouting(K8sTrafficRouting.ProviderType.SMI, getSchemeRuleSpec());
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.SMI, getSchemeRuleSpec());
 
-    k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+    k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
   }
 
   @Test(expected = InvalidArgumentsException.class)
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testIstioHttpMethodSpecWithoutMatch() {
-    K8sTrafficRouting k8sTrafficRouting =
-        getK8sTrafficRouting(K8sTrafficRouting.ProviderType.ISTIO, getMethodRuleSpec(null, null));
+    AbstractK8sTrafficRouting abstractK8STrafficRouting =
+        getK8sTrafficRouting(AbstractK8sTrafficRouting.ProviderType.ISTIO, getMethodRuleSpec(null, null));
 
-    k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(k8sTrafficRouting);
+    k8sTrafficRoutingHelper.validateAndGetTrafficRoutingConfig(abstractK8STrafficRouting);
   }
 
   @Test
@@ -409,8 +414,8 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
                   .build())
         .build();
   }
-  private K8sTrafficRouting getK8sTrafficRouting(
-      K8sTrafficRouting.ProviderType providerType, K8sTrafficRoutingRule trafficRoutingRule) {
+  private AbstractK8sTrafficRouting getK8sTrafficRouting(
+      AbstractK8sTrafficRouting.ProviderType providerType, K8sTrafficRoutingRule trafficRoutingRule) {
     List<K8sTrafficRoutingDestination> destinations = getDestinationSpec();
     List<K8sTrafficRoutingRoute> routes = List.of(K8sTrafficRoutingRoute.builder()
                                                       .route(K8sTrafficRoutingRoute.RouteSpec.builder()
@@ -420,13 +425,13 @@ public class K8sTrafficRoutingHelperTest extends CategoryTest {
                                                       .build());
 
     K8sTrafficRoutingProvider routingProvider;
-    if (providerType == K8sTrafficRouting.ProviderType.SMI) {
+    if (providerType == AbstractK8sTrafficRouting.ProviderType.SMI) {
       routingProvider = TrafficRoutingSMIProvider.builder()
                             .rootService(ParameterField.<String>builder().value(ROOT_SERVICE).build())
                             .routes(routes)
                             .destinations(destinations)
                             .build();
-    } else if (providerType == K8sTrafficRouting.ProviderType.ISTIO) {
+    } else if (providerType == AbstractK8sTrafficRouting.ProviderType.ISTIO) {
       routingProvider = TrafficRoutingIstioProvider.builder()
                             .hosts(ParameterField.<List<String>>builder().value(HOSTS).build())
                             .gateways(ParameterField.<List<String>>builder().value(GATEWAYS).build())

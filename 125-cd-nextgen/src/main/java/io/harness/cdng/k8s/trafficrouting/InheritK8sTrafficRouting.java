@@ -28,7 +28,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
-public class InheritK8sTrafficRouting implements AbstractK8sTrafficRouting {
+public class InheritK8sTrafficRouting implements K8sTrafficRouting {
   @JsonProperty(YamlNode.UUID_FIELD_NAME)
   @Getter(onMethod_ = { @ApiModelProperty(hidden = true) })
   @ApiModelProperty(hidden = true)

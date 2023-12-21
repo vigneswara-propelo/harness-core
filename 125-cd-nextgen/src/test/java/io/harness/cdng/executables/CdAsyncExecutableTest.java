@@ -11,8 +11,7 @@ import static io.harness.rule.OwnerRule.BUHA;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,7 +22,6 @@ import io.harness.delegate.AccountId;
 import io.harness.delegate.SubmitTaskRequest;
 import io.harness.delegate.TaskDetails;
 import io.harness.delegate.TaskId;
-import io.harness.delegate.beans.TaskData;
 import io.harness.delegate.task.k8s.K8sDeployResponse;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.plancreator.steps.common.StepElementParameters;
@@ -53,10 +51,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -150,24 +146,25 @@ public class CdAsyncExecutableTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testExecuteAsyncAfterRbac() {
+    TaskRequest taskRequest = getTaskRequest();
     when(cdTaskExecutable.obtainTaskAfterRbac(ambiance, stepElementParameters, stepInputPackage))
-        .thenReturn(getTaskRequest());
-    when(asyncExecutableTaskHelper.extractTaskRequest(any())).thenReturn(TaskData.builder().timeout(1000).build());
-    when(asyncExecutableTaskHelper.mapTaskRequestToDelegateTaskRequest(any(), any(), any(), any(), anyBoolean()))
-        .thenReturn(io.harness.beans.DelegateTaskRequest.builder().build());
-    when(delegateGrpcClientWrapper.submitAsyncTaskV2(any(), any())).thenReturn(TASK_ID);
+        .thenReturn(taskRequest);
 
+    AsyncExecutableResponse asyncExecutableResponse = AsyncExecutableResponse.newBuilder()
+                                                          .addLogKeys("logkey1")
+                                                          .addLogKeys("logkey2")
+                                                          .addLogKeys("logkey3")
+                                                          .addUnits("unit1")
+                                                          .addUnits("unit2")
+                                                          .addUnits("unit3")
+                                                          .addCallbackIds(TASK_ID)
+                                                          .setTimeout(1000)
+                                                          .build();
+
+    doReturn(asyncExecutableResponse).when(asyncExecutableTaskHelper).getAsyncExecutableResponse(ambiance, taskRequest);
     AsyncExecutableResponse response =
         cdAsyncExecutable.executeAsyncAfterRbac(ambiance, stepElementParameters, stepInputPackage);
-    ArgumentCaptor<AsyncDelegateResumeCallback> asyncDelegateResumeCallbackArgumentCaptor =
-        ArgumentCaptor.forClass(AsyncDelegateResumeCallback.class);
-    ArgumentCaptor<List<String>> correlationIdsCaptor = ArgumentCaptor.forClass(List.class);
 
-    Mockito.verify(asyncWaitEngine, Mockito.times(1))
-        .waitForAllOn(
-            asyncDelegateResumeCallbackArgumentCaptor.capture(), any(), correlationIdsCaptor.capture(), anyLong());
-    verify(asyncExecutableTaskHelper).extractTaskRequest(any());
-    verify(asyncExecutableTaskHelper).mapTaskRequestToDelegateTaskRequest(any(), any(), any(), any(), anyBoolean());
     assertThat(response.getLogKeys(0)).isEqualTo("logkey1");
     assertThat(response.getLogKeys(1)).isEqualTo("logkey2");
     assertThat(response.getLogKeys(2)).isEqualTo("logkey3");

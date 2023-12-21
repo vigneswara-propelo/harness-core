@@ -35,14 +35,14 @@ public class K8sTrafficRoutingRoute {
   @Builder
   @FieldDefaults(level = AccessLevel.PRIVATE)
   @JsonIgnoreProperties(ignoreUnknown = true)
-  static class RouteSpec {
+  public static class RouteSpec {
     @NotNull RouteType type;
     List<K8sTrafficRoutingRule> rules;
 
     @AllArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    enum RouteType {
+    public enum RouteType {
       HTTP(K8sTrafficRoutingConst.HTTP);
       @JsonValue @Getter final String displayName;
     }

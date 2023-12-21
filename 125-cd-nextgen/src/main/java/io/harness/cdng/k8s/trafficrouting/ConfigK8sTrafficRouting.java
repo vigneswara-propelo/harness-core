@@ -22,4 +22,4 @@ import lombok.experimental.SuperBuilder;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = false, components = {HarnessModuleComponent.CDS_K8S})
-public class ConfigK8sTrafficRouting extends K8sTrafficRouting implements AbstractK8sTrafficRouting {}
+public class ConfigK8sTrafficRouting extends AbstractK8sTrafficRouting implements K8sTrafficRouting {}

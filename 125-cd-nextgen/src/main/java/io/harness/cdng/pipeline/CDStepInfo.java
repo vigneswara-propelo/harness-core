@@ -75,6 +75,7 @@ import io.harness.cdng.k8s.K8sDryRunManifestStepInfo;
 import io.harness.cdng.k8s.K8sRollingRollbackStepInfo;
 import io.harness.cdng.k8s.K8sRollingStepInfo;
 import io.harness.cdng.k8s.K8sScaleStepInfo;
+import io.harness.cdng.k8s.K8sTrafficRoutingStepInfo;
 import io.harness.cdng.pipeline.steps.CdAbstractStepNode;
 import io.harness.cdng.pipeline.steps.CdStepParametersUtils;
 import io.harness.cdng.provision.awscdk.AwsCdkBootstrapStepInfo;
@@ -167,7 +168,7 @@ import io.swagger.annotations.ApiModel;
               AwsCdkBootstrapStepInfo.class, AwsCdkSynthStepInfo.class, AwsCdkDiffStepInfo.class,
               AwsCdkDeployStepInfo.class, AwsCdkDestroyStepInfo.class, AwsCdkRollbackStepInfo.class,
               EcsServiceSetupStepInfo.class, EcsUpgradeContainerStepInfo.class, EcsBasicRollbackStepInfo.class,
-              DownloadAwsS3StepInfo.class, DownloadHarnessStoreStepInfo.class})
+              DownloadAwsS3StepInfo.class, DownloadHarnessStoreStepInfo.class, K8sTrafficRoutingStepInfo.class})
 
 @OwnedBy(HarnessTeam.CDC)
 // keeping this class because of the swagger annotation and UI dependency on it

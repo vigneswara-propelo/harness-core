@@ -41,6 +41,7 @@ public interface StepSpecTypeConstantsV1 {
   String K8S_DELETE = "k8s-delete";
   String K8S_BLUE_GREEN_STAGE_SCALE_DOWN = "k8s-blue-green-stage-scale-down";
   String K8S_DRY_RUN_MANIFEST = "k8s-dry-run";
+  String K8S_TRAFFIC_ROUTING = "K8sTrafficRouting";
 
   String TERRAFORM_APPLY = "terraform-apply";
   String TERRAFORM_PLAN = "terraform-plan";

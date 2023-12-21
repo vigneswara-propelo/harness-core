@@ -152,8 +152,9 @@ public class K8sStepHelper extends K8sHelmCommonStepHelper {
   @Inject private EncryptionHelper encryptionHelper;
   @Inject private SdkGraphVisualizationDataService sdkGraphVisualizationDataService;
   @Inject private AccountClient accountClient;
-  public TaskChainResponse queueK8sTask(StepBaseParameters stepElementParameters, K8sDeployRequest k8sDeployRequest,
-      Ambiance ambiance, K8sExecutionPassThroughData executionPassThroughData, TaskType taskType) {
+
+  public TaskRequest createTaskRequest(StepBaseParameters stepElementParameters, K8sDeployRequest k8sDeployRequest,
+      TaskType taskType, Ambiance ambiance) {
     TaskData taskData = TaskData.builder()
                             .parameters(new Object[] {k8sDeployRequest})
                             .taskType(taskType.name())
@@ -163,12 +164,16 @@ public class K8sStepHelper extends K8sHelmCommonStepHelper {
 
     String taskName = taskType.getDisplayName() + " : " + k8sDeployRequest.getCommandName();
     K8sSpecParameters k8SSpecParameters = (K8sSpecParameters) stepElementParameters.getSpec();
-    final TaskRequest taskRequest = TaskRequestsUtils.prepareCDTaskRequest(ambiance, taskData,
-        referenceFalseKryoSerializer, k8SSpecParameters.getCommandUnits(), taskName,
+    return TaskRequestsUtils.prepareCDTaskRequest(ambiance, taskData, referenceFalseKryoSerializer,
+        k8SSpecParameters.getCommandUnits(), taskName,
         TaskSelectorYaml.toTaskSelector(emptyIfNull(getParameterFieldValue(k8SSpecParameters.getDelegateSelectors()))),
         stepHelper.getEnvironmentType(ambiance));
+  }
+
+  public TaskChainResponse queueK8sTask(StepBaseParameters stepElementParameters, K8sDeployRequest k8sDeployRequest,
+      Ambiance ambiance, K8sExecutionPassThroughData executionPassThroughData, TaskType taskType) {
     return TaskChainResponse.builder()
-        .taskRequest(taskRequest)
+        .taskRequest(createTaskRequest(stepElementParameters, k8sDeployRequest, taskType, ambiance))
         .chainEnd(true)
         .passThroughData(executionPassThroughData)
         .build();
@@ -180,7 +185,7 @@ public class K8sStepHelper extends K8sHelmCommonStepHelper {
     return queueK8sTask(stepElementParameters, k8sDeployRequest, ambiance, executionPassThroughData, taskType);
   }
 
-  private TaskType getK8sTaskType(K8sDeployRequest k8sDeployRequest, Ambiance ambiance) {
+  public TaskType getK8sTaskType(K8sDeployRequest k8sDeployRequest, Ambiance ambiance) {
     if (k8sDeployRequest.hasTrafficRoutingConfig()) {
       return TaskType.K8S_COMMAND_TASK_NG_TRAFFIC_ROUTING;
     }

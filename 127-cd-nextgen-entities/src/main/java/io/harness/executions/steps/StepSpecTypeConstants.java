@@ -38,6 +38,7 @@ public interface StepSpecTypeConstants {
   String K8S_CANARY_DEPLOY = "K8sCanaryDeploy";
   String K8S_DELETE = "K8sDelete";
   String K8S_BLUE_GREEN_STAGE_SCALE_DOWN = "K8sBlueGreenStageScaleDown";
+  String K8S_TRAFFIC_ROUTING = "K8sTrafficRouting";
 
   String TERRAFORM_APPLY = "TerraformApply";
   String TERRAFORM_PLAN = "TerraformPlan";

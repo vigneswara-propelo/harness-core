@@ -122,6 +122,7 @@ import io.harness.cdng.creator.plan.steps.K8sDryRunManifestStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.K8sRollingRollbackStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.K8sRollingStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.K8sScaleStepPlanCreator;
+import io.harness.cdng.creator.plan.steps.K8sTrafficRoutingStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.ShellScriptProvisionStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.TasAppResizeStepPlanCreator;
 import io.harness.cdng.creator.plan.steps.TasBGAppSetupStepPlanCreator;
@@ -243,6 +244,7 @@ import io.harness.cdng.creator.variables.K8sDryRunManifestStepVariableCreator;
 import io.harness.cdng.creator.variables.K8sRollingRollbackStepVariableCreator;
 import io.harness.cdng.creator.variables.K8sRollingStepVariableCreator;
 import io.harness.cdng.creator.variables.K8sScaleStepVariableCreator;
+import io.harness.cdng.creator.variables.K8sTrafficRoutingStepVariableCreator;
 import io.harness.cdng.creator.variables.ServerlessAwsLambdaDeployStepVariableCreator;
 import io.harness.cdng.creator.variables.ServerlessAwsLambdaDeployV2StepVariableCreator;
 import io.harness.cdng.creator.variables.ServerlessAwsLambdaPackageV2StepVariableCreator;
@@ -438,6 +440,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     planCreators.add(new K8sDeleteStepPlanCreator());
     planCreators.add(new K8sBGSwapServicesStepPlanCreator());
     planCreators.add(new K8sCanaryDeleteStepPlanCreator());
+    planCreators.add(new K8sTrafficRoutingStepPlanCreator());
     planCreators.add(new TerraformApplyStepPlanCreator());
     planCreators.add(new FetchInstanceScriptStepPlanCreator());
     planCreators.add(new TerraformPlanStepPlanCreator());
@@ -633,6 +636,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     variableCreators.add(new K8sRollingRollbackStepVariableCreator());
     variableCreators.add(new K8sRollingStepVariableCreator());
     variableCreators.add(new K8sScaleStepVariableCreator());
+    variableCreators.add(new K8sTrafficRoutingStepVariableCreator());
     variableCreators.add(new TerraformApplyStepVariableCreator());
     variableCreators.add(new TerraformPlanStepVariableCreator());
     variableCreators.add(new TerraformDestroyStepVariableCreator());
@@ -862,6 +866,13 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
         StepInfo.newBuilder()
             .setName("Rolling Rollback")
             .setType(StepSpecTypeConstants.K8S_ROLLING_ROLLBACK)
+            .setStepMetaData(StepMetaData.newBuilder().addCategory("Kubernetes").addFolderPaths("Kubernetes").build())
+            .build();
+
+    StepInfo k8sTrafficRouting =
+        StepInfo.newBuilder()
+            .setName("K8s Traffic Routing")
+            .setType(StepSpecTypeConstants.K8S_TRAFFIC_ROUTING)
             .setStepMetaData(StepMetaData.newBuilder().addCategory("Kubernetes").addFolderPaths("Kubernetes").build())
             .build();
 
@@ -1646,6 +1657,7 @@ public class CDNGPlanCreatorProvider implements PipelineServiceInfoProvider {
     stepInfos.add(apply);
     stepInfos.add(scale);
     stepInfos.add(k8sRollingRollback);
+    stepInfos.add(k8sTrafficRouting);
     stepInfos.add(terraformApply);
     stepInfos.add(terraformPlan);
     stepInfos.add(terraformRollback);

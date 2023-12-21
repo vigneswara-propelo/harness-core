@@ -33,7 +33,7 @@ public class K8sTrafficRoutingDestination {
   @Builder
   @FieldDefaults(level = AccessLevel.PRIVATE)
   @JsonIgnoreProperties(ignoreUnknown = true)
-  static class DestinationSpec {
+  public static class DestinationSpec {
     @NotEmpty @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> host;
     @ApiModelProperty(dataType = SwaggerConstants.INTEGER_CLASSPATH) ParameterField<Integer> weight;
   }

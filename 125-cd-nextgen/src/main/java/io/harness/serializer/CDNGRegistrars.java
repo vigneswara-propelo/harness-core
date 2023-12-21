@@ -81,6 +81,7 @@ import io.harness.cdng.k8s.K8sDryRunManifestStepNode;
 import io.harness.cdng.k8s.K8sRollingRollbackStepNode;
 import io.harness.cdng.k8s.K8sRollingStepNode;
 import io.harness.cdng.k8s.K8sScaleStepNode;
+import io.harness.cdng.k8s.K8sTrafficRoutingStepNode;
 import io.harness.cdng.pipeline.steps.CDAbstractStepInfo;
 import io.harness.cdng.provision.awscdk.AwsCdkBootstrapStepNode;
 import io.harness.cdng.provision.awscdk.AwsCdkDeployStepNode;
@@ -393,6 +394,18 @@ public class CDNGRegistrars {
                    .availableAtOrgLevel(false)
                    .availableAtAccountLevel(false)
                    .clazz(K8sCanaryDeleteStepNode.class)
+                   .yamlSchemaMetadata(YamlSchemaMetadata.builder()
+                                           .namespace(SchemaNamespaceConstants.CD)
+                                           .modulesSupported(Collections.singletonList(ModuleType.CD))
+                                           .yamlGroup(YamlGroup.builder().group(StepCategory.STEP.name()).build())
+                                           .build())
+                   .build())
+          .add(YamlSchemaRootClass.builder()
+                   .entityType(EntityType.K8S_TRAFFIC_ROUTING_STEP)
+                   .availableAtProjectLevel(true)
+                   .availableAtOrgLevel(false)
+                   .availableAtAccountLevel(false)
+                   .clazz(K8sTrafficRoutingStepNode.class)
                    .yamlSchemaMetadata(YamlSchemaMetadata.builder()
                                            .namespace(SchemaNamespaceConstants.CD)
                                            .modulesSupported(Collections.singletonList(ModuleType.CD))

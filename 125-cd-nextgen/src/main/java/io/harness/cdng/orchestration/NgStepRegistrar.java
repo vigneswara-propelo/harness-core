@@ -131,6 +131,7 @@ import io.harness.cdng.k8s.asyncsteps.K8sDryRunManifestStepV2;
 import io.harness.cdng.k8s.asyncsteps.K8sRollingRollbackStepV2;
 import io.harness.cdng.k8s.asyncsteps.K8sRollingStepV2;
 import io.harness.cdng.k8s.asyncsteps.K8sScaleStepV2;
+import io.harness.cdng.k8s.asyncsteps.K8sTrafficRoutingStep;
 import io.harness.cdng.manifest.steps.ManifestStep;
 import io.harness.cdng.manifest.steps.ManifestsStep;
 import io.harness.cdng.manifest.steps.ManifestsStepV2;
@@ -444,6 +445,7 @@ public class NgStepRegistrar {
     engineSteps.put(K8sDeleteStepV2.STEP_TYPE, K8sDeleteStepV2.class);
     engineSteps.put(K8sApplyStepV2.STEP_TYPE, K8sApplyStepV2.class);
     engineSteps.put(K8sRollingStepV2.STEP_TYPE, K8sRollingStepV2.class);
+    engineSteps.put(K8sTrafficRoutingStep.STEP_TYPE, K8sTrafficRoutingStep.class);
 
     engineSteps.put(HelmDeployStepV2.STEP_TYPE, HelmDeployStepV2.class);
     engineSteps.put(HelmRollbackStepV2.STEP_TYPE, HelmRollbackStepV2.class);

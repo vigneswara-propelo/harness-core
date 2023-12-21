@@ -85,6 +85,9 @@ public enum NGStepType {
   @JsonProperty(StepSpecTypeConstants.K8S_CANARY_DEPLOY)
   CANARY_DEPLOYMENT("Deployment", Arrays.asList(ServiceDefinitionType.KUBERNETES), "Kubernetes",
       StepSpecTypeConstants.K8S_CANARY_DEPLOY),
+  @JsonProperty(StepSpecTypeConstants.K8S_TRAFFIC_ROUTING)
+  K8S_TRAFFIC_ROUTING("Traffic Routing", Arrays.asList(ServiceDefinitionType.KUBERNETES), "Kubernetes",
+      StepSpecTypeConstants.K8S_TRAFFIC_ROUTING),
 
   // Infrastructure Provisioners
   @JsonProperty(StepSpecTypeConstants.TERRAFORM_APPLY)

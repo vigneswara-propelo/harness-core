@@ -64,6 +64,7 @@ import io.harness.cdng.k8s.asyncsteps.K8sBlueGreenStepV2;
 import io.harness.cdng.k8s.asyncsteps.K8sCanaryStepV2;
 import io.harness.cdng.k8s.asyncsteps.K8sRollingRollbackStepV2;
 import io.harness.cdng.k8s.asyncsteps.K8sRollingStepV2;
+import io.harness.cdng.k8s.asyncsteps.K8sTrafficRoutingStep;
 import io.harness.cdng.serverless.ServerlessAwsLambdaDeployStep;
 import io.harness.cdng.serverless.container.steps.ServerlessAwsLambdaDeployV2Step;
 import io.harness.cdng.ssh.CommandStep;
@@ -121,7 +122,8 @@ public class InstanceSyncStepResolver {
       GoogleFunctionsGenOneRollbackStep.STEP_TYPE.getType(), AwsSamDeployStep.STEP_TYPE.getType(),
       ServerlessAwsLambdaDeployV2Step.STEP_TYPE.getType(), EcsUpgradeContainerStep.STEP_TYPE.getType(),
       EcsUpgradeContainerStepV2.STEP_TYPE.getType(), EcsBasicRollbackStep.STEP_TYPE.getType(),
-      EcsBasicRollbackStepV2.STEP_TYPE.getType(), K8sRollingRollbackStepV2.STEP_TYPE.getType()));
+      EcsBasicRollbackStepV2.STEP_TYPE.getType(), K8sRollingRollbackStepV2.STEP_TYPE.getType(),
+      K8sTrafficRoutingStep.STEP_TYPE.getType()));
 
   public boolean shouldRunInstanceSync(StepType stepType) {
     return nonNull(stepType) && INSTANCE_SYN_STEP_TYPES.contains(stepType.getType());

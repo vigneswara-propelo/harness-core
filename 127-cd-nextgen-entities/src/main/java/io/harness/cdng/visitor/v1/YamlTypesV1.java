@@ -14,6 +14,7 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.cdng.manifest.ManifestType;
+import io.harness.executions.steps.StepSpecTypeConstants;
 import io.harness.executions.steps.v1.StepSpecTypeConstantsV1;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.walktree.visitor.utilities.VisitorParentPathUtils;
@@ -53,6 +54,7 @@ public final class YamlTypesV1 {
   public static final String K8S_DELETE = StepSpecTypeConstantsV1.K8S_DELETE;
   public static final String K8S_CANARY_DELETE = StepSpecTypeConstantsV1.K8S_CANARY_DELETE;
   public static final String K8S_BLUE_GREEN_STAGE_SCALE_DOWN = StepSpecTypeConstantsV1.K8S_BLUE_GREEN_STAGE_SCALE_DOWN;
+  public static final String K8S_TRAFFIC_ROUTING = StepSpecTypeConstants.K8S_TRAFFIC_ROUTING;
 
   public static final String HELM_DEPLOY = StepSpecTypeConstantsV1.HELM_DEPLOY;
   public static final String HELM_ROLLBACK = StepSpecTypeConstantsV1.HELM_ROLLBACK;

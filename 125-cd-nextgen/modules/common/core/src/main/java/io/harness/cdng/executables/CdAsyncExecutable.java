@@ -14,32 +14,21 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
-import io.harness.beans.DelegateTaskRequest;
 import io.harness.cdng.common.beans.SetupAbstractionKeys;
 import io.harness.delegate.AccountId;
-import io.harness.delegate.SubmitTaskRequest;
 import io.harness.delegate.TaskId;
-import io.harness.delegate.TaskSelector;
-import io.harness.delegate.beans.TaskData;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.contracts.execution.AsyncExecutableResponse;
-import io.harness.pms.contracts.execution.tasks.TaskRequest;
 import io.harness.pms.sdk.core.execution.invokers.StrategyHelper;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.sdk.core.steps.io.v1.StepBaseParameters;
-import io.harness.pms.sdk.core.waiter.AsyncWaitEngine;
 import io.harness.service.DelegateGrpcClientWrapper;
 import io.harness.steps.executable.AsyncExecutableWithCapabilities;
 import io.harness.tasks.ResponseData;
 
 import com.google.inject.Inject;
-import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_K8S})
@@ -51,7 +40,6 @@ public class CdAsyncExecutable<R extends ResponseData, T extends CdTaskExecutabl
   @Inject private DelegateGrpcClientWrapper delegateGrpcClientWrapper;
   @Inject private AsyncExecutableTaskHelper asyncExecutableTaskHelper;
   @Inject private StrategyHelper strategyHelper;
-  @Inject private AsyncWaitEngine asyncWaitEngine;
 
   @Override
   public StepResponse handleAsyncResponseInternal(
@@ -72,7 +60,7 @@ public class CdAsyncExecutable<R extends ResponseData, T extends CdTaskExecutabl
   @Override
   public AsyncExecutableResponse executeAsyncAfterRbac(
       Ambiance ambiance, StepBaseParameters stepParameters, StepInputPackage inputPackage) {
-    return getAsyncExecutableResponse(
+    return asyncExecutableTaskHelper.getAsyncExecutableResponse(
         ambiance, cdTaskExecutable.obtainTaskAfterRbac(ambiance, stepParameters, inputPackage));
   }
 
@@ -88,37 +76,5 @@ public class CdAsyncExecutable<R extends ResponseData, T extends CdTaskExecutabl
     String accountId = ambiance.getSetupAbstractionsMap().get(SetupAbstractionKeys.accountId);
     delegateGrpcClientWrapper.cancelV2Task(
         AccountId.newBuilder().setId(accountId).build(), TaskId.newBuilder().setId(taskId).build());
-  }
-
-  private AsyncExecutableResponse getAsyncExecutableResponse(Ambiance ambiance, TaskRequest taskRequest) {
-    SubmitTaskRequest request = taskRequest.getDelegateTaskRequest().getRequest();
-    TaskData taskData = asyncExecutableTaskHelper.extractTaskRequest(request.getDetails());
-    Set<String> selectorsList =
-        request.getSelectorsList().stream().map(TaskSelector::getSelector).collect(Collectors.toSet());
-    String taskName = taskRequest.getDelegateTaskRequest().getTaskName();
-    DelegateTaskRequest delegateTaskRequest =
-        asyncExecutableTaskHelper.mapTaskRequestToDelegateTaskRequest(taskRequest, taskData, selectorsList, "", false);
-
-    String taskId = delegateGrpcClientWrapper.submitAsyncTaskV2(delegateTaskRequest, Duration.ZERO);
-    return createAsyncExecutableResponse(ambiance, taskId, taskName, taskRequest, taskData.getTimeout());
-  }
-
-  private AsyncExecutableResponse createAsyncExecutableResponse(
-      Ambiance ambiance, String callbackId, String taskName, TaskRequest taskRequest, long timeout) {
-    List<String> logKeysList = taskRequest.getDelegateTaskRequest().getLogKeysList();
-    List<String> units = taskRequest.getDelegateTaskRequest().getUnitsList();
-    byte[] ambianceBytes = ambiance.toByteArray();
-    AsyncDelegateResumeCallback asyncDelegateResumeCallback = AsyncDelegateResumeCallback.builder()
-                                                                  .ambianceBytes(ambianceBytes)
-                                                                  .taskId(callbackId)
-                                                                  .taskName(taskName)
-                                                                  .build();
-    asyncWaitEngine.waitForAllOn(asyncDelegateResumeCallback, null, Collections.singletonList(callbackId), 0);
-    return AsyncExecutableResponse.newBuilder()
-        .addAllLogKeys(logKeysList)
-        .addAllUnits(units)
-        .addCallbackIds(callbackId)
-        .setTimeout(Math.toIntExact(timeout))
-        .build();
   }
 }

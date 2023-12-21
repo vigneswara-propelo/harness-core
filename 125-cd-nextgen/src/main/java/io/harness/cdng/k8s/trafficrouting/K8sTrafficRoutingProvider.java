@@ -48,7 +48,7 @@ public abstract class K8sTrafficRoutingProvider {
   @ApiModelProperty(hidden = true)
   String uuid;
 
-  @NotEmpty List<K8sTrafficRoutingRoute> routes;
+  List<K8sTrafficRoutingRoute> routes;
   @NotEmpty List<K8sTrafficRoutingDestination> destinations;
 
   abstract ProviderConfig toProviderConfig();
