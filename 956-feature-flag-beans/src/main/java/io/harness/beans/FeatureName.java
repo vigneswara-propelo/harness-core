@@ -12,6 +12,7 @@ import static io.harness.annotations.dev.HarnessTeam.CV;
 import static io.harness.annotations.dev.HarnessTeam.GTM;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.annotations.dev.HarnessTeam.SPG;
+import static io.harness.annotations.dev.HarnessTeam.SSCA;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
@@ -918,7 +919,8 @@ public enum FeatureName {
   CDS_VARIABLES_MERGE_V2_OPTIMIZED_FLOW("FF to switch the v2/variables flow to a new optimized one", CDC, Scope.GLOBAL),
   CDS_OVERRIDES_GITX("Onboard Overrides entity to GitX", HarnessTeam.CDC),
   CDS_SUPPORT_DIFFERENT_INFRA_DURING_ENV_PROPAGATION(
-      "FF to suppport selecting different infrastructure during environment propagation", CDC);
+      "FF to suppport selecting different infrastructure during environment propagation", CDC),
+  SSCA_ENFORCEMENT_EXEMPTIONS_ENABLED("FF to enable exemption workflow in the SSCA enforcement step", SSCA);
 
   // keep-sorted end
 
