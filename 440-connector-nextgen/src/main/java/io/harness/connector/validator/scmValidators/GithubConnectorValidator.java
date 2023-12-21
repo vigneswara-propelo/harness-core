@@ -7,10 +7,7 @@
 
 package io.harness.connector.validator.scmValidators;
 
-import static io.harness.remote.client.CGRestUtils.getResponse;
-
 import io.harness.account.AccountClient;
-import io.harness.beans.FeatureName;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.ConnectorValidationResult;
 import io.harness.connector.task.git.GitAuthenticationDecryptionHelper;
@@ -42,9 +39,7 @@ public class GithubConnectorValidator extends AbstractGitConnectorValidator {
     List<EncryptedDataDetail> authenticationEncryptedDataDetails = gitCommandParams.getEncryptionDetails();
     GithubConnectorDTO githubConnectorDTO = (GithubConnectorDTO) connectorConfig;
 
-    boolean isGithubAppAuthentication = GitAuthenticationDecryptionHelper.isGitHubAppAuthentication(githubConnectorDTO)
-        && getResponse(
-            accountClient.isFeatureFlagEnabled(FeatureName.CDS_GITHUB_APP_AUTHENTICATION.name(), accountIdentifier));
+    boolean isGithubAppAuthentication = GitAuthenticationDecryptionHelper.isGitHubAppAuthentication(githubConnectorDTO);
     if (isGithubAppAuthentication) {
       authenticationEncryptedDataDetails.addAll(gitConfigAuthenticationInfoHelper.getGithubAppEncryptedDataDetail(
           githubConnectorDTO, super.getNgAccess(accountIdentifier, orgIdentifier, projectIdentifier)));

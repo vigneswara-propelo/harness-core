@@ -7,10 +7,7 @@
 
 package io.harness.connector.heartbeat;
 
-import static io.harness.remote.client.CGRestUtils.getResponse;
-
 import io.harness.account.AccountClient;
-import io.harness.beans.FeatureName;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.helper.GitApiAccessDecryptionHelper;
 import io.harness.connector.task.git.GitAuthenticationDecryptionHelper;
@@ -57,9 +54,7 @@ public class ScmConnectorValidationParamsProvider implements ConnectorValidation
           gitConfigAuthenticationInfoHelper.getApiAccessEncryptedDataDetail(scmConnector, ngAccess));
     }
 
-    final boolean githubAppAuthentication = GitAuthenticationDecryptionHelper.isGitHubAppAuthentication(scmConnector)
-        && getResponse(
-            accountClient.isFeatureFlagEnabled(FeatureName.CDS_GITHUB_APP_AUTHENTICATION.name(), accountIdentifier));
+    final boolean githubAppAuthentication = GitAuthenticationDecryptionHelper.isGitHubAppAuthentication(scmConnector);
     if (githubAppAuthentication) {
       encryptedDataDetails.addAll(
           gitConfigAuthenticationInfoHelper.getGithubAppEncryptedDataDetail(scmConnector, ngAccess));

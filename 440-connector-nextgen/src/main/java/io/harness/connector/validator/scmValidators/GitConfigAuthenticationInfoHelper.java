@@ -10,13 +10,11 @@ package io.harness.connector.validator.scmValidators;
 import static io.harness.connector.helper.GitApiAccessDecryptionHelper.getAPIAccessDecryptableEntity;
 import static io.harness.connector.helper.GitApiAccessDecryptionHelper.hasApiAccess;
 import static io.harness.delegate.beans.connector.scm.GitAuthType.SSH;
-import static io.harness.remote.client.CGRestUtils.getResponse;
 
 import static java.util.Collections.emptyList;
 
 import io.harness.account.AccountClient;
 import io.harness.beans.DecryptableEntity;
-import io.harness.beans.FeatureName;
 import io.harness.beans.IdentifierRef;
 import io.harness.connector.helper.EncryptionHelper;
 import io.harness.connector.task.git.GitAuthenticationDecryptionHelper;
@@ -81,14 +79,9 @@ public class GitConfigAuthenticationInfoHelper {
       return Collections.emptyList();
     }
     GithubConnectorDTO githubConnectorDTO = (GithubConnectorDTO) scmConnector;
-    if (getResponse(accountClient.isFeatureFlagEnabled(
-            FeatureName.CDS_GITHUB_APP_AUTHENTICATION.name(), ngAccess.getAccountIdentifier()))) {
-      return getEncryptionDetail(
-          ((GithubHttpCredentialsDTO) githubConnectorDTO.getAuthentication().getCredentials()).getHttpCredentialsSpec(),
-          ngAccess);
-    } else {
-      return Collections.emptyList();
-    }
+    return getEncryptionDetail(
+        ((GithubHttpCredentialsDTO) githubConnectorDTO.getAuthentication().getCredentials()).getHttpCredentialsSpec(),
+        ngAccess);
   }
 
   private List<EncryptedDataDetail> getEncryptionDetail(DecryptableEntity decryptableEntity, NGAccess ngAccess) {
