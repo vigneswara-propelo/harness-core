@@ -106,7 +106,7 @@ global:
       secretName: ''
     # -- add annotations to ingress objects
     objects:
-      annotations: { }
+      annotations: {}
   istio:
     # -- create virtualServices objects
     enabled: false
@@ -120,9 +120,7 @@ global:
 replicaCount: 1
 maxSurge: 1
 maxUnavailable: 0
-
 allowedOrigins: ""
-
 redis:
   protocol: ""
   hosts: []
@@ -144,8 +142,7 @@ redis:
               property: ""
             REDIS_PASSWORD:
               name: ""
-              property: "" 
-
+              property: ""
 database:
   mongo:
     templateharness:
@@ -159,7 +156,7 @@ database:
             keys:
               MONGO_USER: ""
               MONGO_PASSWORD: ""
-        secretManagement: 
+        secretManagement:
           externalSecretsOperator:
             - secretStore:
                 name: ""
@@ -170,17 +167,15 @@ database:
                   property: ""
                 MONGO_PASSWORD:
                   name: ""
-                  property: ""         
-
+                  property: ""
 image:
-  registry: docker.io
-  repository: harness/template-service-signed
+  registry: us.gcr.io/platform-205701
+  repository: template-service
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "1.17.3"
+  tag: "1.5.0"
   digest: ""
   imagePullSecrets: []
-
 mongoSecrets:
   userName:
     name: harness-secrets
@@ -188,12 +183,10 @@ mongoSecrets:
   password:
     name: mongodb-replicaset-chart
     key: mongodb-root-password
-
 timescaleSecret:
   password:
     name: harness-secrets
     key: timescaledbPostgresPassword
-
 waitForInitContainer:
   image:
     registry: docker.io
@@ -201,15 +194,11 @@ waitForInitContainer:
     pullPolicy: IfNotPresent
     tag: "latest"
     digest: ""
-
 appLogLevel: INFO
-
 java:
   memory: "1024m"
-
 nameOverride: ""
 fullnameOverride: ""
-
 serviceAccount:
   # Specifies whether a service account should be created
   create: false
@@ -218,16 +207,13 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: "harness-default"
-
 podAnnotations: {}
-
 podSecurityContext: {}
-  # fsGroup: 2000
+# fsGroup: 2000
 
 securityContext:
   runAsUser: 65534
   runAsNonRoot: true
-
 service:
   type: ClusterIP
   protocol: TCP
@@ -235,45 +221,34 @@ service:
   grpcport: 15011
   gitsyncgrpcport: 16002
   annotations: {}
-
 resources:
   limits:
     memory: 1400Mi
   requests:
     cpu: 1
     memory: 1400Mi
-
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPU: ""
   targetMemory: ""
-
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
-
 imagePullSecrets: {}
-
 additionalConfigs: {}
-
 java17flags: ""
-
 # extraVolumes:
 # - name: volume-test
 #   configMap:
 #     name: test-config
 #     readOnly: true
 extraVolumes: []
-
 # extraVolumeMounts:
 #   - name: test-volume-mount
 #     mountPath: /opt/harness/config
 extraVolumeMounts: []
-
 # lifecycleHooks:
 #   postStart:
 #     exec:
@@ -288,12 +263,10 @@ extraVolumeMounts: []
 #     fieldRef:
 #       fieldPath: metadata.name
 extraEnvVars: []
-
 virtualService:
   annotations: {}
 ingress:
   annotations: {}
-
 # application level secrets
 secrets:
   default:
