@@ -279,9 +279,6 @@ public class TerraformCloudStepHelper {
             .taskType(TaskType.TERRAFORM_CLOUD_CLEANUP_TASK_NG.name())
             .executionTimeout(Duration.ofMinutes(10))
             .taskSetupAbstraction(SetupAbstractionKeys.ng, "true")
-            .logStreamingAbstractions(new LinkedHashMap<>() {
-              { put(SetupAbstractionKeys.accountId, AmbianceUtils.getAccountId(ambiance)); }
-            })
             .build();
 
     String taskId = delegateGrpcClientWrapper.submitAsyncTaskV2(delegateTaskRequest, Duration.ZERO);

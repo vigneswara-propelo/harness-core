@@ -37,7 +37,6 @@ import io.harness.beans.Scope;
 import io.harness.beans.SecretManagerConfig;
 import io.harness.cdng.CDStepHelper;
 import io.harness.cdng.artifact.utils.ArtifactUtils;
-import io.harness.cdng.common.beans.SetupAbstractionKeys;
 import io.harness.cdng.expressions.CDExpressionResolver;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.fileservice.FileServiceClientFactory;
@@ -1529,21 +1528,17 @@ public class TerraformStepHelper {
                                 .build();
     Map<String, String> abstractions = ArtifactUtils.getTaskSetupAbstractions(ngAccess);
 
-    DelegateTaskRequest delegateTaskRequest =
-        DelegateTaskRequest.builder()
-            .accountId(AmbianceUtils.getAccountId(ambiance))
-            .taskParameters(TerraformSecretCleanupTaskParameters.builder()
-                                .encryptedRecordDataList(encryptedRecordDataList)
-                                .encryptionConfig(encryptionConfig)
-                                .cleanupUuid(cleanupSecretUuid)
-                                .build())
-            .taskType(TaskType.TERRAFORM_SECRET_CLEANUP_TASK_NG.name())
-            .executionTimeout(Duration.ofMinutes(10))
-            .taskSetupAbstractions(abstractions)
-            .logStreamingAbstractions(new LinkedHashMap<>() {
-              { put(SetupAbstractionKeys.accountId, AmbianceUtils.getAccountId(ambiance)); }
-            })
-            .build();
+    DelegateTaskRequest delegateTaskRequest = DelegateTaskRequest.builder()
+                                                  .accountId(AmbianceUtils.getAccountId(ambiance))
+                                                  .taskParameters(TerraformSecretCleanupTaskParameters.builder()
+                                                                      .encryptedRecordDataList(encryptedRecordDataList)
+                                                                      .encryptionConfig(encryptionConfig)
+                                                                      .cleanupUuid(cleanupSecretUuid)
+                                                                      .build())
+                                                  .taskType(TaskType.TERRAFORM_SECRET_CLEANUP_TASK_NG.name())
+                                                  .executionTimeout(Duration.ofMinutes(10))
+                                                  .taskSetupAbstractions(abstractions)
+                                                  .build();
 
     String taskId = delegateGrpcClientWrapper.submitAsyncTaskV2(delegateTaskRequest, Duration.ZERO);
     log.info("Task Successfully queued with taskId: {}", taskId);
