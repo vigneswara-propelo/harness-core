@@ -23,4 +23,5 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 public class OverviewExecutionCostDetails {
   @Schema(description = "Potential Savings per resource type for AWS") Map<String, Double> awsExecutionCostDetails;
   @Schema(description = "Potential Savings per resource type for Azure") Map<String, Double> azureExecutionCostDetails;
+  @Schema(description = "Potential Savings per resource type for GCP") Map<String, Double> gcpExecutionCostDetails;
 }

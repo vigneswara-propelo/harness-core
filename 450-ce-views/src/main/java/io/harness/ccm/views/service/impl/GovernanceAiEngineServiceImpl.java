@@ -48,6 +48,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,8 +125,10 @@ public class GovernanceAiEngineServiceImpl implements GovernanceAiEngineService 
   public Set<String> getGovernancePromptResources(RuleCloudProviderType ruleCloudProviderType) {
     if (ruleCloudProviderType == RuleCloudProviderType.AZURE) {
       return AZURE_SAMPLE_POLICIES_FOR_RESOURCE.keySet();
-    } else {
+    } else if (ruleCloudProviderType == RuleCloudProviderType.AWS) {
       return AWS_SAMPLE_POLICIES_FOR_RESOURCE.keySet();
+    } else {
+      return Collections.emptySet();
     }
   }
 

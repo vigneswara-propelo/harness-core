@@ -12,6 +12,7 @@ import static io.harness.ccm.commons.entities.CCMField.RULE_NAME;
 import static io.harness.ccm.commons.entities.CCMField.RULE_SET_NAME;
 import static io.harness.ccm.views.helper.RuleCloudProviderType.AWS;
 import static io.harness.ccm.views.helper.RuleCloudProviderType.AZURE;
+import static io.harness.ccm.views.helper.RuleCloudProviderType.GCP;
 import static io.harness.ccm.views.helper.RuleCostType.POTENTIAL;
 import static io.harness.ccm.views.helper.RuleCostType.REALIZED;
 import static io.harness.ccm.views.helper.RuleExecutionType.INTERNAL;
@@ -202,6 +203,7 @@ public class RuleExecutionServiceImpl implements RuleExecutionService {
     return OverviewExecutionCostDetails.builder()
         .awsExecutionCostDetails(getResourcePotentialCostPerCloudProvider(accountId, AWS.name(), ruleExecutionIds))
         .azureExecutionCostDetails(getResourcePotentialCostPerCloudProvider(accountId, AZURE.name(), ruleExecutionIds))
+        .gcpExecutionCostDetails(getResourcePotentialCostPerCloudProvider(accountId, GCP.name(), ruleExecutionIds))
         .build();
   }
 
