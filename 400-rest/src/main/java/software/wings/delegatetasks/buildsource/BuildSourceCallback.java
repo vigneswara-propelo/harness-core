@@ -74,7 +74,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Slf4j
 public class BuildSourceCallback implements OldNotifyCallback {
-  private static final Duration THRESHOLD_PROCESS_DURATION = Duration.ofMillis(500);
+  private static final Duration THRESHOLD_PROCESS_DURATION = Duration.ofMillis(2000);
   private static final Duration THRESHOLD_TASK_DURATION = Duration.ofMinutes(2);
 
   private String accountId;
@@ -238,14 +238,14 @@ public class BuildSourceCallback implements OldNotifyCallback {
       StringBuilder builder = new StringBuilder("[build_source_callback] ");
       Duration processDuration = Duration.ofMillis(System.currentTimeMillis() - currTime);
       if (THRESHOLD_PROCESS_DURATION.compareTo(processDuration) < 0) {
-        builder.append("process notify time taken: ").append(processDuration);
+        builder.append("process notify time taken: ").append(processDuration.toSeconds());
         toLog = true;
       }
 
       if (startTs != null) {
         Duration taskDuration = Duration.ofMillis(System.currentTimeMillis() - startTs);
-        if (toLog || THRESHOLD_PROCESS_DURATION.compareTo(taskDuration) < 0) {
-          builder.append("build_source_task completed in: ").append(taskDuration);
+        if (THRESHOLD_TASK_DURATION.compareTo(taskDuration) < 0) {
+          builder.append("build_source_task completed in: ").append(taskDuration.toSeconds());
           toLog = true;
         }
       }

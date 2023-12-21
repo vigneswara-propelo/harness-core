@@ -138,7 +138,7 @@ public class ArtifactCollectionHandler extends IteratorPumpAndRedisModeHandler i
       }
 
       var failedAttempts = artifactStream.getFailedCronAttempts();
-      int leaseDuration = (int) (TimeUnit.MINUTES.toMillis(failedAttempts == 0 ? 10 : 2)
+      int leaseDuration = (int) (TimeUnit.MINUTES.toMillis(failedAttempts == 0 ? 5 : 2)
           * PermitServiceImpl.getBackoffMultiplier(failedAttempts));
       String permitId = permitService.acquirePermit(Permit.builder()
                                                         .appId(artifactStream.fetchAppId())
