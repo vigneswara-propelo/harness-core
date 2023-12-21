@@ -6,6 +6,7 @@
  */
 
 package io.harness.pms.sdk.core.pipeline.variables;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
@@ -214,6 +215,15 @@ public class PipelineVariableCreator extends ChildrenVariableCreator<PipelineInf
         YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".endTs").build();
     YamlProperties statusProperty =
         YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".status").build();
+    YamlProperties executionUrlProperty =
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".executionUrl").build();
+    YamlProperties storeTypeProperty =
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".storeType").build();
+    YamlProperties selectedStagesProperty =
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".selectedStages").build();
+    YamlProperties branchProperty =
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".branch").build();
+    YamlProperties repoProperty = YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".repo").build();
     YamlExtraProperties.Builder yamlExtraPropertyBuilder = YamlExtraProperties.newBuilder();
 
     // ci build properties
@@ -235,6 +245,11 @@ public class PipelineVariableCreator extends ChildrenVariableCreator<PipelineInf
         .addProperties(triggeredByEmailProperty)
         .addProperties(triggeredByTriggerIdentifierProperty)
         .addProperties(statusProperty)
+        .addProperties(executionUrlProperty)
+        .addProperties(storeTypeProperty)
+        .addProperties(selectedStagesProperty)
+        .addProperties(branchProperty)
+        .addProperties(repoProperty)
         .build();
   }
 }

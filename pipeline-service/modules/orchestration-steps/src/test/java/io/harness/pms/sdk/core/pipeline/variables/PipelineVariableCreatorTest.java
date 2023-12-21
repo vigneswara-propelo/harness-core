@@ -100,7 +100,9 @@ public class PipelineVariableCreatorTest extends CategoryTest {
     assertThat(fqnExtraPropertiesList)
         .containsOnly("pipeline.identifier", "pipeline.sequenceId", "pipeline.executionId", "pipeline.startTs",
             "pipeline.endTs", "pipeline.properties", "pipeline.triggerType", "pipeline.triggeredBy.name",
-            "pipeline.triggeredBy.email", "pipeline.triggeredBy.triggerIdentifier", "pipeline.status");
+            "pipeline.triggeredBy.email", "pipeline.triggeredBy.triggerIdentifier", "pipeline.status",
+            "pipeline.executionUrl", "pipeline.storeType", "pipeline.selectedStages", "pipeline.branch",
+            "pipeline.repo");
   }
 
   @Test
@@ -124,7 +126,7 @@ public class PipelineVariableCreatorTest extends CategoryTest {
   public void testGetPipelineExtraProperties() {
     YamlExtraProperties yamlExtraProperties = pipelineVariableCreator.getPipelineExtraProperties(
         PipelineInfoConfig.builder().properties(NGProperties.builder().build()).build());
-    assertEquals(yamlExtraProperties.getPropertiesList().size(), 13);
+    assertEquals(yamlExtraProperties.getPropertiesList().size(), 18);
     assertThat(yamlExtraProperties.getPropertiesList().contains(
         YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".sequenceId").build()));
     assertThat(yamlExtraProperties.getPropertiesList().contains(
@@ -143,6 +145,14 @@ public class PipelineVariableCreatorTest extends CategoryTest {
         YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".endTs").build()));
     assertThat(yamlExtraProperties.getPropertiesList().contains(
         YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".status").build()));
+    assertThat(yamlExtraProperties.getPropertiesList().contains(
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".executionUrl").build()));
+    assertThat(yamlExtraProperties.getPropertiesList().contains(
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".repo").build()));
+    assertThat(yamlExtraProperties.getPropertiesList().contains(
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".selectedStages").build()));
+    assertThat(yamlExtraProperties.getPropertiesList().contains(
+        YamlProperties.newBuilder().setFqn(YAMLFieldNameConstants.PIPELINE + ".storeType").build()));
     String propertiesExpressionPath = "pipeline.properties.ci.codebase.build";
     assertThat(yamlExtraProperties.getPropertiesList().contains(YamlProperties.newBuilder()
                                                                     .setFqn(propertiesExpressionPath + "."

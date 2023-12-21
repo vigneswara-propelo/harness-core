@@ -38,10 +38,7 @@ import lombok.experimental.FieldDefaults;
 @OwnedBy(PL)
 @Schema(name = "Account", description = "Account details defined in Harness.")
 public class AccountDTO {
-  @Schema(description = "Account Identifier.")
-  @EntityIdentifier(allowBlank = false)
-  @VariableExpression(skipVariableExpression = true)
-  String identifier;
+  @Schema(description = "Account Identifier.") @EntityIdentifier(allowBlank = false) String identifier;
   @Schema(description = "Name of the Account.") @NGEntityName String name;
   @Schema(description = "Name of the Company.") String companyName;
   @Schema(description = "Name of the cluster associated with this Account.")
