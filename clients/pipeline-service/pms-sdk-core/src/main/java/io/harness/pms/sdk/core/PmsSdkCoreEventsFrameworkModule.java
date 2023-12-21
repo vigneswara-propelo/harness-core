@@ -9,8 +9,12 @@ package io.harness.pms.sdk.core;
 
 import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_PARTIAL_PLAN_RESPONSE;
 import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_SDK_RESPONSE_EVENT_TOPIC;
+import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_SDK_RESPONSE_SPAWN_EVENT_TOPIC;
+import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_SDK_STEP_RESPONSE_EVENT_TOPIC;
 import static io.harness.pms.sdk.core.PmsSdkCoreEventsFrameworkConstants.PARTIAL_PLAN_RESPONSE_EVENT_PRODUCER;
 import static io.harness.pms.sdk.core.PmsSdkCoreEventsFrameworkConstants.SDK_RESPONSE_EVENT_PRODUCER;
+import static io.harness.pms.sdk.core.PmsSdkCoreEventsFrameworkConstants.SDK_RESPONSE_SPAWN_EVENT_PRODUCER;
+import static io.harness.pms.sdk.core.PmsSdkCoreEventsFrameworkConstants.SDK_STEP_RESPONSE_EVENT_PRODUCER;
 
 import io.harness.eventsframework.EventsFrameworkConfiguration;
 import io.harness.eventsframework.EventsFrameworkConstants;
@@ -54,6 +58,12 @@ public class PmsSdkCoreEventsFrameworkModule extends AbstractModule {
           .annotatedWith(Names.named(SDK_RESPONSE_EVENT_PRODUCER))
           .toInstance(NoOpProducer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME));
       bind(Producer.class)
+          .annotatedWith(Names.named(SDK_RESPONSE_SPAWN_EVENT_PRODUCER))
+          .toInstance(NoOpProducer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME));
+      bind(Producer.class)
+          .annotatedWith(Names.named(SDK_STEP_RESPONSE_EVENT_PRODUCER))
+          .toInstance(NoOpProducer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME));
+      bind(Producer.class)
           .annotatedWith(Names.named(PARTIAL_PLAN_RESPONSE_EVENT_PRODUCER))
           .toInstance(NoOpProducer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME));
     } else {
@@ -62,6 +72,16 @@ public class PmsSdkCoreEventsFrameworkModule extends AbstractModule {
           .annotatedWith(Names.named(SDK_RESPONSE_EVENT_PRODUCER))
           .toInstance(RedisProducer.of(PIPELINE_SDK_RESPONSE_EVENT_TOPIC, redissonClient,
               pipelineSdkRedisEventsConfig.getPipelineSdkResponseEvent().getMaxTopicSize(), serviceName,
+              redisConfig.getEnvNamespace()));
+      bind(Producer.class)
+          .annotatedWith(Names.named(SDK_RESPONSE_SPAWN_EVENT_PRODUCER))
+          .toInstance(RedisProducer.of(PIPELINE_SDK_RESPONSE_SPAWN_EVENT_TOPIC, redissonClient,
+              pipelineSdkRedisEventsConfig.getPipelineSdkResponseSpawnEvent().getMaxTopicSize(), serviceName,
+              redisConfig.getEnvNamespace()));
+      bind(Producer.class)
+          .annotatedWith(Names.named(SDK_STEP_RESPONSE_EVENT_PRODUCER))
+          .toInstance(RedisProducer.of(PIPELINE_SDK_STEP_RESPONSE_EVENT_TOPIC, redissonClient,
+              pipelineSdkRedisEventsConfig.getPipelineSdkStepResponseEvent().getMaxTopicSize(), serviceName,
               redisConfig.getEnvNamespace()));
       bind(Producer.class)
           .annotatedWith(Names.named(PARTIAL_PLAN_RESPONSE_EVENT_PRODUCER))

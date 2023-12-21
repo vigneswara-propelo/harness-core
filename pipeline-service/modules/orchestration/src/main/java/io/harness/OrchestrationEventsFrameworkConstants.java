@@ -17,6 +17,10 @@ import lombok.experimental.UtilityClass;
 public class OrchestrationEventsFrameworkConstants {
   public static final String SDK_RESPONSE_EVENT_CONSUMER = "SDK_RESPONSE_EVENT_CONSUMER";
 
+  public static final String SDK_RESPONSE_SPAWN_EVENT_CONSUMER = "SDK_RESPONSE_SPAWN_EVENT_CONSUMER";
+
+  public static final String SDK_STEP_RESPONSE_EVENT_CONSUMER = "SDK_STEP_RESPONSE_EVENT_CONSUMER";
+
   public static final String PARTIAL_PLAN_EVENT_CONSUMER = "PARTIAL_PLAN_EVENT_RESPONSE_CONSUMER";
 
   public static final String INITIATE_NODE_EVENT_CONSUMER = "INITIATE_NODE_EVENT_CONSUMER";

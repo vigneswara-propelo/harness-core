@@ -446,6 +446,10 @@ pipelineEventConsumersConfig:
     threads: ${TRIGGER_EXECUTION_EVENT_CONSUMER_THREAD_COUNT:-1}
   asyncFilterCreationEvent:
     threads: ${ASYNC_FILTER_CREATION_CONSUMER_THREAD_COUNT:-1}
+  sdkResponseSpawnEvent:
+    threads: ${SDK_RESPONSE_SPAWN_EVENT_CONSUMER_THREAD_COUNT:-1}
+  sdkStepResponseEvent:
+    threads: ${SDK_STEP_RESPONSE_EVENT_CONSUMER_THREAD_COUNT:-1}
 
 delegatePollingConfig:
   syncDelay: 2000
@@ -501,6 +505,10 @@ pipelineRedisEventsConfig:
 pipelineSdkRedisEventsConfig:
   pipelineSdkResponseEvent:
     maxTopicSize: ${PIPELINE_SDK_RESPONSE_EVENT_MAX_TOPIC_SIZE:-5000}
+  pipelineSdkResponseSpawnEvent:
+    maxTopicSize: ${PIPELINE_SDK_RESPONSE_SPAWN_EVENT_MAX_TOPIC_SIZE:-5000}
+  pipelineSdkStepResponseEvent:
+    maxTopicSize: ${PIPELINE_SDK_STEP_RESPONSE_EVENT_MAX_TOPIC_SIZE:-5000}
 
 orchestrationRedisEventsConfig:
   pipelineInterruptEvent:

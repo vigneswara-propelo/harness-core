@@ -8,12 +8,16 @@
 package io.harness.execution.consumers;
 
 import static io.harness.rule.OwnerRule.SHALINI;
+import static io.harness.rule.OwnerRule.YUVRAJ;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.harness.category.element.UnitTests;
 import io.harness.eventsframework.consumer.Message;
 import io.harness.execution.SdkResponseHandler;
+import io.harness.execution.consumers.sdk.response.SdkResponseEventMessageListener;
+import io.harness.execution.consumers.sdk.response.SdkResponseSpawnEventMessageListener;
+import io.harness.execution.consumers.sdk.response.SdkStepResponseEventMessageListener;
 import io.harness.rule.Owner;
 
 import org.junit.Before;
@@ -34,6 +38,28 @@ public class SdkResponseEventMessageListenerTest {
   public void testSdkResponseEventMessageListener() {
     SdkResponseEventMessageListener messageListener =
         Mockito.spy(new SdkResponseEventMessageListener("RANDOM_SERVICE", eventHandler));
+
+    Boolean listenerProcessable = messageListener.isProcessable(Message.newBuilder().build());
+    assertThat(listenerProcessable).isEqualTo(true);
+  }
+
+  @Test
+  @Owner(developers = YUVRAJ)
+  @Category(UnitTests.class)
+  public void testSdkResponseSpawnEventMessageListener() {
+    SdkResponseSpawnEventMessageListener messageListener =
+        Mockito.spy(new SdkResponseSpawnEventMessageListener("RANDOM_SERVICE", eventHandler));
+
+    Boolean listenerProcessable = messageListener.isProcessable(Message.newBuilder().build());
+    assertThat(listenerProcessable).isEqualTo(true);
+  }
+
+  @Test
+  @Owner(developers = YUVRAJ)
+  @Category(UnitTests.class)
+  public void testSdkStepResponseEventMessageListener() {
+    SdkStepResponseEventMessageListener messageListener =
+        Mockito.spy(new SdkStepResponseEventMessageListener("RANDOM_SERVICE", eventHandler));
 
     Boolean listenerProcessable = messageListener.isProcessable(Message.newBuilder().build());
     assertThat(listenerProcessable).isEqualTo(true);

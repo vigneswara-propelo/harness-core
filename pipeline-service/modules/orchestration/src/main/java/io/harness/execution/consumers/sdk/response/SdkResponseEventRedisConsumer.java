@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.execution.consumers;
+package io.harness.execution.consumers.sdk.response;
 
 import static io.harness.OrchestrationEventsFrameworkConstants.SDK_RESPONSE_EVENT_CONSUMER;
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;

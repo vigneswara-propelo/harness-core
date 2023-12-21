@@ -11,6 +11,8 @@ import static io.harness.OrchestrationEventsFrameworkConstants.INITIATE_NODE_EVE
 import static io.harness.OrchestrationEventsFrameworkConstants.INITIATE_NODE_EVENT_PRODUCER;
 import static io.harness.OrchestrationEventsFrameworkConstants.PARTIAL_PLAN_EVENT_CONSUMER;
 import static io.harness.OrchestrationEventsFrameworkConstants.SDK_RESPONSE_EVENT_CONSUMER;
+import static io.harness.OrchestrationEventsFrameworkConstants.SDK_RESPONSE_SPAWN_EVENT_CONSUMER;
+import static io.harness.OrchestrationEventsFrameworkConstants.SDK_STEP_RESPONSE_EVENT_CONSUMER;
 import static io.harness.authorization.AuthorizationServiceHeader.PIPELINE_SERVICE;
 import static io.harness.eventsframework.EventsFrameworkConstants.INITIATE_NODE_EVENT_BATCH_SIZE;
 import static io.harness.eventsframework.EventsFrameworkConstants.INITIATE_NODE_EVENT_MAX_TOPIC_SIZE;
@@ -20,7 +22,11 @@ import static io.harness.eventsframework.EventsFrameworkConstants.ORCHESTRATION_
 import static io.harness.eventsframework.EventsFrameworkConstants.PARTIAL_PLAN_EVENT_BATCH_SIZE;
 import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_PARTIAL_PLAN_RESPONSE;
 import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_SDK_RESPONSE_EVENT_TOPIC;
+import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_SDK_RESPONSE_SPAWN_EVENT_TOPIC;
+import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_SDK_STEP_RESPONSE_EVENT_TOPIC;
 import static io.harness.eventsframework.EventsFrameworkConstants.SDK_RESPONSE_EVENT_BATCH_SIZE;
+import static io.harness.eventsframework.EventsFrameworkConstants.SDK_RESPONSE_SPAWN_EVENT_BATCH_SIZE;
+import static io.harness.eventsframework.EventsFrameworkConstants.SDK_STEP_RESPONSE_EVENT_BATCH_SIZE;
 import static io.harness.pms.events.PmsEventFrameworkConstants.MAX_PROCESSING_TIME_SECONDS;
 
 import io.harness.eventsframework.EventsFrameworkConfiguration;
@@ -55,6 +61,14 @@ public class OrchestrationEventsFrameworkModule extends AbstractModule {
           .toInstance(
               NoOpConsumer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME, EventsFrameworkConstants.DUMMY_GROUP_NAME));
       bind(Consumer.class)
+          .annotatedWith(Names.named(SDK_RESPONSE_SPAWN_EVENT_CONSUMER))
+          .toInstance(
+              NoOpConsumer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME, EventsFrameworkConstants.DUMMY_GROUP_NAME));
+      bind(Consumer.class)
+          .annotatedWith(Names.named(SDK_STEP_RESPONSE_EVENT_CONSUMER))
+          .toInstance(
+              NoOpConsumer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME, EventsFrameworkConstants.DUMMY_GROUP_NAME));
+      bind(Consumer.class)
           .annotatedWith(Names.named(PARTIAL_PLAN_EVENT_CONSUMER))
           .toInstance(
               NoOpConsumer.of(EventsFrameworkConstants.DUMMY_TOPIC_NAME, EventsFrameworkConstants.DUMMY_GROUP_NAME));
@@ -75,6 +89,16 @@ public class OrchestrationEventsFrameworkModule extends AbstractModule {
           .annotatedWith(Names.named(SDK_RESPONSE_EVENT_CONSUMER))
           .toInstance(RedisConsumer.of(PIPELINE_SDK_RESPONSE_EVENT_TOPIC, PIPELINE_SERVICE.getServiceId(),
               redissonClient, Duration.ofSeconds(MAX_PROCESSING_TIME_SECONDS), SDK_RESPONSE_EVENT_BATCH_SIZE,
+              redisConfig.getEnvNamespace()));
+      bind(Consumer.class)
+          .annotatedWith(Names.named(SDK_RESPONSE_SPAWN_EVENT_CONSUMER))
+          .toInstance(RedisConsumer.of(PIPELINE_SDK_RESPONSE_SPAWN_EVENT_TOPIC, PIPELINE_SERVICE.getServiceId(),
+              redissonClient, Duration.ofSeconds(MAX_PROCESSING_TIME_SECONDS), SDK_RESPONSE_SPAWN_EVENT_BATCH_SIZE,
+              redisConfig.getEnvNamespace()));
+      bind(Consumer.class)
+          .annotatedWith(Names.named(SDK_STEP_RESPONSE_EVENT_CONSUMER))
+          .toInstance(RedisConsumer.of(PIPELINE_SDK_STEP_RESPONSE_EVENT_TOPIC, PIPELINE_SERVICE.getServiceId(),
+              redissonClient, Duration.ofSeconds(MAX_PROCESSING_TIME_SECONDS), SDK_STEP_RESPONSE_EVENT_BATCH_SIZE,
               redisConfig.getEnvNamespace()));
       bind(Consumer.class)
           .annotatedWith(Names.named(PARTIAL_PLAN_EVENT_CONSUMER))

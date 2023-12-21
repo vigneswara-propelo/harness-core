@@ -40,4 +40,6 @@ public class PipelineServiceConsumersConfig {
   PipelineServiceConsumerConfig pipelineExecutionEventSnapshot;
   PipelineServiceConsumerConfig triggerExecutionEvent;
   PipelineServiceConsumerConfig asyncFilterCreationEvent;
+  PipelineServiceConsumerConfig sdkResponseSpawnEvent;
+  PipelineServiceConsumerConfig sdkStepResponseEvent;
 }

@@ -9,6 +9,8 @@ package io.harness.pms.sdk.core;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_SDK_RESPONSE_EVENT_MAX_TOPIC_SIZE;
+import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_SDK_RESPONSE_SPAWN_EVENT_MAX_TOPIC_SIZE;
+import static io.harness.eventsframework.EventsFrameworkConstants.PIPELINE_SDK_STEP_RESPONSE_EVENT_MAX_TOPIC_SIZE;
 
 import io.harness.RedisEventConfig;
 import io.harness.annotations.dev.OwnedBy;
@@ -24,4 +26,12 @@ public class PipelineSdkRedisEventsConfig {
   @Default
   RedisEventConfig pipelineSdkResponseEvent =
       RedisEventConfig.builder().maxTopicSize(PIPELINE_SDK_RESPONSE_EVENT_MAX_TOPIC_SIZE).build();
+
+  @Default
+  RedisEventConfig pipelineSdkResponseSpawnEvent =
+      RedisEventConfig.builder().maxTopicSize(PIPELINE_SDK_RESPONSE_SPAWN_EVENT_MAX_TOPIC_SIZE).build();
+
+  @Default
+  RedisEventConfig pipelineSdkStepResponseEvent =
+      RedisEventConfig.builder().maxTopicSize(PIPELINE_SDK_STEP_RESPONSE_EVENT_MAX_TOPIC_SIZE).build();
 }

@@ -25,16 +25,17 @@ message SdkResponseEventProto {
   SdkResponseEventType sdkResponseEventType = 1;
   google.protobuf.Timestamp createdAt = 3;
   oneof request {
-    QueueTaskRequest queueTaskRequest = 6;
+    QueueTaskRequest queueTaskRequest = 6;  // will be pushed to pipeline_sdk_step_response redis stream
     AddExecutableResponseRequest addExecutableResponseRequest = 7;
-    HandleStepResponseRequest handleStepResponseRequest = 8;
+    HandleStepResponseRequest handleStepResponseRequest =
+        8;  // will be pushed to pipeline_sdk_step_response redis stream
     ResumeNodeExecutionRequest resumeNodeExecutionRequest = 9;
     FacilitatorResponseRequest facilitatorResponseRequest = 10;
     EventErrorRequest eventErrorRequest = 11;
     AdviserResponseRequest adviserResponseRequest = 12;
     SuspendChainRequest suspendChainRequest = 13;
-    SpawnChildRequest spawnChildRequest = 14;
-    SpawnChildrenRequest spawnChildrenRequest = 15;
+    SpawnChildRequest spawnChildRequest = 14;        // will be pushed to pipeline_sdk_spawn redis stream
+    SpawnChildrenRequest spawnChildrenRequest = 15;  // will be pushed to pipeline_sdk_spawn redis stream
     HandleProgressRequest progressRequest = 16;
     AddStepDetailsInstanceRequest stepDetailsInstanceRequest = 17;
   }
