@@ -32,6 +32,7 @@ import io.harness.idp.namespace.beans.entity.NamespaceEntity;
 import io.harness.idp.onboarding.entities.AsyncCatalogImportEntity;
 import io.harness.idp.plugin.entities.PluginInfoEntity;
 import io.harness.idp.plugin.entities.PluginRequestEntity;
+import io.harness.idp.proxy.layout.beans.entity.LayoutEntity;
 import io.harness.idp.scorecard.checks.entity.CheckEntity;
 import io.harness.idp.scorecard.checks.entity.CheckStatsEntity;
 import io.harness.idp.scorecard.checks.entity.CheckStatusEntity;
@@ -98,6 +99,7 @@ public class IdpServiceMorphiaRegistrar implements MorphiaRegistrar {
     set.add(BackstageCatalogSystemEntity.class);
     set.add(BackstageCatalogTemplateEntity.class);
     set.add(BackstageCatalogUserEntity.class);
+    set.add(LayoutEntity.class);
   }
 
   @Override

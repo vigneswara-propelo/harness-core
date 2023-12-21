@@ -20,6 +20,7 @@ java_library(
         "//idp-service/src/main/java/io/harness/idp/gitintegration/entities:module",
         "//idp-service/src/main/java/io/harness/idp/gitintegration/events:module",
         "//idp-service/src/main/java/io/harness/idp/plugin/events:module",
+        "//idp-service/src/main/java/io/harness/idp/proxy/layout:module",
         "//idp-service/src/main/java/io/harness/idp/scorecard:module",
     ],
 )

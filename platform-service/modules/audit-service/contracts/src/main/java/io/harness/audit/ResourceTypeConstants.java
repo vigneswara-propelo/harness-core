@@ -110,4 +110,5 @@ public class ResourceTypeConstants {
   public static final String MODULE_LICENSE = "MODULE_LICENSE";
 
   public static final String SSCA_ARTIFACT = "SSCA_ARTIFACT";
+  public static final String IDP_LAYOUT = "IDP_LAYOUT";
 }

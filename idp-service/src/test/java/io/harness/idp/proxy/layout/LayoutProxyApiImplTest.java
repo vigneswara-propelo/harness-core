@@ -16,6 +16,8 @@ import static org.mockito.Mockito.when;
 import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.clients.BackstageResourceClient;
+import io.harness.idp.proxy.layout.resource.LayoutProxyApiImpl;
+import io.harness.idp.proxy.layout.service.LayoutService;
 import io.harness.rule.Owner;
 import io.harness.spec.server.idp.v1.model.LayoutIngestRequest;
 import io.harness.spec.server.idp.v1.model.LayoutRequest;
@@ -38,6 +40,7 @@ public class LayoutProxyApiImplTest extends CategoryTest {
   private Call<Object> call;
   AutoCloseable openMocks;
   @Mock BackstageResourceClient backstageResourceClient;
+  @Mock LayoutService layoutService;
   @InjectMocks LayoutProxyApiImpl layoutProxyApiImpl;
 
   @Before

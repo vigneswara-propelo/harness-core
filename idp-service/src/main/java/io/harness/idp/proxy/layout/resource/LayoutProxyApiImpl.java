@@ -5,7 +5,7 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.idp.proxy.layout;
+package io.harness.idp.proxy.layout.resource;
 
 import static io.harness.idp.common.Constants.IDP_PERMISSION;
 import static io.harness.idp.common.Constants.IDP_RESOURCE_TYPE;
@@ -17,6 +17,7 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.clients.BackstageResourceClient;
 import io.harness.eraro.ResponseMessage;
+import io.harness.idp.proxy.layout.service.LayoutService;
 import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.spec.server.idp.v1.LayoutProxyApi;
 import io.harness.spec.server.idp.v1.model.LayoutIngestRequest;
@@ -37,12 +38,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LayoutProxyApiImpl implements LayoutProxyApi {
   BackstageResourceClient backstageResourceClient;
+  LayoutService layoutsService;
 
   @Override
   @NGAccessControlCheck(resourceType = IDP_RESOURCE_TYPE, permission = IDP_PERMISSION)
   public Response createLayout(@Valid LayoutRequest body, @AccountIdentifier String harnessAccount) {
     try {
       Object entity = getGeneralResponse(backstageResourceClient.createLayout(body, harnessAccount));
+      layoutsService.saveOrUpdateLayouts(body, harnessAccount);
       return Response.ok(entity).build();
     } catch (Exception ex) {
       log.error("Error in createLayout - account = {}, error = {}", harnessAccount, ex.getMessage(), ex);
