@@ -1,0 +1,16 @@
+apiVersion: split.smi-spec.io/v1alpha3
+kind: TrafficSplit
+metadata:
+  labels:
+    harness.io/release-name: release-name
+  name: harness-traffic-routing-traffic-split
+  namespace: namespace
+spec:
+  backends:
+  - service: first
+    weight: 30
+  - service: second
+    weight: 20
+  - service: third
+    weight: 50
+  service: rootSvc

@@ -1,0 +1,19 @@
+apiVersion: split.smi-spec.io/v1alpha3
+kind: TrafficSplit
+metadata:
+  labels:
+    harness.io/release-name: release-name
+  name: stableService-traffic-split
+  namespace: namespace
+spec:
+  backends:
+  - service: stableService
+    weight: 80
+  - service: stageService
+    weight: 20
+  matches:
+  - kind: HTTPRouteGroup
+    name: uri-http-route-group
+  - kind: HTTPRouteGroup
+    name: method-http-route-group
+  service: stableService

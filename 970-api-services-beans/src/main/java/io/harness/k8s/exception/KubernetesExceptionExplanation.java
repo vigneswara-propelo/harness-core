@@ -92,4 +92,5 @@ public class KubernetesExceptionExplanation {
   public final String OPENSHIFT_RENDER_ERROR = "Failed to render template with error: %n%s %n%nCommand Executed: %n%s";
   public final String FILE_PATH_NOT_PART_OF_MANIFEST_FORMAT = "File path: %s is not part of manifest directory";
   public final String NO_FILES_EXISTS_IN_MANIFEST_DIRECTORY = "No files found in manifest directory";
+  public final String TRAFFIC_ROUTING_MISSING_FIELD = "The %s field is missing in the Traffic Routing configuration";
 }

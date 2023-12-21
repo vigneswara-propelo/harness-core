@@ -10,14 +10,17 @@ package io.harness.delegate.k8s.trafficrouting;
 import static io.harness.rule.OwnerRule.BUHA;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
+import io.harness.delegate.task.k8s.trafficrouting.K8sTrafficRoutingConfig;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.logging.LogCallback;
 import io.harness.rule.Owner;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
@@ -26,7 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class TrafficRoutingCommonTest extends CategoryTest {
+public class TrafficRoutingResourceCreatorTest extends CategoryTest {
   private static final String STABLE_SERVICE = "stable-service-name";
   public static final String STAGE_SERVICE = "stage-service-name";
   @Mock LogCallback logCallback;
@@ -40,7 +43,7 @@ public class TrafficRoutingCommonTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testUpdatePlaceHolderWhenStable() {
-    assertThat(TrafficRoutingCommon.updatePlaceHoldersIfExist("stable", STABLE_SERVICE, STAGE_SERVICE))
+    assertThat(getTrafficRoutingCreator().updatePlaceHoldersIfExist("stable", STABLE_SERVICE, STAGE_SERVICE))
         .isEqualTo(STABLE_SERVICE);
   }
 
@@ -48,7 +51,7 @@ public class TrafficRoutingCommonTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testUpdatePlaceHolderWhenStage() {
-    assertThat(TrafficRoutingCommon.updatePlaceHoldersIfExist("stage", STABLE_SERVICE, STAGE_SERVICE))
+    assertThat(getTrafficRoutingCreator().updatePlaceHoldersIfExist("stage", STABLE_SERVICE, STAGE_SERVICE))
         .isEqualTo(STAGE_SERVICE);
   }
 
@@ -56,7 +59,7 @@ public class TrafficRoutingCommonTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testUpdatePlaceHolderWhenCanary() {
-    assertThat(TrafficRoutingCommon.updatePlaceHoldersIfExist("canary", STABLE_SERVICE, STAGE_SERVICE))
+    assertThat(getTrafficRoutingCreator().updatePlaceHoldersIfExist("canary", STABLE_SERVICE, STAGE_SERVICE))
         .isEqualTo(STAGE_SERVICE);
   }
 
@@ -64,42 +67,42 @@ public class TrafficRoutingCommonTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testUpdatePlaceHolderWithoutStableOrStage() {
-    assertThat(TrafficRoutingCommon.updatePlaceHoldersIfExist("some-host", null, null)).isEqualTo("some-host");
+    assertThat(getTrafficRoutingCreator().updatePlaceHoldersIfExist("some-host", null, null)).isEqualTo("some-host");
   }
 
   @Test(expected = InvalidArgumentsException.class)
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testUpdatePlaceHolderWhenEmptyHost() {
-    TrafficRoutingCommon.updatePlaceHoldersIfExist(null, STABLE_SERVICE, STAGE_SERVICE);
+    getTrafficRoutingCreator().updatePlaceHoldersIfExist(null, STABLE_SERVICE, STAGE_SERVICE);
   }
 
   @Test
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testUpdatePlaceHolderStableWithoutStableService() {
-    assertThat(TrafficRoutingCommon.updatePlaceHoldersIfExist("stable", null, null)).isEqualTo("stable");
+    assertThat(getTrafficRoutingCreator().updatePlaceHoldersIfExist("stable", null, null)).isEqualTo("stable");
   }
 
   @Test
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testUpdatePlaceHolderStageWithoutStageService() {
-    assertThat(TrafficRoutingCommon.updatePlaceHoldersIfExist("stage", null, null)).isEqualTo("stage");
+    assertThat(getTrafficRoutingCreator().updatePlaceHoldersIfExist("stage", null, null)).isEqualTo("stage");
   }
 
   @Test
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testUpdatePlaceHolderCanaryWithoutStageService() {
-    assertThat(TrafficRoutingCommon.updatePlaceHoldersIfExist("canary", null, null)).isEqualTo("canary");
+    assertThat(getTrafficRoutingCreator().updatePlaceHoldersIfExist("canary", null, null)).isEqualTo("canary");
   }
 
   @Test
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testGetTrafficRoutingResourceNameWhenNull() {
-    assertThat(TrafficRoutingCommon.getTrafficRoutingResourceName(null, "-some-suffix", "defaultName"))
+    assertThat(getTrafficRoutingCreator().getTrafficRoutingResourceName(null, "-some-suffix", "defaultName"))
         .isEqualTo("defaultName");
   }
 
@@ -107,7 +110,7 @@ public class TrafficRoutingCommonTest extends CategoryTest {
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testGetTrafficRoutingResourceName() {
-    assertThat(TrafficRoutingCommon.getTrafficRoutingResourceName("resource-name", "-some-suffix", "defaultName"))
+    assertThat(getTrafficRoutingCreator().getTrafficRoutingResourceName("resource-name", "-some-suffix", "defaultName"))
         .isEqualTo("resource-name-some-suffix");
   }
 
@@ -117,7 +120,7 @@ public class TrafficRoutingCommonTest extends CategoryTest {
   public void testGetTrafficRoutingResourceWithOverLimitResourceName() {
     String overLimitResourceName = RandomStringUtils.randomAlphabetic(260);
     String result =
-        TrafficRoutingCommon.getTrafficRoutingResourceName(overLimitResourceName, "-some-suffix", "defaultName");
+        getTrafficRoutingCreator().getTrafficRoutingResourceName(overLimitResourceName, "-some-suffix", "defaultName");
     assertThat(result).endsWith("-some-suffix").hasSize(253);
   }
 
@@ -126,20 +129,31 @@ public class TrafficRoutingCommonTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testGetApiVersion() {
     Set<String> availableApis = Set.of("api1", "api2", "api3", "api4");
-    List<String> providerApis = List.of("dummy1", "dummy2", "api2", "api4", "api5");
-    String defaultApi = "api5";
-    String result = TrafficRoutingCommon.getApiVersion(availableApis, providerApis, defaultApi, null, logCallback);
-    assertThat(result).isEqualTo("api2");
+    Map<String, String> result = getTrafficRoutingCreator().getApiVersions(availableApis, logCallback);
+    assertThat(result).contains(entry("key1", "api3")).contains(entry("key2", "api4"));
   }
 
   @Test
   @Owner(developers = BUHA)
   @Category(UnitTests.class)
   public void testGetApiVersionDefault() {
-    Set<String> availableApis = Set.of("api1", "api2", "api3");
-    List<String> providerApis = List.of("api4", "api5");
-    String defaultApi = "api6";
-    String result = TrafficRoutingCommon.getApiVersion(availableApis, providerApis, defaultApi, null, logCallback);
-    assertThat(result).isEqualTo("api6");
+    Set<String> availableApis = Set.of("api99", "api98", "api97");
+    Map<String, String> result = getTrafficRoutingCreator().getApiVersions(availableApis, logCallback);
+    assertThat(result).contains(entry("key1", "api3")).contains(entry("key2", "api5"));
+  }
+
+  public TrafficRoutingResourceCreator getTrafficRoutingCreator() {
+    return new TrafficRoutingResourceCreator(K8sTrafficRoutingConfig.builder().build()) {
+      @Override
+      protected List<String> getManifests(
+          String namespace, String releaseName, String stableName, String stageName, Map<String, String> apiVersions) {
+        return null;
+      }
+
+      @Override
+      protected Map<String, List<String>> getProviderVersionMap() {
+        return Map.of("key1", List.of("api1", "api2", "api3"), "key2", List.of("api4", "api5"));
+      }
+    };
   }
 }

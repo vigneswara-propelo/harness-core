@@ -1,0 +1,11 @@
+apiVersion: specs.smi-spec.io/v1alpha3
+kind: HTTPRouteGroup
+metadata:
+  labels:
+    harness.io/release-name: release-name
+  name: uri-http-route-group
+  namespace: namespace
+spec:
+  matches:
+  - name: uri
+    pathRegex: /metrics

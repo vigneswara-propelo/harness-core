@@ -48,7 +48,8 @@ import io.harness.beans.FileData;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.logstreaming.CommandUnitsProgress;
 import io.harness.delegate.beans.logstreaming.ILogStreamingTaskClient;
-import io.harness.delegate.k8s.trafficrouting.K8sTrafficRoutingHelper;
+import io.harness.delegate.k8s.trafficrouting.TrafficRoutingResourceCreator;
+import io.harness.delegate.k8s.trafficrouting.TrafficRoutingResourceCreatorFactory;
 import io.harness.delegate.task.helm.HelmChartInfo;
 import io.harness.delegate.task.k8s.ContainerDeploymentDelegateBaseHelper;
 import io.harness.delegate.task.k8s.HelmChartManifestDelegateConfig;
@@ -109,6 +110,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
@@ -127,7 +130,7 @@ public class K8sBGRequestHandlerTest extends CategoryTest {
   @Mock K8sReleaseHandler releaseHandler;
   @Mock IK8sReleaseHistory releaseHistory;
   @Mock K8sRelease release;
-  @Mock K8sTrafficRoutingHelper trafficRoutingHelper;
+  @Mock TrafficRoutingResourceCreator trafficRoutingResourceCreator;
   @Mock K8sApiClient kubernetesApiClient;
   @Spy @InjectMocks K8sManifestHashGenerator k8sManifestHashGenerator;
   @Spy @InjectMocks K8sBGBaseHandler k8sBGBaseHandler;
@@ -981,28 +984,35 @@ public class K8sBGRequestHandlerTest extends CategoryTest {
             eq(HarnessLabelValues.colorGreen), eq("releaseName"), anyList());
     doReturn(avaliableApis).when(kubernetesApiClient).getApiVersions(any(), any(), any(), any());
     doReturn(List.of(KubernetesResource.builder().build()))
-        .when(trafficRoutingHelper)
-        .getTrafficRoutingResources(any(), anyString(), anyString(), any(), any(), any(), any());
+        .when(trafficRoutingResourceCreator)
+        .createTrafficRoutingResources(anyString(), anyString(), any(), any(), any(), any());
 
-    K8sDeployResponse response = k8sBGRequestHandler.executeTaskInternal(
-        k8sBGDeployRequest, k8sDelegateTaskParams, logStreamingTaskClient, commandUnitsProgress);
+    try (MockedStatic<TrafficRoutingResourceCreatorFactory> utilities =
+             Mockito.mockStatic(TrafficRoutingResourceCreatorFactory.class)) {
+      utilities.when(() -> TrafficRoutingResourceCreatorFactory.create(trafficRoutingProvider))
+          .thenReturn(trafficRoutingResourceCreator);
 
-    assertThat(response.getCommandExecutionStatus()).isEqualTo(SUCCESS);
-    assertThat(response.getK8sNGTaskResponse()).isNotNull();
-    K8sBGDeployResponse bgDeployResponse = (K8sBGDeployResponse) response.getK8sNGTaskResponse();
-    assertThat(bgDeployResponse.getPrimaryColor()).isEqualTo(HarnessLabelValues.colorBlue);
-    assertThat(bgDeployResponse.getStageColor()).isEqualTo(HarnessLabelValues.colorGreen);
-    assertThat(bgDeployResponse.getPrimaryServiceName()).isEqualTo("my-service");
-    assertThat(bgDeployResponse.getStageServiceName()).isEqualTo("my-service-stage");
-    assertThat(bgDeployResponse.getK8sPodList()).isEqualTo(deployedPods);
-    verify(k8sBGRequestHandler)
-        .getManifestOverrideFlies(k8sBGDeployRequest,
-            KubernetesReleaseDetails.builder()
-                .releaseNumber(10)
-                .color(k8sBGBaseHandler.getInverseColor(HarnessLabelValues.colorDefault))
-                .build()
-                .toContextMap());
-    verify(trafficRoutingHelper).getTrafficRoutingResources(any(), any(), anyString(), any(), any(), any(), any());
+      K8sDeployResponse response = k8sBGRequestHandler.executeTaskInternal(
+          k8sBGDeployRequest, k8sDelegateTaskParams, logStreamingTaskClient, commandUnitsProgress);
+
+      assertThat(response.getCommandExecutionStatus()).isEqualTo(SUCCESS);
+      assertThat(response.getK8sNGTaskResponse()).isNotNull();
+      K8sBGDeployResponse bgDeployResponse = (K8sBGDeployResponse) response.getK8sNGTaskResponse();
+      assertThat(bgDeployResponse.getPrimaryColor()).isEqualTo(HarnessLabelValues.colorBlue);
+      assertThat(bgDeployResponse.getStageColor()).isEqualTo(HarnessLabelValues.colorGreen);
+      assertThat(bgDeployResponse.getPrimaryServiceName()).isEqualTo("my-service");
+      assertThat(bgDeployResponse.getStageServiceName()).isEqualTo("my-service-stage");
+      assertThat(bgDeployResponse.getK8sPodList()).isEqualTo(deployedPods);
+      verify(k8sBGRequestHandler)
+          .getManifestOverrideFlies(k8sBGDeployRequest,
+              KubernetesReleaseDetails.builder()
+                  .releaseNumber(10)
+                  .color(k8sBGBaseHandler.getInverseColor(HarnessLabelValues.colorDefault))
+                  .build()
+                  .toContextMap());
+      verify(trafficRoutingResourceCreator)
+          .createTrafficRoutingResources(any(), anyString(), any(), any(), any(), any());
+    }
   }
 
   private void assertResourceColor(KubernetesResource resource, String expected) {

@@ -10,6 +10,8 @@ package io.harness.delegate.k8s.trafficrouting;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.delegate.task.k8s.trafficrouting.RouteType.HTTP;
 
+import static java.lang.String.format;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
@@ -20,8 +22,10 @@ import io.harness.delegate.task.k8s.trafficrouting.TrafficRoute;
 import io.harness.delegate.task.k8s.trafficrouting.TrafficRouteRule;
 import io.harness.delegate.task.k8s.trafficrouting.TrafficRoutingDestination;
 import io.harness.exception.InvalidArgumentsException;
+import io.harness.exception.NestedExceptionUtils;
+import io.harness.k8s.exception.KubernetesExceptionExplanation;
+import io.harness.k8s.exception.KubernetesExceptionHints;
 import io.harness.k8s.model.HarnessLabels;
-import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.istio.Destination;
 import io.harness.k8s.model.istio.HttpRouteDestination;
 import io.harness.k8s.model.istio.Match;
@@ -31,52 +35,50 @@ import io.harness.k8s.model.istio.VirtualServiceDetails;
 import io.harness.k8s.model.istio.VirtualServiceSpec;
 
 import io.kubernetes.client.util.Yaml;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
-@UtilityClass
 @Slf4j
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_K8S})
-public class IstioTrafficRoutingMapper {
-  public final String VS_SUFFIX = "-virtual-service";
+public class IstioTrafficRoutingResourceCreator extends TrafficRoutingResourceCreator {
+  private static final String VS_SUFFIX = "-virtual-service";
   // toDo this needs to be revisited, should not be hardcoded
-  public final String TRAFFIC_ROUTING_STEP_VIRTUAL_SERVICE = "harness-traffic-routing-virtual-service";
+  private static final String TRAFFIC_ROUTING_STEP_VIRTUAL_SERVICE = "harness-traffic-routing-virtual-service";
+  private static final String NETWORKING = "networking";
+  private static final Map<String, List<String>> SUPPORTED_API_MAP =
+      Map.of(NETWORKING, List.of("networking.istio.io/v1alpha3", "networking.istio.io/v1beta1"));
 
-  public List<String> getTrafficRoutingManifests(K8sTrafficRoutingConfig k8sTrafficRoutingConfig, String namespace,
-      String releaseName, KubernetesResource stableService, KubernetesResource stageService, String apiVersion) {
-    String stableName = stableService != null ? stableService.getResourceId().getName() : null;
-    String stageName = stageService != null ? stageService.getResourceId().getName() : null;
-
-    return List.of(
-        getVirtualServiceManifest(k8sTrafficRoutingConfig, namespace, releaseName, stableName, stageName, apiVersion));
+  public IstioTrafficRoutingResourceCreator(K8sTrafficRoutingConfig k8sTrafficRoutingConfig) {
+    super(k8sTrafficRoutingConfig);
   }
 
-  private String getVirtualServiceManifest(K8sTrafficRoutingConfig k8sTrafficRoutingConfig, String namespace,
-      String releaseName, String stableName, String stageName, String apiVersion) {
+  @Override
+  protected List<String> getManifests(
+      String namespace, String releaseName, String stableName, String stageName, Map<String, String> apiVersions) {
     String virtualServiceName =
-        TrafficRoutingCommon.getTrafficRoutingResourceName(stableName, VS_SUFFIX, TRAFFIC_ROUTING_STEP_VIRTUAL_SERVICE);
+        getTrafficRoutingResourceName(stableName, VS_SUFFIX, TRAFFIC_ROUTING_STEP_VIRTUAL_SERVICE);
     VirtualService vs = VirtualService.builder()
                             .metadata(Metadata.builder()
                                           .name(virtualServiceName)
                                           .namespace(namespace)
                                           .labels(Map.of(HarnessLabels.releaseName, releaseName))
                                           .build())
-                            .apiVersion(apiVersion)
-                            .spec(getVirtualServiceSpec(stableName, stageName, k8sTrafficRoutingConfig))
+                            .apiVersion(apiVersions.get(NETWORKING))
+                            .spec(getVirtualServiceSpec(stableName, stageName))
                             .build();
-    return Yaml.dump(vs);
+    return List.of(Yaml.dump(vs));
   }
 
-  private VirtualServiceSpec getVirtualServiceSpec(
-      String stableName, String stageName, K8sTrafficRoutingConfig k8sTrafficRoutingConfig) {
+  @Override
+  protected Map<String, List<String>> getProviderVersionMap() {
+    return SUPPORTED_API_MAP;
+  }
+
+  private VirtualServiceSpec getVirtualServiceSpec(String stableName, String stageName) {
     IstioProviderConfig providerConfig = (IstioProviderConfig) k8sTrafficRoutingConfig.getProviderConfig();
     List<String> hosts = providerConfig.getHosts();
     if (isEmpty(hosts)) {
@@ -96,6 +98,12 @@ public class IstioTrafficRoutingMapper {
 
   private List<VirtualServiceDetails> getHttpRouteSpec(
       List<TrafficRoute> routes, List<TrafficRoutingDestination> destinations, String stableName, String stageName) {
+    if (routes == null) {
+      throw NestedExceptionUtils.hintWithExplanationException(
+          format(KubernetesExceptionHints.TRAFFIC_ROUTING_MISSING_FIELD, "routes", "ISTIO"),
+          format(KubernetesExceptionExplanation.TRAFFIC_ROUTING_MISSING_FIELD, "routes"),
+          new InvalidArgumentsException("Traffic Routes are missing in the Traffic Routing configuration"));
+    }
     return routes.stream()
         .filter(route -> route.getRouteType() == HTTP)
         .map(route
@@ -130,24 +138,9 @@ public class IstioTrafficRoutingMapper {
             -> HttpRouteDestination.builder()
                    .weight(destination.getWeight())
                    .destination(Destination.builder()
-                                    .host(TrafficRoutingCommon.updatePlaceHoldersIfExist(
-                                        destination.getHost(), stableName, stageName))
+                                    .host(updatePlaceHoldersIfExist(destination.getHost(), stableName, stageName))
                                     .build())
                    .build())
         .collect(Collectors.toList());
-  }
-
-  @AllArgsConstructor
-  enum ApiVersion {
-    V1_ALPHA3("networking.istio.io/v1alpha3"),
-    V1_BETA1("networking.istio.io/v1beta1");
-    @Getter final String version;
-
-    public static List<String> inverseOrderVersions() {
-      return Arrays.stream(ApiVersion.values())
-          .sorted(Collections.reverseOrder())
-          .map(ApiVersion::getVersion)
-          .collect(Collectors.toList());
-    }
   }
 }

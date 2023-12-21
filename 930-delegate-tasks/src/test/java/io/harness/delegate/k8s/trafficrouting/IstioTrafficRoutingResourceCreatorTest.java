@@ -22,9 +22,11 @@ import io.harness.delegate.task.k8s.trafficrouting.RuleType;
 import io.harness.delegate.task.k8s.trafficrouting.TrafficRoute;
 import io.harness.delegate.task.k8s.trafficrouting.TrafficRouteRule;
 import io.harness.delegate.task.k8s.trafficrouting.TrafficRoutingDestination;
+import io.harness.exception.HintException;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
+import io.harness.logging.LogCallback;
 import io.harness.rule.Owner;
 
 import com.google.api.client.util.Charsets;
@@ -32,17 +34,28 @@ import com.google.common.io.Resources;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-public class IstioTrafficRoutingMapperTest extends CategoryTest {
-  private final String namespace = "namespace";
-  private final String releaseName = "release-name";
-  private final String apiVersion = "networking.istio.io/v1alpha3";
+public class IstioTrafficRoutingResourceCreatorTest extends CategoryTest {
+  private static final String namespace = "namespace";
+  private static final String releaseName = "release-name";
+  private final Set<String> apiVersions = Set.of("networking.istio.io/v1alpha3");
   private final KubernetesResource stableService =
       KubernetesResource.builder().resourceId(KubernetesResourceId.builder().name("stableService").build()).build();
   private final KubernetesResource stageService =
       KubernetesResource.builder().resourceId(KubernetesResourceId.builder().name("stageService").build()).build();
+
+  @Mock LogCallback logCallback;
+
+  @Before
+  public void setup() {
+    MockitoAnnotations.initMocks(this);
+  }
 
   @Test
   @Owner(developers = BUHA)
@@ -57,11 +70,7 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
             .build();
     String path = "/k8s/trafficrouting/virtualService1.yaml";
 
-    List<String> trafficRoutingManifests = IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, stableService, stageService, apiVersion);
-
-    assertThat(trafficRoutingManifests.size()).isEqualTo(1);
-    assertEqualYaml(trafficRoutingManifests.get(0), path);
+    testK8sResourceCreation(istioProviderConfig, path);
   }
 
   @Test
@@ -71,11 +80,7 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
     K8sTrafficRoutingConfig istioProviderConfig = getProviderConfig(RuleType.URI, MatchType.EXACT, "dummyValue");
     String path = "/k8s/trafficrouting/virtualServiceUriRule.yaml";
 
-    List<String> trafficRoutingManifests = IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, stableService, stageService, apiVersion);
-
-    assertThat(trafficRoutingManifests.size()).isEqualTo(1);
-    assertEqualYaml(trafficRoutingManifests.get(0), path);
+    testK8sResourceCreation(istioProviderConfig, path);
   }
 
   @Test
@@ -85,11 +90,7 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
     K8sTrafficRoutingConfig istioProviderConfig = getProviderConfig(RuleType.SCHEME, MatchType.EXACT, "dummyValue");
     String path = "/k8s/trafficrouting/virtualServiceSchemeRule.yaml";
 
-    List<String> trafficRoutingManifests = IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, stableService, stageService, apiVersion);
-
-    assertThat(trafficRoutingManifests.size()).isEqualTo(1);
-    assertEqualYaml(trafficRoutingManifests.get(0), path);
+    testK8sResourceCreation(istioProviderConfig, path);
   }
 
   @Test
@@ -99,11 +100,7 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
     K8sTrafficRoutingConfig istioProviderConfig = getProviderConfig(RuleType.METHOD, MatchType.EXACT, "GET");
     String path = "/k8s/trafficrouting/virtualServiceMethodRule.yaml";
 
-    List<String> trafficRoutingManifests = IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, stableService, stageService, apiVersion);
-
-    assertThat(trafficRoutingManifests.size()).isEqualTo(1);
-    assertEqualYaml(trafficRoutingManifests.get(0), path);
+    testK8sResourceCreation(istioProviderConfig, path);
   }
 
   @Test
@@ -113,11 +110,7 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
     K8sTrafficRoutingConfig istioProviderConfig = getProviderConfig(RuleType.AUTHORITY, MatchType.REGEX, "dummyValue");
     String path = "/k8s/trafficrouting/virtualServiceAuthorityRule.yaml";
 
-    List<String> trafficRoutingManifests = IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, stableService, stageService, apiVersion);
-
-    assertThat(trafficRoutingManifests.size()).isEqualTo(1);
-    assertEqualYaml(trafficRoutingManifests.get(0), path);
+    testK8sResourceCreation(istioProviderConfig, path);
   }
 
   @Test
@@ -127,11 +120,7 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
     K8sTrafficRoutingConfig istioProviderConfig = getProviderConfig(RuleType.HEADER, MatchType.REGEX, null);
     String path = "/k8s/trafficrouting/virtualServiceHeaderRule.yaml";
 
-    List<String> trafficRoutingManifests = IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, stableService, stageService, apiVersion);
-
-    assertThat(trafficRoutingManifests.size()).isEqualTo(1);
-    assertEqualYaml(trafficRoutingManifests.get(0), path);
+    testK8sResourceCreation(istioProviderConfig, path);
   }
 
   @Test
@@ -141,11 +130,7 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
     K8sTrafficRoutingConfig istioProviderConfig = getProviderConfig(RuleType.PORT, MatchType.EXACT, "8080");
     String path = "/k8s/trafficrouting/virtualServicePortRule.yaml";
 
-    List<String> trafficRoutingManifests = IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, stableService, stageService, apiVersion);
-
-    assertThat(trafficRoutingManifests.size()).isEqualTo(1);
-    assertEqualYaml(trafficRoutingManifests.get(0), path);
+    testK8sResourceCreation(istioProviderConfig, path);
   }
 
   @Test
@@ -161,11 +146,7 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
             .build();
     String path = "/k8s/trafficrouting/virtualService2.yaml";
 
-    List<String> trafficRoutingManifests = IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, stableService, stageService, apiVersion);
-
-    assertThat(trafficRoutingManifests.size()).isEqualTo(1);
-    assertEqualYaml(trafficRoutingManifests.get(0), path);
+    testK8sResourceCreation(istioProviderConfig, path);
   }
 
   @Test
@@ -181,11 +162,7 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
             .build();
     String path = "/k8s/trafficrouting/virtualService3.yaml";
 
-    List<String> trafficRoutingManifests = IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, stableService, stageService, apiVersion);
-
-    assertThat(trafficRoutingManifests.size()).isEqualTo(1);
-    assertEqualYaml(trafficRoutingManifests.get(0), path);
+    testK8sResourceCreation(istioProviderConfig, path);
   }
 
   @Test(expected = InvalidArgumentsException.class)
@@ -201,8 +178,10 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
             .providerConfig(IstioProviderConfig.builder().build())
             .build();
 
-    IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, null, null, apiVersion);
+    IstioTrafficRoutingResourceCreator istioTrafficRoutingResourceCreator =
+        new IstioTrafficRoutingResourceCreator(istioProviderConfig);
+    istioTrafficRoutingResourceCreator.createTrafficRoutingResources(
+        namespace, releaseName, null, null, apiVersions, logCallback);
   }
 
   @Test
@@ -220,8 +199,11 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
 
     String path = "/k8s/trafficrouting/virtualService4.yaml";
 
-    List<String> trafficRoutingManifests = IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, null, null, apiVersion);
+    IstioTrafficRoutingResourceCreator istioTrafficRoutingResourceCreator =
+        new IstioTrafficRoutingResourceCreator(istioProviderConfig);
+
+    List<KubernetesResource> trafficRoutingManifests = istioTrafficRoutingResourceCreator.createTrafficRoutingResources(
+        namespace, releaseName, null, null, apiVersions, logCallback);
 
     assertThat(trafficRoutingManifests.size()).isEqualTo(1);
     assertEqualYaml(trafficRoutingManifests.get(0), path);
@@ -258,17 +240,38 @@ public class IstioTrafficRoutingMapperTest extends CategoryTest {
 
     String path = "/k8s/trafficrouting/virtualService5.yaml";
 
-    List<String> trafficRoutingManifests = IstioTrafficRoutingMapper.getTrafficRoutingManifests(
-        istioProviderConfig, namespace, releaseName, stableService, stageService, apiVersion);
+    testK8sResourceCreation(istioProviderConfig, path);
+  }
+
+  @Test(expected = HintException.class)
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testGetTrafficRoutingManifestsWithoutRoutes() throws IOException {
+    K8sTrafficRoutingConfig istioProviderConfig =
+        K8sTrafficRoutingConfig.builder()
+            .destinations(List.of(TrafficRoutingDestination.builder().host("stable").weight(7).build(),
+                TrafficRoutingDestination.builder().host("stage").weight(3).build()))
+            .providerConfig(IstioProviderConfig.builder().build())
+            .build();
+
+    testK8sResourceCreation(istioProviderConfig, null);
+  }
+
+  private void testK8sResourceCreation(K8sTrafficRoutingConfig istioProviderConfig, String path) throws IOException {
+    IstioTrafficRoutingResourceCreator istioTrafficRoutingResourceCreator =
+        new IstioTrafficRoutingResourceCreator(istioProviderConfig);
+
+    List<KubernetesResource> trafficRoutingManifests = istioTrafficRoutingResourceCreator.createTrafficRoutingResources(
+        namespace, releaseName, stableService, stageService, apiVersions, logCallback);
 
     assertThat(trafficRoutingManifests.size()).isEqualTo(1);
     assertEqualYaml(trafficRoutingManifests.get(0), path);
   }
 
-  private void assertEqualYaml(String yaml, String path) throws IOException {
+  private void assertEqualYaml(KubernetesResource k8sResource, String path) throws IOException {
     URL url = this.getClass().getResource(path);
     String fileContents = Resources.toString(url, Charsets.UTF_8);
-    assertThat(yaml).isEqualTo(fileContents);
+    assertThat(k8sResource.getSpec()).isEqualTo(fileContents);
   }
 
   private K8sTrafficRoutingConfig getProviderConfig(RuleType ruleType, MatchType matchType, String value) {

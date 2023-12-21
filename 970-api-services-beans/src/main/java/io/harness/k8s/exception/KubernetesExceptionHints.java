@@ -126,4 +126,6 @@ public class KubernetesExceptionHints {
       "Check manifest folder/file path in manifest configuration";
   public final String HASH_CALCULATION_FAILED_ERROR =
       "Failed to create manifests file to be used for generating hash. Please check resources";
+  public final String TRAFFIC_ROUTING_MISSING_FIELD =
+      "Please check if %s is/are provided in the Traffic Routing configuration. This field is mandatory for provider type %s";
 }

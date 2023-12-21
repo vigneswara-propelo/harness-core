@@ -1,0 +1,14 @@
+apiVersion: specs.smi-spec.io/v1alpha3
+kind: HTTPRouteGroup
+metadata:
+  labels:
+    harness.io/release-name: release-name
+  name: header-http-route-group
+  namespace: namespace
+spec:
+  matches:
+  - headers:
+      cookie: ^(.*?;)?(type=insider)(;.*)?$
+      Content-Type: application/json
+      user-agent: .*Android.*
+    name: header
