@@ -758,7 +758,16 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
   }
 
   private void maybeUpdateTaskRejectionStatus() {
-    final long currentRSSMB = MemoryHelper.getProcessMemoryMB();
+    Map<String, Double> resourceUsuageMap = logPerformanceImpl.getDelegateMemoryCpuUsage();
+    double cpuUsage = getCPULoadAverage();
+    if (isNotEmpty(resourceUsuageMap) && resourceUsuageMap.get("CPU") != null) {
+      cpuUsage = resourceUsuageMap.get("CPU");
+    }
+
+    double currentRSSMB = resourceUsuageMap.get("MiBMem");
+    if (currentRSSMB == 0.0) {
+      currentRSSMB = MemoryHelper.getProcessMemoryMB();
+    }
     if (currentRSSMB >= maxProcessRSSThresholdMB) {
       log.warn(
           "Memory resource reached threshold, temporarily reject incoming task request. CurrentProcessRSSMB {} ThresholdMB {}",
@@ -783,11 +792,11 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
     }
     log.debug("Process info CurrentProcessRSSMB {} ThresholdProcessMB {} currentPodRSSMB {} ThresholdPodMemoryMB {}",
         currentRSSMB, maxProcessRSSThresholdMB, currentPodRSSMB, maxPodRSSThresholdMB);
-    final double cpuLoad = getCPULoadAverage();
-    if (cpuLoad > RESOURCE_USAGE_THRESHOLD) {
+
+    if (cpuUsage > RESOURCE_USAGE_THRESHOLD) {
       log.warn(
           "CPU resource reached threshold, temporarily reject incoming task request, CPU consumption above threshold, {}%",
-          BigDecimal.valueOf(cpuLoad));
+          BigDecimal.valueOf(cpuUsage));
       rejectRequest.compareAndSet(false, true);
       metricRegistry.recordGaugeValue(
           RESOURCE_CONSUMPTION_ABOVE_THRESHOLD.getMetricName(), new String[] {DELEGATE_NAME}, 1.0);
