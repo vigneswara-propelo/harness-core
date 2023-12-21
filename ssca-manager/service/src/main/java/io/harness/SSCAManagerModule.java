@@ -100,6 +100,8 @@ import io.harness.ssca.services.drift.SbomDriftService;
 import io.harness.ssca.services.drift.SbomDriftServiceImpl;
 import io.harness.ssca.services.remediation_tracker.RemediationTrackerService;
 import io.harness.ssca.services.remediation_tracker.RemediationTrackerServiceImpl;
+import io.harness.ssca.ticket.TicketServiceRestClientService;
+import io.harness.ssca.ticket.TicketServiceRestClientServiceImpl;
 import io.harness.time.TimeModule;
 import io.harness.token.TokenClientModule;
 
@@ -184,6 +186,7 @@ public class SSCAManagerModule extends AbstractModule {
     bind(RemediationTrackerService.class).to(RemediationTrackerServiceImpl.class);
     bind(RemediationApi.class).to(RemediationTrackerApiImpl.class);
     bind(ElasticSearchIndexManager.class).annotatedWith(Names.named("SSCA")).to(SSCAIndexManager.class);
+    bind(TicketServiceRestClientService.class).to(TicketServiceRestClientServiceImpl.class);
     MapBinder<PolicyType, PolicyEvaluationService> policyEvaluationServiceMapBinder =
         MapBinder.newMapBinder(binder(), PolicyType.class, PolicyEvaluationService.class);
     policyEvaluationServiceMapBinder.addBinding(PolicyType.OPA)

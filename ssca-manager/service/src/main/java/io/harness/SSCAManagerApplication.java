@@ -51,6 +51,7 @@ import io.harness.security.annotations.NextGenManagerAuth;
 import io.harness.ssca.jobs.ElkMigrationJob;
 import io.harness.ssca.jobs.RemediationTrackerUpdateArtifactsIteratorHandler;
 import io.harness.ssca.migration.SSCAMigrationProvider;
+import io.harness.ssca.ticket.TicketServiceRestClientModule;
 import io.harness.threading.ExecutorModule;
 import io.harness.threading.ThreadPool;
 import io.harness.token.remote.TokenClient;
@@ -164,6 +165,7 @@ public class SSCAManagerApplication extends Application<SSCAManagerConfiguration
     CacheModule cacheModule = new CacheModule(sscaManagerConfiguration.getCacheConfig());
     modules.add(cacheModule);
     modules.add(io.harness.SSCAManagerModule.getInstance(sscaManagerConfiguration));
+    modules.add(new TicketServiceRestClientModule(sscaManagerConfiguration.getTicketServiceRestClientConfig()));
     modules.add(new AbstractCfModule() {
       @Override
       public CfClientConfig cfClientConfig() {

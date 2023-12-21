@@ -238,6 +238,10 @@ if [[ "" != "$MANAGER_CLIENT_BASEURL" ]]; then
   export MANAGER_CLIENT_BASEURL; yq -i '.managerClientConfig.baseUrl=env(MANAGER_CLIENT_BASEURL)' $CONFIG_FILE
 fi
 
+if [[ "" != "$TICKET_SERVICE_REST_CLIENT_BASEURL" ]]; then
+  export TICKET_SERVICE_REST_CLIENT_BASEURL; yq -i '.ticketServiceRestClientConfig.baseUrl=env(TICKET_SERVICE_REST_CLIENT_BASEURL)' $CONFIG_FILE
+fi
+
 replace_key_value eventsFramework.redis.sentinel $EVENTS_FRAMEWORK_USE_SENTINEL
 replace_key_value eventsFramework.redis.envNamespace $EVENTS_FRAMEWORK_ENV_NAMESPACE
 replace_key_value eventsFramework.redis.redisUrl $EVENTS_FRAMEWORK_REDIS_URL

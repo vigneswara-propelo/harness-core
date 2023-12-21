@@ -93,6 +93,7 @@ public class SSCAManagerConfiguration extends Configuration {
   @JsonProperty("managerClientConfig") private ServiceHttpClientConfig managerClientConfig;
   @JsonProperty("accessControlClientConfig") private AccessControlClientConfiguration accessControlClientConfiguration;
   @JsonProperty("iteratorsConfig") private SSCAIteratorsConfig iteratorsConfig;
+  @JsonProperty("ticketServiceRestClientConfig") private ServiceHttpClientConfig ticketServiceRestClientConfig;
 
   public SwaggerBundleConfiguration getSwaggerBundleConfiguration() {
     SwaggerBundleConfiguration defaultSwaggerBundleConfiguration = new SwaggerBundleConfiguration();
