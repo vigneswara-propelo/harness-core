@@ -24,6 +24,7 @@ import io.harness.cdng.infra.mapper.InfrastructureEntityConfigMapper;
 import io.harness.cdng.infra.yaml.AsgInfrastructure;
 import io.harness.cdng.infra.yaml.InfrastructureConfig;
 import io.harness.cdng.infra.yaml.InfrastructureDefinitionConfig;
+import io.harness.cdng.infra.yaml.SshWinRmAwsInfrastructure;
 import io.harness.ng.core.artifacts.resources.util.ArtifactResourceUtils;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ng.core.infrastructure.entity.InfrastructureEntity;
@@ -31,6 +32,8 @@ import io.harness.ng.core.infrastructure.services.InfrastructureEntityService;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.rule.Owner;
 import io.harness.utils.IdentifierRefHelper;
+
+import software.wings.service.impl.aws.model.AwsVPC;
 
 import java.util.Arrays;
 import java.util.List;
@@ -109,6 +112,52 @@ public class AwsHelperResourceTest extends CategoryTest {
       ResponseDTO<List<String>> result = awsHelperResource.getASGNames(
           null, ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, null, ENV_ID, INFRA_DEFINITION_ID);
       assertThat(result.getData()).isEqualTo(asgList);
+    }
+  }
+
+  @Test
+  @Owner(developers = VITALIE)
+  @Category(UnitTests.class)
+  public void getVpcs() {
+    List<AwsVPC> vpcs = Arrays.asList(AwsVPC.builder().id("vpc1").build(), AwsVPC.builder().id("vpc2").build());
+    try (MockedStatic<IdentifierRefHelper> ignore = mockStatic(IdentifierRefHelper.class)) {
+      when(IdentifierRefHelper.getIdentifierRef(anyString(), anyString(), anyString(), anyString()))
+          .thenAnswer(i -> identifierRef);
+      when(awsHelperService.getVPCs(any(), anyString(), anyString(), anyString())).thenReturn(vpcs);
+
+      ResponseDTO<List<AwsVPC>> result = awsHelperResource.getVpcs(
+          CONNECTOR_REF, ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, REGION, null, null);
+      assertThat(result.getData()).isEqualTo(vpcs);
+    }
+  }
+
+  @Test
+  @Owner(developers = VITALIE)
+  @Category(UnitTests.class)
+  public void getVpcsByInfra() {
+    List<AwsVPC> vpcs = Arrays.asList(AwsVPC.builder().id("vpc1").build(), AwsVPC.builder().id("vpc2").build());
+    try (MockedStatic<IdentifierRefHelper> ignore = mockStatic(IdentifierRefHelper.class);
+         MockedStatic<InfrastructureEntityConfigMapper> ignore2 = mockStatic(InfrastructureEntityConfigMapper.class)) {
+      when(IdentifierRefHelper.getIdentifierRef(anyString(), anyString(), anyString(), anyString()))
+          .thenAnswer(i -> identifierRef);
+      when(InfrastructureEntityConfigMapper.toInfrastructureConfig(any(InfrastructureEntity.class)))
+          .thenAnswer(i
+              -> InfrastructureConfig.builder()
+                     .infrastructureDefinitionConfig(
+                         InfrastructureDefinitionConfig.builder()
+                             .spec(SshWinRmAwsInfrastructure.builder()
+                                       .connectorRef(ParameterField.createValueField(CONNECTOR_REF))
+                                       .region(ParameterField.createValueField(REGION))
+                                       .build())
+                             .build())
+                     .build());
+      when(awsHelperService.getVPCs(any(), anyString(), anyString(), anyString())).thenReturn(vpcs);
+      when(infrastructureEntityService.get(anyString(), anyString(), anyString(), anyString(), anyString()))
+          .thenReturn(Optional.of(InfrastructureEntity.builder().build()));
+
+      ResponseDTO<List<AwsVPC>> result = awsHelperResource.getVpcs(
+          null, ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER, null, ENV_ID, INFRA_DEFINITION_ID);
+      assertThat(result.getData()).isEqualTo(vpcs);
     }
   }
 }
