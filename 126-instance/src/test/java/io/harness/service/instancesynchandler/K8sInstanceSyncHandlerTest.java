@@ -7,16 +7,12 @@
 
 package io.harness.service.instancesynchandler;
 
-import static io.harness.beans.FeatureName.CDS_EKS_ADD_REGIONAL_PARAM;
 import static io.harness.rule.OwnerRule.ABOSII;
 import static io.harness.rule.OwnerRule.IVAN;
 import static io.harness.rule.OwnerRule.NAMAN_TALAYCHA;
 import static io.harness.rule.OwnerRule.PRATYUSH;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -148,7 +144,6 @@ public class K8sInstanceSyncHandlerTest extends InstancesTestBase {
   public void testGetDeploymentReleaseDetails() {
     LinkedHashSet<String> namespaces = new LinkedHashSet<>();
     namespaces.add("namespace1");
-    doReturn(true).when(cdFeatureFlagHelper).isEnabled(any(), eq(CDS_EKS_ADD_REGIONAL_PARAM));
     List<DeploymentInfoDetailsDTO> deploymentInfoDetailsDTOList = Arrays.asList(
         DeploymentInfoDetailsDTO.builder()
             .deploymentInfoDTO(K8sDeploymentInfoDTO.builder().releaseName("releaseName").namespaces(namespaces).build())

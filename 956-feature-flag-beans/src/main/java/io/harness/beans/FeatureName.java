@@ -833,9 +833,6 @@ public enum FeatureName {
       HarnessTeam.CDP),
   SEI_ENABLED("FF to enable SEI for harness platform users", HarnessTeam.SEI),
   SEI_NEW_ONBOARDING_INTEGRATIONS("FF to enable new onboarding integrations for SEI", HarnessTeam.SEI),
-  CDS_EKS_ADD_REGIONAL_PARAM(
-      "This flag adds the AWS_STS_REGIONAL_ENDPOINTS=regional environment variable for EKS infrastructure while creating the kubernetes config",
-      HarnessTeam.CDP),
   OPA_AIDA_WIDGET("FF for enabling the AIDA integration for OPA Service", HarnessTeam.OPA),
   CDS_RESOLVE_CUSTOM_TRIGGER_EXPRESSION(
       "This flag resolves expression for pipeline branch for Custom Trigger.", PIPELINE),

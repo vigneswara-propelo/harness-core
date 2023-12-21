@@ -31,7 +31,6 @@ import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.beans.DecryptableEntity;
-import io.harness.beans.FeatureName;
 import io.harness.beans.IdentifierRef;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.cdng.infra.beans.InfrastructureOutcome;
@@ -216,8 +215,7 @@ public class K8sEntityHelper {
               .region(k8sAwsInfrastructure.getRegion())
               .awsConnectorDTO((AwsConnectorDTO) connectorDTO.getConnectorConfig())
               .encryptionDataDetails(getEncryptionDataDetails(connectorDTO, ngAccess))
-              .addRegionalParam(cdFeatureFlagHelper.isEnabled(
-                  connectorDTO.getAccountIdentifier(), FeatureName.CDS_EKS_ADD_REGIONAL_PARAM))
+              .addRegionalParam(true)
               .build();
 
         case KUBERNETES_RANCHER:
