@@ -31,7 +31,11 @@ public abstract class DataSourceLocationLoop extends DataSourceLocation {
     ApiRequestDetails apiRequestDetails = fetchApiRequestDetails(dataSourceLocationEntity);
     matchAndReplaceHeaders(apiRequestDetails.getHeaders(), replaceableHeaders);
     HttpConfig httpConfig = (HttpConfig) dataSourceConfig;
-    apiRequestDetails.getHeaders().putAll(httpConfig.getHeaders());
+    httpConfig.getHeaders().forEach((k, v) -> {
+      if (!apiRequestDetails.getHeaders().containsKey(k)) {
+        apiRequestDetails.getHeaders().put(k, v);
+      }
+    });
     apiRequestDetails.setUrl(
         constructUrl(httpConfig.getTarget(), apiRequestDetails.getUrl(), possibleReplaceableUrlPairs, null, null));
     Map<String, Object> data = new HashMap<>();

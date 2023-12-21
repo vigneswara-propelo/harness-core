@@ -36,7 +36,11 @@ public abstract class DataSourceLocationNoLoop extends DataSourceLocation {
     String requestBodyUnmodified = apiRequestDetails.getRequestBody();
     matchAndReplaceHeaders(apiRequestDetails.getHeaders(), replaceableHeaders);
     HttpConfig httpConfig = (HttpConfig) dataSourceConfig;
-    apiRequestDetails.getHeaders().putAll(httpConfig.getHeaders());
+    httpConfig.getHeaders().forEach((k, v) -> {
+      if (!apiRequestDetails.getHeaders().containsKey(k)) {
+        apiRequestDetails.getHeaders().put(k, v);
+      }
+    });
     apiRequestDetails.setUrl(
         constructUrl(httpConfig.getTarget(), apiRequestDetails.getUrl(), possibleReplaceableUrlPairs,
             dataPointAndInputValues.get(0).getDataPoint(), dataPointAndInputValues.get(0).getInputValues()));

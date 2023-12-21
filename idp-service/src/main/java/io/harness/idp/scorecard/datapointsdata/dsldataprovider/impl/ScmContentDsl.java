@@ -41,7 +41,7 @@ import javax.ws.rs.core.Response;
 
 @OwnedBy(HarnessTeam.IDP)
 public abstract class ScmContentDsl {
-  String FILE_PATH_REPLACER = "{FILE_PATH_REPLACER}";
+  private static final String FILE_PATH_REPLACER = "{FILE_PATH_REPLACER}";
   @Inject DslClientFactory dslClientFactory;
 
   Map<String, Object> fetchData(ScmConfig scmConfig, String accountIdentifier, String baseUrl) {

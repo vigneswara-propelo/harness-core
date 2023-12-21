@@ -161,7 +161,7 @@
     "accountIdentifier": "__GLOBAL_ACCOUNT_ID__",
     "identifier": "bitbucket_mean_time_to_merge_pr",
     "dataSourceIdentifier": "bitbucket",
-    "type": "DirectHttp",
+    "type": "CustomHttp",
     "apiRequestDetails": {
       "method": "GET",
       "url": "/2.0/repositories/{REPOSITORY_OWNER}/{REPOSITORY_NAME}/pullrequests?q=state=\"MERGED\"",

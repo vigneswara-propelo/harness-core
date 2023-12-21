@@ -21,6 +21,7 @@ import io.harness.idp.scorecard.datapointsdata.dsldataprovider.base.DslDataProvi
 import io.harness.idp.scorecard.datapointsdata.dsldataprovider.factory.DataSourceDslFactory;
 import io.harness.spec.server.idp.v1.model.DataPointInputValues;
 import io.harness.spec.server.idp.v1.model.DataSourceDataPointInfo;
+import io.harness.spec.server.idp.v1.model.DataSourceLocationInfo;
 import io.harness.spec.server.idp.v1.model.KubernetesConfig;
 import io.harness.spec.server.idp.v1.model.ScmConfig;
 
@@ -44,8 +45,13 @@ public class DataPointDataValueServiceImpl implements DataPointDataValueService 
     DataSourceDsl dataSourceDataProvider =
         dataSourceDataProviderFactory.getDataSourceDataProvider(datasourceIdentifier);
 
-    Map<String, List<DataPointEntity>> dataToFetch = dataPointService.getDslDataPointsInfo(
-        accountIdentifier, getDataPointIdentifiers(datasourceIdentifier, config), datasourceIdentifier);
+    Map<String, List<DataPointEntity>> dataToFetch = dataPointService.getDslDataPointsInfo(accountIdentifier,
+        getDataPointIdentifiers(datasourceIdentifier, config)
+            .getDataPoints()
+            .stream()
+            .map(DataPointInputValues::getDataPointIdentifier)
+            .collect(Collectors.toList()),
+        datasourceIdentifier);
 
     List<String> dslIdentifiers = new ArrayList<>(dataToFetch.keySet());
     log.info("Mapped DSL identifier for data points - {}", dslIdentifiers.get(0));
@@ -54,31 +60,16 @@ public class DataPointDataValueServiceImpl implements DataPointDataValueService 
     return dslDataProvider.getDslData(accountIdentifier, config);
   }
 
-  List<String> getDataPointIdentifiers(String dataSourceIdentifier, Object config) {
+  DataSourceLocationInfo getDataPointIdentifiers(String dataSourceIdentifier, Object config) {
     switch (dataSourceIdentifier) {
       case HARNESS_IDENTIFIER:
-        return ((DataSourceDataPointInfo) config)
-            .getDataSourceLocation()
-            .getDataPoints()
-            .stream()
-            .map(DataPointInputValues::getDataPointIdentifier)
-            .collect(Collectors.toList());
+        return ((DataSourceDataPointInfo) config).getDataSourceLocation();
       case KUBERNETES_IDENTIFIER:
-        return ((KubernetesConfig) config)
-            .getDataSourceLocation()
-            .getDataPoints()
-            .stream()
-            .map(DataPointInputValues::getDataPointIdentifier)
-            .collect(Collectors.toList());
+        return ((KubernetesConfig) config).getDataSourceLocation();
       case GITHUB_IDENTIFIER:
       case BITBUCKET_IDENTIFIER:
       case GITLAB_IDENTIFIER:
-        return ((ScmConfig) config)
-            .getDataSourceLocation()
-            .getDataPoints()
-            .stream()
-            .map(DataPointInputValues::getDataPointIdentifier)
-            .collect(Collectors.toList());
+        return ((ScmConfig) config).getDataSourceLocation();
       default:
         throw new UnsupportedOperationException(String.format("%s data source is not supported", dataSourceIdentifier));
     }
