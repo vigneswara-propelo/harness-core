@@ -93,7 +93,7 @@ public class SearchServiceImpl implements SearchService {
           -> u.index(index)
                  .id(artifactEntity.getOrchestrationId())
                  .routing(artifactEntity.getAccountId())
-                 .upsert(SSCAArtifactMapper.toSSCAArtifact(artifactEntity)),
+                 .doc(SSCAArtifactMapper.toSSCAArtifact(artifactEntity)),
           SSCAArtifact.class);
 
       return updateResponse.result();
@@ -211,8 +211,11 @@ public class SearchServiceImpl implements SearchService {
       String accountId, String orgIdentifier, String projectIdentifier, ArtifactFilter filter, Pageable pageable) {
     String index = elasticSearchIndexManager.getIndex(accountId);
 
-    SearchRequest searchRequest = SearchRequest.of(
-        s -> s.index(index).query(ArtifactQueryBuilder.getQuery(accountId, orgIdentifier, projectIdentifier, filter)));
+    // Temporary fix to increase the size of the returned values. This will soon be migrated to a paginated ELK query
+    SearchRequest searchRequest = SearchRequest.of(s
+        -> s.index(index)
+               .query(ArtifactQueryBuilder.getQuery(accountId, orgIdentifier, projectIdentifier, filter))
+               .size(10000));
 
     try {
       return elasticsearchClient.search(searchRequest, SSCAArtifact.class).hits().hits();
