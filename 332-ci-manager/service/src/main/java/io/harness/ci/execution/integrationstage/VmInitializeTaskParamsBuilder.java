@@ -686,6 +686,19 @@ public class VmInitializeTaskParamsBuilder {
       }
     }
 
+    if (initializeStepInfo != null && initializeStepInfo.getVariables() != null) {
+      for (NGVariable variable : initializeStepInfo.getVariables()) {
+        if (variable.getName().equals(FeatureName.CI_ENABLE_BARE_METAL.toString())
+            && (ParameterField.isNotNull(variable.fetchValue()))) {
+          String varValue = variable.fetchValue().isExpression() ? variable.fetchValue().getExpressionValue()
+                                                                 : variable.fetchValue().getValue().toString();
+          if ("false".equals(varValue)) {
+            return false;
+          }
+        }
+      }
+    }
+
     // If the bare metal feature flag is enabled
     if (featureFlagService.isEnabled(FeatureName.CI_ENABLE_BARE_METAL, accountID)) {
       return true;
@@ -700,9 +713,14 @@ public class VmInitializeTaskParamsBuilder {
       return false;
     }
     // Check if pipeline variables enable bare metal
-    for (NGVariable var : initializeStepInfo.getVariables()) {
-      if (var.getName().equals(FeatureName.CI_ENABLE_BARE_METAL.toString())) {
-        return true;
+    for (NGVariable variable : initializeStepInfo.getVariables()) {
+      if (variable.getName().equals(FeatureName.CI_ENABLE_BARE_METAL.toString())
+          && (ParameterField.isNotNull(variable.fetchValue()))) {
+        String varValue = variable.fetchValue().isExpression() ? variable.fetchValue().getExpressionValue()
+                                                               : variable.fetchValue().getValue().toString();
+        if ("true".equals(varValue)) {
+          return true;
+        }
       }
     }
     return false;
