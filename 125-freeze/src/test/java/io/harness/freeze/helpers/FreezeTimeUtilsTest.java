@@ -93,9 +93,7 @@ public class FreezeTimeUtilsTest extends CategoryTest {
     freezeWindow.setTimeZone(timeZone);
     List<FreezeWindow> windows = new ArrayList<>();
     windows.add(freezeWindow);
-    CurrentOrUpcomingWindow currentOrUpcomingWindow = FreezeTimeUtils.fetchCurrentOrUpcomingTimeWindow(windows);
-    assertThat(currentOrUpcomingWindow.getStartTime()).isEqualTo(1674298800000L);
-    assertThat(currentOrUpcomingWindow.getEndTime()).isEqualTo(1703158200000L);
+    assertThat(FreezeTimeUtils.fetchCurrentOrUpcomingTimeWindow(windows)).isNull();
 
     FreezeWindow freezeWindow1 = new FreezeWindow();
     freezeWindow1.setEndTime("2022-12-21 05:00 PM");
@@ -126,7 +124,7 @@ public class FreezeTimeUtilsTest extends CategoryTest {
 
     FreezeWindow freezeWindow1 = new FreezeWindow();
     freezeWindow1.setDuration("30m");
-    freezeWindow1.setStartTime("2023-01-21 04:30 PM");
+    freezeWindow1.setStartTime("2027-12-21 04:30 PM");
     freezeWindow1.setTimeZone(timeZone);
     Recurrence recurrence1 = new Recurrence();
     recurrence1.setRecurrenceType(RecurrenceType.YEARLY);
@@ -134,8 +132,8 @@ public class FreezeTimeUtilsTest extends CategoryTest {
     List<FreezeWindow> windows1 = new ArrayList<>();
     windows1.add(freezeWindow1);
     CurrentOrUpcomingWindow currentOrUpcomingWindow = FreezeTimeUtils.fetchCurrentOrUpcomingTimeWindow(windows1);
-    assertThat(currentOrUpcomingWindow.getStartTime()).isEqualTo(1705834800000L);
-    assertThat(currentOrUpcomingWindow.getEndTime()).isEqualTo(1705836600000L);
+    assertThat(currentOrUpcomingWindow.getStartTime()).isEqualTo(1829386800000L);
+    assertThat(currentOrUpcomingWindow.getEndTime()).isEqualTo(1829388600000L);
 
     FreezeWindow freezeWindow2 = new FreezeWindow();
     freezeWindow2.setDuration("30m");
