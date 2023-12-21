@@ -34,6 +34,8 @@ import io.harness.featureflag.FeatureFlagResourceClientModule;
 import io.harness.filestore.FileStoreClientModule;
 import io.harness.gitops.GitopsResourceClientModule;
 import io.harness.gitops.remote.GitopsResourceClient;
+import io.harness.ipallowlist.IPAllowListClient;
+import io.harness.ipallowlist.IPAllowListClientModule;
 import io.harness.migration.NGMigrationSdkModule;
 import io.harness.ng.core.event.MessageListener;
 import io.harness.organization.OrganizationClientModule;
@@ -125,6 +127,7 @@ public class ResourceGroupModule extends AbstractModule {
     requireBinding(ConnectorResourceClient.class);
     requireBinding(PipelineServiceClient.class);
     requireBinding(UserGroupClient.class);
+    requireBinding(IPAllowListClient.class);
     requireBinding(ResourceGroupClient.class);
     requireBinding(AccountClient.class);
     requireBinding(DelegateServiceResourceClient.class);
@@ -158,6 +161,7 @@ public class ResourceGroupModule extends AbstractModule {
     install(new AccountClientModule(
         ServiceHttpClientConfig.builder().baseUrl(resourceClients.getManager().getBaseUrl()).build(),
         resourceClients.getManager().getSecret(), RESOUCE_GROUP_SERVICE.toString()));
+    install(new IPAllowListClientModule(ngManagerHttpClientConfig, ngManagerSecret, RESOUCE_GROUP_SERVICE.toString()));
     install(new DelegateServiceResourceClientModule(
         ServiceHttpClientConfig.builder().baseUrl(resourceClients.getManager().getBaseUrl()).build(),
         resourceClients.getManager().getSecret(), RESOUCE_GROUP_SERVICE.toString()));

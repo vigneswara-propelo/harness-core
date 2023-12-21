@@ -47,6 +47,7 @@ import io.harness.delegate.task.tasklogging.TaskLogContext;
 import io.harness.delegate.task.validation.DelegateConnectionResultDetail;
 import io.harness.exception.ExceptionUtils;
 import io.harness.exception.InvalidRequestException;
+import io.harness.ipallowlist.IPAllowListClient;
 import io.harness.logging.AccountLogContext;
 import io.harness.logging.AutoLogContext;
 import io.harness.logging.common.AccessTokenBean;
@@ -67,10 +68,12 @@ import io.harness.perpetualtask.instancesync.InstanceSyncResponseV2;
 import io.harness.persistence.HPersistence;
 import io.harness.polling.client.PollingResourceClient;
 import io.harness.queueservice.infc.DelegateCapacityManagementService;
+import io.harness.remote.client.NGRestUtils;
 import io.harness.rest.RestResponse;
 import io.harness.security.annotations.DelegateAuth;
 import io.harness.serializer.KryoSerializer;
 import io.harness.service.intfc.DelegateRingService;
+import io.harness.spec.server.ng.v1.model.IPAllowlistConfigValidateResponse;
 
 import software.wings.beans.Account;
 import software.wings.beans.dto.ThirdPartyApiCallLog;
@@ -89,6 +92,7 @@ import software.wings.service.intfc.DelegateTaskServiceClassic;
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Timed;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.swagger.annotations.Api;
@@ -143,6 +147,8 @@ public class DelegateAgentResource {
   private final DelegateRingService delegateRingService;
   private final LoggingTokenCache loggingTokenCache;
 
+  private final IPAllowListClient ipAllowListClient;
+
   @Inject
   public DelegateAgentResource(DelegateService delegateService, AccountService accountService, HPersistence persistence,
       SubdomainUrlHelperIntfc subdomainUrlHelper, ArtifactCollectionResponseHandler artifactCollectionResponseHandler,
@@ -152,7 +158,7 @@ public class DelegateAgentResource {
       PollingResourceClient pollingResourceClient, InstanceSyncResponsePublisher instanceSyncResponsePublisher,
       DelegatePollingHeartbeatService delegatePollingHeartbeatService,
       DelegateCapacityManagementService delegateCapacityManagementService, DelegateRingService delegateRingService,
-      final LoggingTokenCache loggingTokenCache) {
+      final LoggingTokenCache loggingTokenCache, @Named("PRIVILEGED") IPAllowListClient ipAllowListClient) {
     this.instanceHelper = instanceHelper;
     this.delegateService = delegateService;
     this.accountService = accountService;
@@ -170,6 +176,7 @@ public class DelegateAgentResource {
     this.delegateCapacityManagementService = delegateCapacityManagementService;
     this.delegateRingService = delegateRingService;
     this.loggingTokenCache = loggingTokenCache;
+    this.ipAllowListClient = ipAllowListClient;
   }
 
   @DelegateAuth
@@ -271,9 +278,29 @@ public class DelegateAgentResource {
   @Path("register")
   @Timed
   @ExceptionMetered
-  public RestResponse<DelegateRegisterResponse> register(@QueryParam("accountId") @NotEmpty final String accountId,
-      final DelegateParams delegateParams,
+  public RestResponse<DelegateRegisterResponse> register(@Context HttpServletRequest request,
+      @QueryParam("accountId") @NotEmpty final String accountId, final DelegateParams delegateParams,
       @HeaderParam(HEADER_AGENT_MTLS_AUTHORITY) @Nullable String agentMtlsAuthority) {
+    // We want to enforce delegate registration allowlist only for next gen immutable delegates.
+    if (accountService.isNextGenEnabled(accountId)
+        && accountService.isFeatureFlagEnabled("PL_ENFORCE_DELEGATE_REGISTRATION_ALLOWLIST", accountId)
+        && delegateParams.isImmutable()) {
+      // Retrieve source IP from the request
+      String sourceIp = request.getRemoteAddr();
+      log.info("Delegate registration is originating from IP {}, and delegate host ip is {}", sourceIp,
+          delegateParams.getIp());
+      IPAllowlistConfigValidateResponse response;
+      try {
+        response = NGRestUtils.getGeneralResponse(ipAllowListClient.allowedIpAddress(accountId, sourceIp));
+      } catch (Exception e) {
+        log.error("Exception while validating delegate ip: ", e);
+        return null;
+      }
+      if (response == null || !response.isAllowedForApi()) {
+        log.info("Delegate IP {} is not allowed, failing registration", sourceIp);
+        return null;
+      }
+    }
     try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
       final long startTime = System.currentTimeMillis();
       final boolean isConnectedUsingMtls = isAgentConnectedUsingMtls(agentMtlsAuthority);

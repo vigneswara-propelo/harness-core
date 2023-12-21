@@ -101,6 +101,7 @@ public class OwnerRule implements TestRule {
   public static final String ADITYA = "aditya.kashyap";
   public static final String ADITHYA = "adithya.viswanathan";
   public static final String AKRITI = "akriti.garg";
+  public static final String AKSHAY = "akshay.khole";
   public static final String ALEKSANDAR = "aleksandar.radisavljevic";
   public static final String AGORODETKI = "alexandr.gorodetki";
   public static final String ALEXEI = "alexei.stirbul";
@@ -376,6 +377,7 @@ public class OwnerRule implements TestRule {
           .put(ALLEN, defaultUserInfo(ALLEN).slack("U01QCSY8518").team(GTM).build())
           .put(AGORODETKI, defaultUserInfo(AGORODETKI).slack("U013KM8H2NL").team(CDC).build())
           .put(AKRITI, defaultUserInfo(AKRITI).slack("U01JCQAS84S").team(PL).build())
+          .put(AKSHAY, defaultUserInfo(AKSHAY).slack("U042Y23SDL7").team(PL).build())
           .put(ALEXEI, defaultUserInfo(ALEXEI).slack("U012VS112EN").team(CDC).build())
           .put(AMAN, defaultUserInfo(AMAN).slack("UDJG47CHF").team(PL).build())
           .put(AMIT, defaultUserInfo(AMIT).slack("U028DMTKVHN").team(CE).build())

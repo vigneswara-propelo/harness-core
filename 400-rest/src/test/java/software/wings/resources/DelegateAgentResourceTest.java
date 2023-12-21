@@ -29,10 +29,14 @@ import static java.util.Collections.singletonList;
 import static javax.ws.rs.client.Entity.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.HarnessTeam;
@@ -54,6 +58,7 @@ import io.harness.delegate.beans.connector.ConnectorHeartbeatDelegateResponse;
 import io.harness.delegate.heartbeat.polling.DelegatePollingHeartbeatService;
 import io.harness.delegate.task.pcf.response.CfCommandExecutionResponse;
 import io.harness.exception.InvalidRequestException;
+import io.harness.ipallowlist.IPAllowListClient;
 import io.harness.logging.common.AccessTokenBean;
 import io.harness.managerclient.AccountPreference;
 import io.harness.managerclient.AccountPreferenceQuery;
@@ -64,11 +69,13 @@ import io.harness.perpetualtask.connector.ConnectorHearbeatPublisher;
 import io.harness.perpetualtask.instancesync.InstanceSyncResponsePublisher;
 import io.harness.polling.client.PollingResourceClient;
 import io.harness.queueservice.infc.DelegateCapacityManagementService;
+import io.harness.remote.client.NGRestUtils;
 import io.harness.rest.RestResponse;
 import io.harness.rule.Owner;
 import io.harness.serializer.KryoSerializer;
 import io.harness.service.intfc.DelegateRingService;
 import io.harness.service.intfc.DelegateTaskService;
+import io.harness.spec.server.ng.v1.model.IPAllowlistConfigValidateResponse;
 
 import software.wings.beans.Account;
 import software.wings.beans.account.AccountPreferences;
@@ -110,11 +117,14 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.inmemory.InMemoryTestContainerFactory;
 import org.glassfish.jersey.test.spi.TestContainerException;
 import org.glassfish.jersey.test.spi.TestContainerFactory;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 
 @Slf4j
 @OwnedBy(HarnessTeam.DEL)
@@ -140,6 +150,19 @@ public class DelegateAgentResourceTest extends JerseyTest {
   @Mock private DelegateRingService delegateRingService;
   @Mock private LoggingTokenCache loggingTokenCache;
 
+  @Mock private IPAllowListClient ipAllowListClient;
+  private MockedStatic<NGRestUtils> ngRestUtilsMockedStatic;
+
+  @Before
+  public void setup() {
+    ngRestUtilsMockedStatic = mockStatic(NGRestUtils.class);
+  }
+
+  @After
+  public void cleanup() {
+    ngRestUtilsMockedStatic.close();
+  }
+
   @Override
   protected Application configure() {
     // need to initialize mocks here, MockitoJUnitRunner won't help since this is not @Before, but happens only once per
@@ -150,7 +173,7 @@ public class DelegateAgentResourceTest extends JerseyTest {
         subdomainUrlHelper, artifactCollectionResponseHandler, instanceSyncResponseHandler,
         manifestCollectionResponseHandler, connectorHearbeatPublisher, kryoSerializer, configurationController,
         delegateTaskServiceClassic, pollResourceClient, instanceSyncResponsePublisher, delegatePollingHeartbeatService,
-        delegateCapacityManagementService, delegateRingService, loggingTokenCache));
+        delegateCapacityManagementService, delegateRingService, loggingTokenCache, ipAllowListClient));
     resourceConfig.register(new AbstractBinder() {
       @Override
       protected void configure() {
@@ -206,14 +229,26 @@ public class DelegateAgentResourceTest extends JerseyTest {
   @Category(UnitTests.class)
   public void shouldRegisterDelegate() {
     final DelegateRegisterResponse expected = DelegateRegisterResponse.builder().delegateId(DELEGATE_ID).build();
+    IPAllowlistConfigValidateResponse mockResponse = new IPAllowlistConfigValidateResponse();
+    mockResponse.allowedForApi(true);
+
+    when(accountService.isNextGenEnabled(anyString())).thenReturn(true);
+    when(accountService.isFeatureFlagEnabled("PL_ENFORCE_DELEGATE_REGISTRATION_ALLOWLIST", ACCOUNT_ID))
+        .thenReturn(true);
+    when(httpServletRequest.getRemoteAddr()).thenReturn("1.2.3.4");
+    when(NGRestUtils.getGeneralResponse(any())).thenReturn(mockResponse);
     when(delegateService.register(any(DelegateParams.class), any(boolean.class))).thenReturn(expected);
 
     final RestResponse<DelegateRegisterResponse> actual =
         client()
             .target("/agent/delegates/register?accountId=" + ACCOUNT_ID)
             .request()
-            .post(entity(DelegateParams.builder().delegateId(DELEGATE_ID).build(), MediaType.APPLICATION_JSON),
+            .post(entity(DelegateParams.builder().delegateId(DELEGATE_ID).ip("1.2.3.4").immutable(true).build(),
+                      MediaType.APPLICATION_JSON),
                 new GenericType<>() {});
+
+    verifyStatic(NGRestUtils.class, times(1));
+    NGRestUtils.getGeneralResponse(any());
 
     assertThat(actual.getResource()).isEqualTo(expected);
   }

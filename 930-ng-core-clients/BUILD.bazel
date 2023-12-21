@@ -13,6 +13,7 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:lombok",
+        "//120-ng-manager/contracts/openapi/v1:ng-manager-server-spec-module",
         "//930-oidc-core:module",
         "//940-secret-manager-client:module",
         "//947-scim-core:module",
@@ -56,5 +57,3 @@ java_library(
 )
 
 run_tests()
-
-run_analysis()

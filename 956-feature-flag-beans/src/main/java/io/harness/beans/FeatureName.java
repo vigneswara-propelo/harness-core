@@ -521,6 +521,7 @@ public enum FeatureName {
       "Enable Basic Role assignment  Default User Group in Orgs and Projects", HarnessTeam.PL),
   PL_ENABLE_JIT_USER_PROVISION("Enable support for Just in time user provision", HarnessTeam.PL),
   PL_ENABLE_MULTIPLE_IDP_SUPPORT("Enable support for multiple SSO IDP in an account", HarnessTeam.PL),
+  PL_ENFORCE_DELEGATE_REGISTRATION_ALLOWLIST("Enforce allowed IPs for delegate registration", HarnessTeam.PL),
   PL_FAVORITES("To enable favorites marking support on entities", HarnessTeam.PL),
   PL_FIX_INCONSISTENT_USER_DATA(
       "This FF process all users of this account and fixes their inconsistent data between CG Manager, NG manager and Access Control ",

@@ -188,6 +188,7 @@ import io.harness.grpc.DelegateServiceDriverGrpcClientModule;
 import io.harness.instancesync.InstanceSyncResourceClientModule;
 import io.harness.instancesyncmonitoring.module.InstanceSyncMonitoringModule;
 import io.harness.invites.NgInviteClientModule;
+import io.harness.ipallowlist.IPAllowListClientModule;
 import io.harness.k8s.KubernetesContainerService;
 import io.harness.k8s.KubernetesContainerServiceImpl;
 import io.harness.k8s.config.K8sGlobalConfigService;
@@ -1596,6 +1597,10 @@ public class WingsModule extends AbstractModule implements ServersModule {
 
     // ng-user-group-membership dependencies
     install(new UserGroupClientModule(configuration.getNgManagerServiceHttpClientConfig(),
+        configuration.getPortal().getJwtNextGenManagerSecret(), MANAGER.getServiceId()));
+
+    // IP allowlist client dependencies
+    install(new IPAllowListClientModule(configuration.getNgManagerServiceHttpClientConfig(),
         configuration.getPortal().getJwtNextGenManagerSecret(), MANAGER.getServiceId()));
 
     // ng-invite Dependencies

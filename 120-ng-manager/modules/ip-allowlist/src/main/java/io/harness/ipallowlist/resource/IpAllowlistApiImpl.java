@@ -26,6 +26,7 @@ import io.harness.ipallowlist.service.IPAllowlistService;
 import io.harness.spec.server.ng.v1.IpAllowlistApi;
 import io.harness.spec.server.ng.v1.model.IPAllowlistConfigRequest;
 import io.harness.spec.server.ng.v1.model.IPAllowlistConfigResponse;
+import io.harness.spec.server.ng.v1.model.IPAllowlistConfigValidateResponse;
 import io.harness.utils.ApiUtils;
 import io.harness.utils.featureflaghelper.NGFeatureFlagHelperService;
 
@@ -136,6 +137,22 @@ public class IpAllowlistApiImpl implements IpAllowlistApi {
     return responseBuilderWithLinks.entity(ipAllowlistConfigResponsePage.getContent()).build();
   }
 
+  public Response allowedIpAddress(@NotNull String ipAddress, String harnessAccount) {
+    accessControlClient.checkForAccessOrThrow(
+        ResourceScope.of(harnessAccount, null, null), Resource.of(AUTHSETTING, null), EDIT_AUTHSETTING_PERMISSION);
+
+    boolean isEnabled = ipAllowlistService.ipAllowlistEnabled(harnessAccount);
+    if (!isEnabled) {
+      IPAllowlistConfigValidateResponse response = new IPAllowlistConfigValidateResponse();
+      response.allowedForCustomBlock(true);
+      response.allowedForApi(true);
+      response.allowedForUi(true);
+      return Response.status(Response.Status.OK).entity(response).build();
+    }
+    return Response.status(Response.Status.OK)
+        .entity(ipAllowlistService.validateIpAddressAllowlistedOrNot(ipAddress, harnessAccount, ""))
+        .build();
+  }
   @Override
   public Response validateUniqueIpAllowlistConfigIdentifier(String ipConfigIdentifier, String harnessAccount) {
     isIPAllowlistFFEnabled(harnessAccount);

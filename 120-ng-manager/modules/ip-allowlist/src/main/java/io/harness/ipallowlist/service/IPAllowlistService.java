@@ -23,6 +23,8 @@ public interface IPAllowlistService {
 
   boolean validateUniqueness(String accountIdentifier, String identifier);
 
+  boolean ipAllowlistEnabled(String accountIdentifier);
+
   Page<IPAllowlistEntity> list(String harnessAccount, Pageable pageable, IPAllowlistFilterDTO ipAllowlistFilterDTO);
 
   IPAllowlistConfigValidateResponse validateIpAddressAllowlistedOrNot(

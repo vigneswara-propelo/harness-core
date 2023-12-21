@@ -145,6 +145,10 @@ public class IPAllowlistResourceUtils {
         .build();
   }
 
+  public IPAllowlistFilterDTO getEnabledFilter() {
+    return IPAllowlistFilterDTO.builder().enabled(true).build();
+  }
+
   public AllowedSourceType getAllowedSourceTypeEnum(String allowedSourceType) {
     if (isEmpty(allowedSourceType)) {
       return null;

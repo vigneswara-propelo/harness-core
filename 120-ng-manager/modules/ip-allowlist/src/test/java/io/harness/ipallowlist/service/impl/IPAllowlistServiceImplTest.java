@@ -8,6 +8,7 @@
 package io.harness.ipallowlist.service.impl;
 
 import static io.harness.annotations.dev.HarnessTeam.PL;
+import static io.harness.rule.OwnerRule.AKSHAY;
 import static io.harness.rule.OwnerRule.MEENAKSHI;
 import static io.harness.spec.server.ng.v1.model.AllowedSourceType.API;
 import static io.harness.spec.server.ng.v1.model.AllowedSourceType.UI;
@@ -72,6 +73,8 @@ public class IPAllowlistServiceImplTest extends CategoryTest {
   private IPAllowlistResourceUtils ipAllowlistResourceUtil;
   @Mock private IPAllowlistServiceImpl ipAllowlistService;
   @Mock private IPAllowlistServiceImpl ipAllowlistServiceSpy;
+
+  @Mock private Page<IPAllowlistEntity> mockPage;
 
   @Rule public ExpectedException exceptionRule = ExpectedException.none();
   private static final String ACCOUNT_IDENTIFIER = randomAlphabetic(10);
@@ -269,6 +272,26 @@ public class IPAllowlistServiceImplTest extends CategoryTest {
     assertThat(response.isAllowedForUi()).isEqualTo(false);
     assertThat(response.getAllowlistedConfigs().size()).isEqualTo(1);
     assertThat(response.isAllowedForCustomBlock()).isEqualTo(false);
+  }
+
+  @Test
+  @Owner(developers = AKSHAY)
+  @Category(UnitTests.class)
+  public void ipAllowlistEnabled_WhenAllowlistEnabled_ShouldReturnTrue() {
+    doReturn(mockPage).when(ipAllowlistService).list(eq(ACCOUNT_IDENTIFIER), any(), any());
+    when(mockPage.getTotalElements()).thenReturn(1L); // Assuming allowlist is enabled
+    boolean result = ipAllowlistService.ipAllowlistEnabled(ACCOUNT_IDENTIFIER);
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  @Owner(developers = AKSHAY)
+  @Category(UnitTests.class)
+  public void ipAllowlistEnabled_WhenAllowlistEnabled_ShouldReturnFalse() {
+    doReturn(mockPage).when(ipAllowlistService).list(eq(ACCOUNT_IDENTIFIER), any(), any());
+    when(mockPage.getTotalElements()).thenReturn(0L); // Assuming allowlist is enabled
+    boolean result = ipAllowlistService.ipAllowlistEnabled(ACCOUNT_IDENTIFIER);
+    assertThat(result).isFalse();
   }
 
   @Test

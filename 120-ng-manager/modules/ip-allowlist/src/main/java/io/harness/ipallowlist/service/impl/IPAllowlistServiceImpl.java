@@ -235,6 +235,13 @@ public class IPAllowlistServiceImpl implements IPAllowlistService {
     } while (true);
   }
 
+  public boolean ipAllowlistEnabled(String accountIdentifier) {
+    IPAllowlistFilterDTO ipAllowlistFilterDTO = ipAllowlistResourceUtil.getEnabledFilter();
+    Pageable pageable = ipAllowlistResourceUtil.getPageRequest(0, 1, "", "");
+    Page<IPAllowlistEntity> ipAllowlistEntityPage = list(accountIdentifier, pageable, ipAllowlistFilterDTO);
+    return ipAllowlistEntityPage.getTotalElements() > 0;
+  }
+
   private boolean validateInRange(String ipAddress, String ipAddressBlock) {
     IpAddressMatcher ipAddressMatcher = new IpAddressMatcher(ipAddressBlock);
     return ipAddressMatcher.matches(ipAddress);
