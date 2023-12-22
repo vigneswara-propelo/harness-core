@@ -460,7 +460,8 @@ public abstract class CommonAbstractStepExecutable extends CiAsyncExecutable {
     }
 
     if (shouldPublishOutcome(stepStatus) && (stepStatus.getOutput() != null || stepStatus.getOutputV2() != null)) {
-      Map<String, String> outputVariables = getOutputVariables(stepStatus);
+      Map<String, String> outputVariables =
+          getOutputVariables(stepStatus.getOutputV2(), ((StepMapOutput) stepStatus.getOutput()).getMap());
       populateCIStageOutputs(outputVariables, AmbianceUtils.getAccountId(ambiance), ambiance.getStageExecutionId());
       StepResponse.StepOutcome stepOutcome =
           StepResponse.StepOutcome.builder()
@@ -610,11 +611,11 @@ public abstract class CommonAbstractStepExecutable extends CiAsyncExecutable {
     }
   }
 
-  private Map<String, String> getOutputVariables(StepStatus stepStatus) {
-    if (stepStatus.getOutputV2() != null) {
+  protected Map<String, String> getOutputVariables(
+      List<StepOutputV2> outputVariables, Map<String, String> defaultOutputVariables) {
+    if (isNotEmpty(outputVariables)) {
       SimpleEncryption encryption = new SimpleEncryption();
       Map<String, String> resolvedOutputVariables = new HashMap<>();
-      List<StepOutputV2> outputVariables = stepStatus.getOutputV2();
       outputVariables.forEach(outputVariable -> {
         if (OutputVariable.OutputType.SECRET.toString().equals(outputVariable.getType())
             && isNotEmpty(outputVariable.getValue())) {
@@ -629,7 +630,7 @@ public abstract class CommonAbstractStepExecutable extends CiAsyncExecutable {
       });
       return resolvedOutputVariables;
     }
-    return ((StepMapOutput) stepStatus.getOutput()).getMap();
+    return defaultOutputVariables;
   }
 
   protected StepArtifacts handleArtifact(

@@ -7,6 +7,8 @@
 
 package io.harness.delegate.beans.ci.vm.runner;
 
+import io.harness.delegate.task.stepstatus.StepOutputV2;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
@@ -51,6 +53,7 @@ public class ExecuteStepRequest {
     @JsonProperty("user") String user;
     @JsonProperty("volumes") List<VolumeMount> volumeMounts;
     @JsonProperty("auth") ImageAuth imageAuth;
+    @JsonProperty("outputs") List<StepOutputV2> outputs;
   }
 
   @Data

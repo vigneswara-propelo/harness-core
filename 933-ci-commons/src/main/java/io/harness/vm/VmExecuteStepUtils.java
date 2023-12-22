@@ -185,6 +185,7 @@ public class VmExecuteStepUtils {
         .envs(envs)
         .privileged(runStep.isPrivileged())
         .outputVars(runStep.getOutputVariables())
+        .outputs(runStep.getOutputs())
         .testReport(convertTestReport(runStep.getUnitTestReport()))
         .timeout(runStep.getTimeoutSecs());
     return secrets;
@@ -306,6 +307,7 @@ public class VmExecuteStepUtils {
         .envs(runTestStep.getEnvVariables())
         .privileged(runTestStep.isPrivileged())
         .outputVars(runTestStep.getOutputVariables())
+        .outputs(runTestStep.getOutputs())
         .testReport(convertTestReport(runTestStep.getUnitTestReport()))
         .timeout(runTestStep.getTimeoutSecs());
     return secrets;

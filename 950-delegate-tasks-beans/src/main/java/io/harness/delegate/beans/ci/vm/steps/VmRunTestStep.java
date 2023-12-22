@@ -10,6 +10,7 @@ package io.harness.delegate.beans.ci.vm.steps;
 import static io.harness.expression.Expression.ALLOW_SECRETS;
 
 import io.harness.delegate.beans.ci.pod.ConnectorDetails;
+import io.harness.delegate.task.stepstatus.StepOutputV2;
 import io.harness.expression.Expression;
 
 import java.util.List;
@@ -47,6 +48,7 @@ public class VmRunTestStep implements VmStepInfo {
   private String testGlobs;
   private String pythonVersion;
   private String testRoot;
+  private List<StepOutputV2> outputs;
 
   @Override
   public VmStepInfo.Type getType() {

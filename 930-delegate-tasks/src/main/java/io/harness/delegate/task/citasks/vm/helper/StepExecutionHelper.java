@@ -39,6 +39,7 @@ public class StepExecutionHelper {
             .commandExecutionStatus(CommandExecutionStatus.SUCCESS)
             .outputVars(response.body().getOutputs())
             .artifact(response.body().getArtifact())
+            .outputs(response.body().getOutputV2())
             .build();
       } else {
         return VmTaskExecutionResponse.builder()

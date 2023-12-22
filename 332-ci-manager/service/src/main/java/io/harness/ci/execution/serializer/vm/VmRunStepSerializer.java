@@ -28,6 +28,7 @@ import io.harness.delegate.beans.ci.pod.ConnectorDetails;
 import io.harness.delegate.beans.ci.vm.steps.VmJunitTestReport;
 import io.harness.delegate.beans.ci.vm.steps.VmRunStep;
 import io.harness.delegate.beans.ci.vm.steps.VmRunStep.VmRunStepBuilder;
+import io.harness.delegate.task.stepstatus.StepOutputV2;
 import io.harness.ng.core.NGAccess;
 import io.harness.pms.contracts.ambiance.Ambiance;
 import io.harness.pms.execution.utils.AmbianceUtils;
@@ -91,9 +92,12 @@ public class VmRunStepSerializer {
     envVars.putAll(statusEnvVars);
 
     List<String> outputVarNames = new ArrayList<>();
+    List<StepOutputV2> outputVariables = new ArrayList<>();
     if (isNotEmpty(runStepInfo.getOutputVariables().getValue())) {
       outputVarNames =
           runStepInfo.getOutputVariables().getValue().stream().map(NGVariable::getName).collect(Collectors.toList());
+      outputVariables = SerializerUtils.getStepOutputV2FromNGVar(
+          runStepInfo.getOutputVariables().getValue(), runStepInfo.getIdentifier());
     }
 
     String earlyExitCommand = SerializerUtils.getEarlyExitCommand(runStepInfo.getShell());
@@ -114,6 +118,7 @@ public class VmRunStepSerializer {
                                           .entrypoint(SerializerUtils.getEntrypoint(runStepInfo.getShell()))
                                           .command(command)
                                           .outputVariables(outputVarNames)
+                                          .outputs(outputVariables)
                                           .envVariables(envVars)
                                           .timeoutSecs(timeout);
 

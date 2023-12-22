@@ -9,6 +9,7 @@ package io.harness.delegate.beans.ci.vm;
 
 import io.harness.delegate.beans.DelegateMetaInfo;
 import io.harness.delegate.beans.ci.CITaskExecutionResponse;
+import io.harness.delegate.task.stepstatus.StepOutputV2;
 import io.harness.logging.CommandExecutionStatus;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -30,6 +31,7 @@ public class VmTaskExecutionResponse implements CITaskExecutionResponse {
   @JsonProperty("service_statuses") private List<VmServiceStatus> serviceStatuses;
   @JsonProperty("artifact") private byte[] artifact;
   @JsonProperty("pool_driver_used") private String poolDriverUsed;
+  @JsonProperty("outputs") private List<StepOutputV2> outputs;
 
   @Builder.Default private static final CITaskExecutionResponse.Type type = Type.VM;
 

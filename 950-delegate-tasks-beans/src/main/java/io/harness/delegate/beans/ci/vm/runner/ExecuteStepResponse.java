@@ -7,8 +7,11 @@
 
 package io.harness.delegate.beans.ci.vm.runner;
 
+import io.harness.delegate.task.stepstatus.StepOutputV2;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Value;
@@ -23,4 +26,5 @@ public class ExecuteStepResponse {
   @JsonProperty("oom_killed") boolean oomKilled;
   @JsonProperty("outputs") Map<String, String> outputs;
   @JsonProperty("artifact") byte[] artifact;
+  @JsonProperty("outputV2") List<StepOutputV2> outputV2;
 }

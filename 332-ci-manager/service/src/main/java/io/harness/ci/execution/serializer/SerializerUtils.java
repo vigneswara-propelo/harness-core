@@ -27,6 +27,7 @@ import io.harness.ci.ff.CIFeatureFlagService;
 import io.harness.common.NGExpressionUtils;
 import io.harness.delegate.beans.ci.CIInitializeTaskParams;
 import io.harness.delegate.task.stepstatus.StepExecutionStatus;
+import io.harness.delegate.task.stepstatus.StepOutputV2;
 import io.harness.encryption.SecretRefData;
 import io.harness.exception.ngexception.CIStageExecutionException;
 import io.harness.pms.contracts.ambiance.Ambiance;
@@ -150,6 +151,7 @@ public class SerializerUtils {
       return String.format("");
     }
   }
+
   public static String getK8sDebugCommand(
       String accountId, int timeoutSeconds, RunStepInfo runStepInfo, String tmateEndpoint) {
     return getDebugCommand(accountId, timeoutSeconds, runStepInfo.getShell(), "/addon/bin/tmate", tmateEndpoint);
@@ -171,6 +173,7 @@ public class SerializerUtils {
     }
     return getDebugCommand(accountId, timeoutSeconds, runStepInfo.getShell(), tmatePath, tmateEndpoint);
   }
+
   public static String getEarlyExitCommand(ParameterField<CIShellType> parametrizedShellType) {
     String cmd;
     CIShellType shellType = RunTimeInputHandler.resolveShellType(parametrizedShellType);
@@ -352,6 +355,7 @@ public class SerializerUtils {
     }
     return ParameterField.ofNull();
   }
+
   public Map<String, String> getStepStatusEnvVars(Ambiance ambiance) {
     Map<String, String> statusEnvVars = new HashMap<>();
     StepStatusMetadata stepStatusMetadata =
@@ -423,5 +427,32 @@ public class SerializerUtils {
       }
     }
     return val;
+  }
+
+  public static List<StepOutputV2> getStepOutputV2FromNGVar(List<NGVariable> ngVariables, String identifier) {
+    if (isNotEmpty(ngVariables)) {
+      List<StepOutputV2> outputVariables =
+          ngVariables.stream()
+              .map(outputVariable -> {
+                String val = null;
+                if (ParameterField.isNotNull(outputVariable.getCurrentValue())) {
+                  if (outputVariable.getType().equals(NGVariableType.STRING)) {
+                    val = getOutputVarFromStringNGVar(outputVariable, identifier);
+                  } else if (outputVariable.getType().equals(NGVariableType.SECRET)) {
+                    val = getOutputVarFromSecretNGVar(outputVariable);
+                  }
+                }
+                return StepOutputV2.builder()
+                    .key(outputVariable.getName())
+                    .value(val)
+                    .type(outputVariable.getType().toString())
+                    .build();
+              })
+              .filter(outputVariable -> outputVariable.getType() != null && outputVariable.getValue() != null)
+              .collect(Collectors.toList());
+
+      return outputVariables;
+    }
+    return Collections.emptyList();
   }
 }
