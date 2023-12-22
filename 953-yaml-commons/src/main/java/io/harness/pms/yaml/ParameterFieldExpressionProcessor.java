@@ -6,6 +6,7 @@
  */
 
 package io.harness.pms.yaml;
+
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
@@ -67,6 +68,8 @@ public class ParameterFieldExpressionProcessor {
 
       if (newValue instanceof String && EngineExpressionEvaluator.hasExpressions((String) newValue)) {
         String newExpression = (String) newValue;
+
+        field.updateWithExpression(newExpression);
         // This is added for CD step as they depend upon getValue, this is possible only for fields which are string
         if (field.isTypeString()) {
           field.updateValueOnly(newExpression);
@@ -74,8 +77,6 @@ public class ParameterFieldExpressionProcessor {
         if (newExpression.equals(field.getExpressionValue())) {
           return ProcessorResult.builder().build();
         }
-
-        field.updateWithExpression(newExpression);
         return validateUsingValidator(newValue, inputSetValidator);
       }
 

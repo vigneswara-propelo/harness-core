@@ -41,6 +41,7 @@ public class ParameterField<T> {
   private boolean jsonResponseField;
   private String responseField;
 
+  @Deprecated
   public T getValue() {
     return value != null ? value : defaultValue;
   }
