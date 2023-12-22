@@ -9,7 +9,6 @@ package io.harness.sto.plan.creator;
 
 import static io.harness.pms.yaml.YAMLFieldNameConstants.STEP;
 
-import io.harness.ModuleType;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.steps.StepSpecTypeConstants;
@@ -118,7 +117,7 @@ public class STOPipelineServiceInfoProvider implements PipelineServiceInfoProvid
     stepInfos.add(runStepInfo);
     stepInfos.add(backgroundStepInfo);
 
-    stepInfos.addAll(STOStepType.getStepInfos(ModuleType.STO));
+    stepInfos.addAll(STOStepType.getStepInfos());
 
     return stepInfos;
   }

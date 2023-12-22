@@ -10,7 +10,6 @@ import static io.harness.pms.yaml.YAMLFieldNameConstants.STEP;
 import static io.harness.ssca.SscaBeansRegistrar.sscaStepPaletteSteps;
 import static io.harness.steps.plugin.ContainerStepConstants.PLUGIN;
 
-import io.harness.ModuleType;
 import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.HarnessTeam;
@@ -264,7 +263,6 @@ public class CIPipelineServiceInfoProvider implements PipelineServiceInfoProvide
     StepInfo securityStepInfo = StepInfo.newBuilder()
                                     .setName("Security")
                                     .setType(StepSpecTypeConstants.SECURITY)
-                                    .setFeatureRestrictionName(FeatureRestrictionName.SECURITY.name())
                                     .setStepMetaData(StepMetaData.newBuilder().addFolderPaths("Security").build())
                                     .build();
 
@@ -357,7 +355,7 @@ public class CIPipelineServiceInfoProvider implements PipelineServiceInfoProvide
     stepInfos.add(actionStepInfo);
     stepInfos.add(bitriseStepInfo);
 
-    stepInfos.addAll(STOStepType.getStepInfos(ModuleType.CI));
+    stepInfos.addAll(STOStepType.getStepInfos());
 
     stepInfos.addAll(sscaStepPaletteSteps);
 

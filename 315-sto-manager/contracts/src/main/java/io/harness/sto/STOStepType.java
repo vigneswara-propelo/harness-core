@@ -61,7 +61,6 @@ import io.harness.beans.steps.nodes.security.SysdigScanNode;
 import io.harness.beans.steps.nodes.security.TenableScanNode;
 import io.harness.beans.steps.nodes.security.VeracodeScanNode;
 import io.harness.beans.steps.nodes.security.ZapScanNode;
-import io.harness.enforcement.constants.FeatureRestrictionName;
 import io.harness.plancreator.steps.common.StepElementParameters;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepInfo;
@@ -175,7 +174,7 @@ public enum STOStepType {
     return lookup.get(name);
   }
 
-  public static StepInfo createStepInfo(STOStepType stoStepType, ModuleType moduleType, String[] stepCategory) {
+  public static StepInfo createStepInfo(STOStepType stoStepType, String[] stepCategory) {
     StepInfo.Builder stepInfoBuilder =
         StepInfo.newBuilder()
             .setType(stoStepType.getName())
@@ -194,10 +193,6 @@ public enum STOStepType {
       stepInfoBuilder.setFeatureFlag(featureName.name());
     }
 
-    if (moduleType == ModuleType.CI) {
-      stepInfoBuilder.setFeatureRestrictionName(FeatureRestrictionName.SECURITY.name());
-    }
-
     return stepInfoBuilder.build();
   }
 
@@ -205,10 +200,10 @@ public enum STOStepType {
     return Arrays.stream(STOStepType.values()).map(e -> e.getName()).collect(Collectors.toSet());
   }
 
-  public static List<StepInfo> getStepInfos(ModuleType moduleType) {
+  public static List<StepInfo> getStepInfos() {
     List<StepInfo> stepInfos = new ArrayList<>();
     Arrays.asList(STOStepType.values())
-        .forEach(e -> stepInfos.add(STOStepType.createStepInfo(e, moduleType, e.getStepCategories())));
+        .forEach(e -> stepInfos.add(STOStepType.createStepInfo(e, e.getStepCategories())));
 
     return stepInfos;
   }
