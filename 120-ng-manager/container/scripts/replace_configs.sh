@@ -180,6 +180,10 @@ if [[ "" != "$TEMPLATE_SERVICE_SECRET" ]]; then
   export TEMPLATE_SERVICE_SECRET; yq -i '.nextGen.templateServiceSecret=env(TEMPLATE_SERVICE_SECRET)' $CONFIG_FILE
 fi
 
+if [[ "" != "$IDP_SERVICE_SECRET" ]]; then
+  export IDP_SERVICE_SECRET; yq -i '.nextGen.idpServiceSecret=env(IDP_SERVICE_SECRET)' $CONFIG_FILE
+fi
+
 if [[ "" != "$AUTH_ENABLED" ]]; then
   export AUTH_ENABLED; yq -i '.enableAuth=env(AUTH_ENABLED)' $CONFIG_FILE
 fi

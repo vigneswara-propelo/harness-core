@@ -57,6 +57,7 @@ nextGen:
   cvngServiceSecret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM #get secret value.
   chaosServiceSecret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
   serviceDiscoveryServiceSecret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
+  idpServiceSecret: IC04LYMBf1lDP5oeY4hupxd4HJhLmN6azUku3xEbeE3SUx5G3ZYzhbiwVtK4i7AmqyU9OZkwB4v8E9qM
 
 enableAudit: false
 
@@ -189,6 +190,11 @@ seiServiceClientConfig:
 
 serviceDiscoveryServiceClientConfig:
   baseUrl: ${SERVICE_DISCOVERY_SERVICE_BASE_URL:-http://localhost:8080/}
+  connectTimeOutSeconds: 15
+  readTimeOutSeconds: 15
+
+idpServiceClientConfig:
+  baseUrl: ${IDP_SERVICE_CLIENT_BASE_URL:-http://localhost:12003/}
   connectTimeOutSeconds: 15
   readTimeOutSeconds: 15
 

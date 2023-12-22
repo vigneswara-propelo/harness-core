@@ -1,0 +1,13 @@
+moduleType: IDP
+clients:
+  - name: idpService
+    clientConfig: idpServiceClientConfig
+    secretConfig: nextGenConfig.idpServiceSecret
+features:
+  - name: IDP_ACTIVE_DEVELOPERS
+    description: Number of IDP active developers
+    restrictions:
+      ENTERPRISE:
+        restrictionType: LICENSE_STATIC_LIMIT
+        fieldName: idpActiveDevelopers
+        clientName: idpService

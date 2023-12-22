@@ -31,4 +31,5 @@ public class NextGenConfig {
   @ConfigSecret String cvngServiceSecret;
   @ConfigSecret String chaosServiceSecret;
   @ConfigSecret String serviceDiscoveryServiceSecret;
+  @ConfigSecret String idpServiceSecret;
 }

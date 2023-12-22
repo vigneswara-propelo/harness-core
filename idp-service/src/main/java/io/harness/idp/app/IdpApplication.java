@@ -28,6 +28,13 @@ import io.harness.cache.CacheModule;
 import io.harness.ci.execution.execution.OrchestrationExecutionEventHandlerRegistrar;
 import io.harness.ci.execution.plan.creator.CIModuleInfoProvider;
 import io.harness.ci.registrars.ExecutionAdvisers;
+import io.harness.enforcement.client.CustomRestrictionRegisterConfiguration;
+import io.harness.enforcement.client.RestrictionUsageRegisterConfiguration;
+import io.harness.enforcement.client.custom.CustomRestrictionInterface;
+import io.harness.enforcement.client.resources.EnforcementClientResource;
+import io.harness.enforcement.client.services.EnforcementSdkRegisterService;
+import io.harness.enforcement.client.usage.RestrictionUsageInterface;
+import io.harness.enforcement.constants.FeatureRestrictionName;
 import io.harness.ff.FeatureFlagService;
 import io.harness.health.HealthMonitor;
 import io.harness.health.HealthService;
@@ -41,6 +48,7 @@ import io.harness.idp.events.consumers.IdpEventConsumerController;
 import io.harness.idp.events.consumers.IdpModuleLicenseUsageCaptureEventConsumer;
 import io.harness.idp.governance.beans.Constants;
 import io.harness.idp.governance.services.ScorecardExpansionHandler;
+import io.harness.idp.license.enforcement.ActiveDevelopersRestrictionUsageImpl;
 import io.harness.idp.license.usage.jobs.IDPTelemetryRecordsJob;
 import io.harness.idp.license.usage.jobs.LicenseUsageDailyCountJob;
 import io.harness.idp.license.usage.resources.IDPLicenseUsageResource;
@@ -123,6 +131,7 @@ import io.harness.yaml.YamlSdkInitHelper;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dirkraft.dropwizard.fileassets.FileAssetsBundle;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -266,6 +275,7 @@ public class IdpApplication extends Application<IdpConfiguration> {
     injector.getInstance(IDPTelemetryRecordsJob.class).scheduleTasks();
     environment.jersey().register(MultiPartFeature.class);
     initMetrics(injector);
+    initializeEnforcementSdk(injector);
 
     log.info("Starting app done");
     log.info("IDP Service is running on JRE: {}", System.getProperty("java.version"));
@@ -333,6 +343,7 @@ public class IdpApplication extends Application<IdpConfiguration> {
     }
     environment.jersey().register(injector.getInstance(LicenseUsageResource.class));
     environment.jersey().register(injector.getInstance(IDPLicenseUsageResource.class));
+    environment.jersey().register(injector.getInstance(EnforcementClientResource.class));
     environment.jersey().property(ServerProperties.RESOURCE_VALIDATION_DISABLE, true);
   }
 
@@ -539,5 +550,23 @@ public class IdpApplication extends Application<IdpConfiguration> {
         }
       }
     }
+  }
+
+  private void initializeEnforcementSdk(Injector injector) {
+    RestrictionUsageRegisterConfiguration restrictionUsageRegisterConfiguration =
+        RestrictionUsageRegisterConfiguration.builder()
+            .restrictionNameClassMap(
+                ImmutableMap.<FeatureRestrictionName, Class<? extends RestrictionUsageInterface>>builder()
+                    .put(FeatureRestrictionName.IDP_ACTIVE_DEVELOPERS, ActiveDevelopersRestrictionUsageImpl.class)
+                    .build())
+            .build();
+    CustomRestrictionRegisterConfiguration customConfig =
+        CustomRestrictionRegisterConfiguration.builder()
+            .customRestrictionMap(
+                ImmutableMap.<FeatureRestrictionName, Class<? extends CustomRestrictionInterface>>builder().build())
+            .build();
+
+    injector.getInstance(EnforcementSdkRegisterService.class)
+        .initialize(restrictionUsageRegisterConfiguration, customConfig);
   }
 }

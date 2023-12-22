@@ -131,6 +131,11 @@ public class IDPModuleLicenseUsageImpl implements IDPModuleLicenseUsage {
     }
   }
 
+  @Override
+  public long getActiveDevelopers(String accountIdentifier) {
+    return activeDevelopersRepository.findByAccountIdentifier(accountIdentifier).size();
+  }
+
   private List<ActiveDevelopersDailyCountEntity> prepareActiveDevelopersDailyCountEntitiesForSave(
       Map<String, Long> accountsPreviousDayDevelopersCount) {
     Pair<String, Date> yesterdayDateInStringAndDateFormat = yesterdayDateInStringAndDateFormat();

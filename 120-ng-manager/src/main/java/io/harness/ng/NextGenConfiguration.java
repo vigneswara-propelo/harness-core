@@ -220,6 +220,7 @@ public class NextGenConfiguration extends Configuration {
   @JsonProperty("seiServiceClientConfig") private ServiceHttpClientConfig seiServiceClientConfig;
   @JsonProperty("serviceDiscoveryServiceClientConfig")
   private ServiceHttpClientConfig serviceDiscoveryServiceClientConfig;
+  @JsonProperty("idpServiceClientConfig") private ServiceHttpClientConfig idpServiceClientConfig;
   @JsonProperty("eventsFramework") @ConfigSecret private EventsFrameworkConfiguration eventsFrameworkConfiguration;
   @JsonProperty("redisLockConfig") @ConfigSecret private RedisConfig redisLockConfig;
   @JsonProperty(value = "enableAuth", defaultValue = "true") private boolean enableAuth;

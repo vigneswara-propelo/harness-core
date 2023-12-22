@@ -49,4 +49,11 @@ public interface IDPModuleLicenseUsage {
    */
   List<ActiveDevelopersTrendCountDTO> getHistoryTrend(
       String accountIdentifier, IDPLicenseDateUsageParams idpLicenseDateUsageParams);
+
+  /**
+   * Fetch number of active developers for given account
+   * @param accountIdentifier Account identifier to fetch data for
+   * @return Number of active developers for given account
+   */
+  long getActiveDevelopers(String accountIdentifier);
 }

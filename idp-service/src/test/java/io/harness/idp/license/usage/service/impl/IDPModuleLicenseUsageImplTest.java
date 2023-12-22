@@ -267,6 +267,18 @@ public class IDPModuleLicenseUsageImplTest extends CategoryTest {
     assertEquals(1, activeDevelopersTrendCountDTOList.get(0).getCount());
   }
 
+  @Test
+  @Owner(developers = SATHISH)
+  @Category(UnitTests.class)
+  public void testGetActiveDevelopers() {
+    ActiveDevelopersEntity activeDevelopersEntity = buildActiveDevelopersEntity(TEST_ACCOUNT_IDENTIFIER);
+    when(activeDevelopersRepository.findByAccountIdentifier(TEST_ACCOUNT_IDENTIFIER))
+        .thenReturn(Collections.singletonList(activeDevelopersEntity));
+    long activeDevelopers = idpModuleLicenseUsage.getActiveDevelopers(TEST_ACCOUNT_IDENTIFIER);
+
+    assertEquals(1, activeDevelopers);
+  }
+
   @After
   public void tearDown() throws Exception {
     openMocks.close();

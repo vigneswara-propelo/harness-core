@@ -467,7 +467,7 @@ public class IdpModule extends AbstractModule {
     install(
         new CIExecutionServiceModule(appConfig.getCiExecutionServiceConfig(), appConfig.getShouldConfigureWithPMS()));
     install(new IACMServiceClientModule(appConfig.getIacmServiceConfig()));
-    install(EnforcementClientModule.getInstance(appConfig.getManagerClientConfig(), // Licencing
+    install(EnforcementClientModule.getInstance(appConfig.getNgManagerServiceHttpClientConfig(), // Licencing
         appConfig.getNgManagerServiceSecret(), IDP_SERVICE.getServiceId(),
         appConfig.getEnforcementClientConfiguration()));
     install(new CDStageConfigResourceClientModule(appConfig.getNgManagerServiceHttpClientConfig(),
