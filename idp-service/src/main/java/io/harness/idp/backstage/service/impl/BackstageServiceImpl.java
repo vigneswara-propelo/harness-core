@@ -8,34 +8,51 @@
 package io.harness.idp.backstage.service.impl;
 
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.idp.backstage.beans.BackstageCatalogEntityTypes.GROUP;
+import static io.harness.idp.backstage.beans.BackstageCatalogEntityTypes.USER;
 import static io.harness.idp.common.JacksonUtils.convert;
 import static io.harness.idp.common.JacksonUtils.readValueForObject;
 import static io.harness.idp.common.YamlUtils.writeObjectAsYaml;
+import static io.harness.outbox.TransactionOutboxModule.OUTBOX_TRANSACTION_TEMPLATE;
 import static io.harness.remote.client.NGRestUtils.getGeneralResponse;
+import static io.harness.springdata.PersistenceUtils.DEFAULT_RETRY_POLICY;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.clients.BackstageResourceClient;
 import io.harness.exception.UnexpectedException;
+import io.harness.idp.backstage.beans.BackstageCatalogEntityTypes;
 import io.harness.idp.backstage.entities.BackstageCatalogEntity;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity.Relation;
+import io.harness.idp.backstage.entities.BackstageCatalogEntity.Target;
+import io.harness.idp.backstage.events.BackstageCatalogEntityCreateEvent;
+import io.harness.idp.backstage.events.BackstageCatalogEntityDeleteEvent;
+import io.harness.idp.backstage.events.BackstageCatalogEntityUpdateEvent;
 import io.harness.idp.backstage.repositories.BackstageCatalogEntityRepository;
 import io.harness.idp.backstage.service.BackstageService;
 import io.harness.idp.events.producers.IdpEntityCrudStreamProducer;
 import io.harness.idp.events.producers.IdpServiceMiscRedisProducer;
 import io.harness.idp.namespace.service.NamespaceService;
+import io.harness.outbox.api.OutboxService;
 import io.harness.spec.server.idp.v1.model.BackstageHarnessSyncRequest;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.math3.util.Pair;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Slf4j
@@ -49,6 +66,9 @@ public class BackstageServiceImpl implements BackstageService {
   @Inject BackstageCatalogEntityRepository backstageCatalogEntityRepository;
   @Inject IdpEntityCrudStreamProducer idpEntityCrudStreamProducer;
   @Inject IdpServiceMiscRedisProducer idpServiceMiscRedisProducer;
+  @Inject OutboxService outboxService;
+  @Inject @Named(OUTBOX_TRANSACTION_TEMPLATE) private TransactionTemplate transactionTemplate;
+  private static final RetryPolicy<Object> transactionRetryPolicy = DEFAULT_RETRY_POLICY;
 
   @Override
   public void sync() {
@@ -95,22 +115,60 @@ public class BackstageServiceImpl implements BackstageService {
 
   private void syncInternal(String accountIdentifier, String entityUid, String action,
       List<BackstageCatalogEntity> backstageCatalogEntities) {
-    if (backstageCatalogEntities.size() == 0) {
+    if (backstageCatalogEntities.isEmpty()) {
       return;
     }
     log.info(
         "Fetched {} catalog entities in IdpCatalogEntitiesAsHarnessEntities sync for accountIdentifier = {} EntityUid = {} Action = {}",
         backstageCatalogEntities.size(), accountIdentifier, entityUid, action);
-    prepareEntitiesForSave(accountIdentifier, backstageCatalogEntities);
-    Map<BackstageCatalogEntity, String> entitiesActions = categorizeEntitiesActions(backstageCatalogEntities);
-    Iterable<BackstageCatalogEntity> savedBackstageCatalogEntities =
-        backstageCatalogEntityRepository.saveAll(backstageCatalogEntities);
+    List<Pair<BackstageCatalogEntity, BackstageCatalogEntity>> entitiesList =
+        prepareEntitiesForSave(accountIdentifier, backstageCatalogEntities);
+
+    AtomicReference<Iterable<BackstageCatalogEntity>> savedBackstageCatalogEntities = new AtomicReference<>();
+    Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
+      savedBackstageCatalogEntities.set(backstageCatalogEntityRepository.saveAll(backstageCatalogEntities));
+      if (StringUtils.isNotBlank(entityUid)) {
+        for (Pair<BackstageCatalogEntity, BackstageCatalogEntity> entityPair : entitiesList) {
+          BackstageCatalogEntity oldEntity = entityPair.getFirst();
+          BackstageCatalogEntity newEntity = entityPair.getSecond();
+          if (oldEntity == null) {
+            outboxService.save(new BackstageCatalogEntityCreateEvent(
+                accountIdentifier, newEntity.getEntityUid(), newEntity.getYaml()));
+          } else if (!oldEntity.getYaml().equals(newEntity.getYaml())) {
+            outboxService.save(new BackstageCatalogEntityUpdateEvent(
+                accountIdentifier, newEntity.getEntityUid(), oldEntity.getYaml(), newEntity.getYaml()));
+            handleEntityDeletionIfRequired(accountIdentifier, oldEntity, newEntity);
+          }
+        }
+      }
+      return true;
+    }));
+
     log.info(
         "Saved {} catalog entities into DB in IdpCatalogEntitiesAsHarnessEntities sync for accountIdentifier = {} EntityUid = {} Action = {}",
         backstageCatalogEntities.size(), accountIdentifier, entityUid, action);
-    publishBackstageCatalogEntityChange(accountIdentifier, savedBackstageCatalogEntities, action);
+    publishBackstageCatalogEntityChange(accountIdentifier, savedBackstageCatalogEntities.get(), action);
     log.info("Synced IDP catalog entities as Harness entities for accountIdentifier = {} EntityUid = {} Action = {}",
         accountIdentifier, entityUid, action);
+  }
+
+  private void handleEntityDeletionIfRequired(
+      String accountIdentifier, BackstageCatalogEntity oldEntity, BackstageCatalogEntity newEntity) {
+    if (GROUP.equals(BackstageCatalogEntityTypes.fromString(oldEntity.getKind()))
+        || USER.equals(BackstageCatalogEntityTypes.fromString(oldEntity.getKind()))) {
+      Set<Relation> oldRelations = oldEntity.getRelations();
+      Set<Relation> newRelations = newEntity.getRelations();
+      oldRelations.removeAll(newRelations);
+      for (Relation oldRelation : oldRelations) {
+        if ("ownerOf".equals(oldRelation.getType())) {
+          Target target = oldRelation.getTarget();
+          String kind = BackstageCatalogEntityTypes.fromString(target.getKind()).kind;
+          String entityUidToDelete = getEntityUniqueId(kind, target.getNamespace(), target.getName());
+          handleCreateOrUpdateOrUpsertAction(
+              accountIdentifier, entityUidToDelete, BackstageHarnessSyncRequest.ActionEnum.UPSERT.value());
+        }
+      }
+    }
   }
 
   private boolean syncInSynchronousMode(String accountIdentifier, String entityUid, String action) {
@@ -144,39 +202,35 @@ public class BackstageServiceImpl implements BackstageService {
     return true;
   }
 
-  private void prepareEntitiesForSave(String accountIdentifier, List<BackstageCatalogEntity> backstageCatalogEntities) {
+  private List<Pair<BackstageCatalogEntity, BackstageCatalogEntity>> prepareEntitiesForSave(
+      String accountIdentifier, List<BackstageCatalogEntity> backstageCatalogEntities) {
+    List<Pair<BackstageCatalogEntity, BackstageCatalogEntity>> entitesList = new ArrayList<>();
+
     backstageCatalogEntities.forEach(backstageCatalogEntity -> {
       String entityUid = getEntityUniqueId(backstageCatalogEntity);
       Optional<BackstageCatalogEntity> optionalBackstageCatalogEntity =
           backstageCatalogEntityRepository.findByAccountIdentifierAndEntityUid(accountIdentifier, entityUid);
-      optionalBackstageCatalogEntity.ifPresent(backstageCatalogEntityExisting -> {
+      optionalBackstageCatalogEntity.ifPresentOrElse(backstageCatalogEntityExisting -> {
+        entitesList.add(new Pair<>(backstageCatalogEntityExisting, backstageCatalogEntity));
         backstageCatalogEntity.setId(backstageCatalogEntityExisting.getId());
         backstageCatalogEntity.setCreatedAt(backstageCatalogEntityExisting.getCreatedAt());
-      });
+      }, () -> entitesList.add(new Pair<>(null, backstageCatalogEntity)));
+
       backstageCatalogEntity.setAccountIdentifier(accountIdentifier);
       backstageCatalogEntity.setEntityUid(entityUid);
       backstageCatalogEntity.setYaml(writeObjectAsYaml(backstageCatalogEntity));
     });
-  }
-
-  private Map<BackstageCatalogEntity, String> categorizeEntitiesActions(
-      List<BackstageCatalogEntity> backstageCatalogEntities) {
-    Map<BackstageCatalogEntity, String> entitiesActions = new HashMap<>();
-    backstageCatalogEntities.forEach(backstageCatalogEntity -> {
-      if (backstageCatalogEntity.getCreatedAt() == 0) {
-        entitiesActions.put(backstageCatalogEntity, BackstageHarnessSyncRequest.ActionEnum.CREATE.value());
-      } else {
-        entitiesActions.put(backstageCatalogEntity, BackstageHarnessSyncRequest.ActionEnum.UPDATE.value());
-      }
-    });
-    return entitiesActions;
+    return entitesList;
   }
 
   private String getEntityUniqueId(BackstageCatalogEntity backstageCatalogEntity) {
-    String namespace = isEmpty(backstageCatalogEntity.getMetadata().getNamespace())
-        ? "default"
-        : backstageCatalogEntity.getMetadata().getNamespace();
-    return backstageCatalogEntity.getKind() + "/" + namespace + "/" + backstageCatalogEntity.getMetadata().getName();
+    return getEntityUniqueId(backstageCatalogEntity.getKind(), backstageCatalogEntity.getMetadata().getNamespace(),
+        backstageCatalogEntity.getMetadata().getName());
+  }
+
+  private String getEntityUniqueId(String kind, String namespace, String name) {
+    namespace = isEmpty(namespace) ? "default" : namespace;
+    return kind + "/" + namespace + "/" + name;
   }
 
   private void publishBackstageCatalogEntityChange(
@@ -219,7 +273,12 @@ public class BackstageServiceImpl implements BackstageService {
     optionalBackstageCatalogEntity.ifPresent(backstageCatalogEntityExisting -> {
       log.info("Found BackstageCatalogEntity for delete, deleting it. AccountIdentifier = {}, entityUid = {}",
           accountIdentifier, entityUid);
-      backstageCatalogEntityRepository.delete(backstageCatalogEntityExisting);
+      Failsafe.with(transactionRetryPolicy).get(() -> transactionTemplate.execute(status -> {
+        backstageCatalogEntityRepository.delete(backstageCatalogEntityExisting);
+        outboxService.save(new BackstageCatalogEntityDeleteEvent(accountIdentifier,
+            backstageCatalogEntityExisting.getEntityUid(), backstageCatalogEntityExisting.getYaml()));
+        return true;
+      }));
     });
   }
 }

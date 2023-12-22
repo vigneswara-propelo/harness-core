@@ -32,6 +32,7 @@ import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -77,7 +78,7 @@ public abstract class BackstageCatalogEntity
   private String apiVersion = "backstage.io/v1alpha1";
   private Metadata metadata;
   @JsonIgnore private String kind;
-  private Object relations;
+  private Set<Relation> relations;
   private Object status;
 
   @Data
@@ -94,8 +95,9 @@ public abstract class BackstageCatalogEntity
     private String namespace;
     private String description;
     private List<String> tags;
+    // TODO: We can JsonIgnore uid in future once we stop depending on it in scorecards.
     private String uid;
-    private String etag;
+    @JsonIgnore private String etag;
     @JsonInclude(JsonInclude.Include.NON_EMPTY) private Map<String, String> annotations;
     private Object links;
     private Map<String, String> labels;
@@ -110,6 +112,30 @@ public abstract class BackstageCatalogEntity
       this.tags = tags;
       this.annotations = annotations;
     }
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @FieldNameConstants(innerTypeName = "BackstageCatalogEntityRelationKeys")
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public static class Relation {
+    String type;
+    String targetRef;
+    Target target;
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @FieldNameConstants(innerTypeName = "BackstageCatalogEntityRelationTargetKeys")
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public static class Target {
+    String kind;
+    String namespace;
+    String name;
   }
 
   @JsonIgnore private String yaml;

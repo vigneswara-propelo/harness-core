@@ -97,6 +97,7 @@ public class ResourceTypeConstants {
   public static final String IDP_OAUTH_CONFIG = "IDP_OAUTH_CONFIG";
 
   public static final String IDP_CATALOG_CONNECTOR = "IDP_CATALOG_CONNECTOR";
+  public static final String IDP_BACKSTAGE_CATALOG_ENTITY = "IDP_BACKSTAGE_CATALOG_ENTITY";
   public static final String GITOPS_REPOSITORY = "GITOPS_REPOSITORY";
   public static final String GITOPS_CLUSTER = "GITOPS_CLUSTER";
   public static final String GITOPS_CREDENTIAL_TEMPLATE = "GITOPS_CREDENTIAL_TEMPLATE";
