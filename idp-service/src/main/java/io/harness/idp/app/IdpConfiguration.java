@@ -168,6 +168,8 @@ public class IdpConfiguration extends Configuration {
   public static final String DELEGATE_PROXY_PACKAGE = "io.harness.idp.proxy.delegate";
   private static final String PLUGIN_PACKAGE = "io.harness.idp.plugin.resources";
   public static final String IDP_HEALTH_PACKAGE = "io.harness.idp.health";
+  public static final String LICENSING_USAGE_PACKAGE = "io.harness.licensing.usage.resources";
+  public static final String IDP_LICENSE_USAGE_PACKAGE = "io.harness.idp.license.usage.resources";
   private static final String IDP_YAML_SCHEMA = "io.harness.idp.pipeline.stages.yamlschema";
 
   public IdpConfiguration() {
@@ -272,7 +274,8 @@ public class IdpConfiguration extends Configuration {
         .stream()
         .filter(klazz
             -> StringUtils.startsWithAny(klazz.getPackage().getName(), IDP_SPEC_PACKAGE, SERVICES_PROXY_PACKAGE,
-                DELEGATE_PROXY_PACKAGE, PLUGIN_PACKAGE, IDP_HEALTH_PACKAGE, IDP_YAML_SCHEMA))
+                DELEGATE_PROXY_PACKAGE, PLUGIN_PACKAGE, IDP_HEALTH_PACKAGE, IDP_YAML_SCHEMA, LICENSING_USAGE_PACKAGE,
+                IDP_LICENSE_USAGE_PACKAGE))
         .collect(Collectors.toSet());
   }
 }
