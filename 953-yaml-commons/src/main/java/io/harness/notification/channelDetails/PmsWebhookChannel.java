@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiModelProperty;
+import java.util.Collections;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
@@ -36,6 +37,7 @@ import lombok.EqualsAndHashCode;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PmsWebhookChannel extends PmsNotificationChannel {
   @ApiModelProperty(dataType = SwaggerConstants.STRING_CLASSPATH) ParameterField<String> webhookUrl;
+  @ApiModelProperty(dataType = SwaggerConstants.STRING_MAP_CLASSPATH) Map<String, String> headers;
 
   @Override
   public NotificationChannel toNotificationChannel(String accountId, String orgIdentifier, String projectIdentifier,
@@ -48,6 +50,7 @@ public class PmsWebhookChannel extends PmsNotificationChannel {
         .projectIdentifier(projectIdentifier)
         .expressionFunctorToken(ambiance.getExpressionFunctorToken())
         .templateId(templateId)
+        .headers(headers == null ? Collections.emptyMap() : headers)
         // webhookUrl will be expression in case secret variables are used in it. Else normal expressions will be
         // resolved in pipeline-service only.
         .webhookUrls(
