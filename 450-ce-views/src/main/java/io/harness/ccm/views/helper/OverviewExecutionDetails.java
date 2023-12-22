@@ -7,6 +7,10 @@
 
 package io.harness.ccm.views.helper;
 
+import static io.harness.annotations.dev.HarnessTeam.CE;
+
+import io.harness.annotations.dev.OwnedBy;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Map;
 import lombok.AccessLevel;
@@ -20,10 +24,10 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Schema(description = "This object will contain the complete definition of a Cloud Cost OverviewExecutionDetails")
-
+@OwnedBy(CE)
 public class OverviewExecutionDetails {
   @Schema(description = "Total Rules") int totalRules;
   @Schema(description = "Total Enforcements") int totalRuleEnforcements;
   @Schema(description = "ResourceTypeExecution") Map<String, Integer> topResourceTypeExecution;
-  @Schema(description = "monthlyRealizedSavings") Map<String, String> monthlyRealizedSavings;
+  @Schema(description = "monthlyRealizedSavings") Map<String, Double> monthlyRealizedSavings;
 }

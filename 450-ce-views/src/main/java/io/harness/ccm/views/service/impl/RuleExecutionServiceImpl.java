@@ -14,7 +14,6 @@ import static io.harness.ccm.views.helper.RuleCloudProviderType.AWS;
 import static io.harness.ccm.views.helper.RuleCloudProviderType.AZURE;
 import static io.harness.ccm.views.helper.RuleCloudProviderType.GCP;
 import static io.harness.ccm.views.helper.RuleCostType.POTENTIAL;
-import static io.harness.ccm.views.helper.RuleCostType.REALIZED;
 import static io.harness.ccm.views.helper.RuleExecutionType.INTERNAL;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 
@@ -25,7 +24,6 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort
 
 import io.harness.ccm.commons.entities.CCMSort;
 import io.harness.ccm.commons.entities.CCMSortOrder;
-import io.harness.ccm.commons.entities.CCMTimeFilter;
 import io.harness.ccm.governance.dto.OverviewExecutionCostDetails;
 import io.harness.ccm.views.dao.RuleDAO;
 import io.harness.ccm.views.dao.RuleExecutionDAO;
@@ -39,8 +37,6 @@ import io.harness.ccm.views.helper.ExecutionSummary;
 import io.harness.ccm.views.helper.FilterValues;
 import io.harness.ccm.views.helper.GovernanceRuleFilter;
 import io.harness.ccm.views.helper.OverviewExecutionDetails;
-import io.harness.ccm.views.helper.ResourceTypeCount;
-import io.harness.ccm.views.helper.ResourceTypeCount.ResourceTypeCountkey;
 import io.harness.ccm.views.helper.ResourceTypePotentialCost;
 import io.harness.ccm.views.helper.ResourceTypePotentialCost.ResourceTypeCostKey;
 import io.harness.ccm.views.helper.RuleExecutionFilter;
@@ -52,8 +48,6 @@ import io.harness.exception.InvalidRequestException;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.fabric8.utils.Lists;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,8 +60,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOptions;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
@@ -82,7 +74,6 @@ public class RuleExecutionServiceImpl implements RuleExecutionService {
   @Inject private RuleSetDAO ruleSetDAO;
   @Inject private RuleDAO rulesDao;
   @Inject private MongoTemplate mongoTemplate;
-  private final String POTENTIALCOST = "potentialCost";
 
   @Override
   public String save(RuleExecution rulesExecution) {
@@ -139,32 +130,13 @@ public class RuleExecutionServiceImpl implements RuleExecutionService {
     return filterValues;
   }
 
-  public static Map<String, String> getDates() {
-    LocalDate endDate = LocalDate.now();
-    LocalDate startDate = endDate.minusDays(30);
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    Map<String, String> datesAsString = new HashMap<>();
-    LocalDate currentDate = startDate;
-    while (currentDate.isBefore(endDate)) {
-      currentDate = currentDate.plusDays(1);
-      datesAsString.put(currentDate.format(formatter), "0");
-    }
-    return datesAsString;
-  }
-
   @Override
   public OverviewExecutionDetails getOverviewExecutionDetails(
       String accountId, RuleExecutionFilter ruleExecutionFilter) {
-    OverviewExecutionDetails overviewExecutionDetails =
-        rulesExecutionDAO.getOverviewExecutionDetails(accountId, ruleExecutionFilter);
-    overviewExecutionDetails.setTopResourceTypeExecution(getResourceTypeCount(accountId, ruleExecutionFilter));
-    Map<String, String> dates = getDates();
-    List<Map> result = getResourceActualCost(accountId, ruleExecutionFilter);
-    for (Map res : result) {
-      dates.put(res.get("_id").toString(), res.get("cost").toString());
-    }
-    overviewExecutionDetails.setMonthlyRealizedSavings(dates);
+    OverviewExecutionDetails overviewExecutionDetails = rulesExecutionDAO.getOverviewExecutionDetails(accountId);
+    overviewExecutionDetails.setTopResourceTypeExecution(
+        rulesExecutionDAO.getResourceTypeCountMapping(ruleExecutionFilter));
+    overviewExecutionDetails.setMonthlyRealizedSavings(rulesExecutionDAO.getRealisedSavings(ruleExecutionFilter));
     return overviewExecutionDetails;
   }
 
@@ -234,77 +206,6 @@ public class RuleExecutionServiceImpl implements RuleExecutionService {
         .forEach(resource
             -> result.put(
                 resource.getResourceName() != null ? resource.getResourceName() : "others", resource.getCost()));
-    return result;
-  }
-
-  public List<Map> getResourceActualCost(String accountId, RuleExecutionFilter ruleExecutionFilter) {
-    Criteria criteria = Criteria.where(RuleExecutionKeys.accountId)
-                            .is(accountId)
-                            .and(RuleExecutionKeys.cost)
-                            .ne(null)
-                            .and(RuleExecutionKeys.costType)
-                            .is(REALIZED)
-                            .and(RuleExecutionKeys.executionType)
-                            .ne(INTERNAL);
-    if (ruleExecutionFilter.getTime() != null) {
-      for (CCMTimeFilter time : ruleExecutionFilter.getTime()) {
-        switch (time.getOperator()) {
-          case AFTER:
-            criteria.and(RuleExecutionKeys.createdAt).gte(time.getTimestamp());
-            break;
-          default:
-            throw new InvalidRequestException("Operator not supported not supported for time fields");
-        }
-      }
-    }
-    MatchOperation matchStage = Aggregation.match(criteria);
-    ProjectionOperation projectionStage = Aggregation.project()
-                                              .andExpression("dateToString('%Y-%m-%d', toDate("
-                                                  + "$createdAt"
-                                                  + "))")
-                                              .as("formatted_day")
-                                              .andInclude("cost");
-
-    GroupOperation group = Aggregation.group("formatted_day").sum("cost").as("cost");
-    AggregationOperation[] stages = {matchStage, projectionStage, group};
-    Aggregation aggregation = Aggregation.newAggregation(stages);
-    List<Map> result = mongoTemplate.aggregate(aggregation, "governanceRuleExecution", Map.class).getMappedResults();
-
-    log.info("getResourceActualCost: {}", result);
-    return result;
-  }
-
-  public Map<String, Integer> getResourceTypeCount(String accountId, RuleExecutionFilter ruleExecutionFilter) {
-    Criteria criteria = Criteria.where(RuleExecutionKeys.accountId)
-                            .is(accountId)
-                            .and(RuleExecutionKeys.resourceType)
-                            .exists(true)
-                            .and(RuleExecutionKeys.executionType)
-                            .ne(INTERNAL);
-    if (ruleExecutionFilter.getTime() != null) {
-      for (CCMTimeFilter time : ruleExecutionFilter.getTime()) {
-        switch (time.getOperator()) {
-          case AFTER:
-            criteria.and(RuleExecutionKeys.lastUpdatedAt).gte(time.getTimestamp());
-            break;
-          default:
-            throw new InvalidRequestException("Operator not supported not supported for time fields");
-        }
-      }
-    }
-    MatchOperation matchStage = Aggregation.match(criteria);
-    GroupOperation group = group(RuleExecutionKeys.resourceType).count().as(ResourceTypeCountkey.count);
-    SortOperation sortStage = sort(Sort.by(ResourceTypeCountkey.count));
-
-    ProjectionOperation projectionStage =
-        project().and(MONGODB_ID).as(ResourceTypeCountkey.resourceName).andInclude(ResourceTypeCountkey.count);
-    Map<String, Integer> result = new HashMap<>();
-    AggregationOptions options = Aggregation.newAggregationOptions().allowDiskUse(true).build();
-    aggregate(
-        newAggregation(matchStage, group, projectionStage, sortStage).withOptions(options), ResourceTypeCount.class)
-        .getMappedResults()
-        .forEach(resource -> result.put(resource.getResourceName(), resource.getCount()));
-    log.info("result: {}", result);
     return result;
   }
 

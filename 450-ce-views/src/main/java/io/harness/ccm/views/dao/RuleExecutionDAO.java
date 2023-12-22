@@ -8,9 +8,15 @@
 package io.harness.ccm.views.dao;
 
 import static io.harness.beans.FeatureName.CCM_ENABLE_AZURE_CLOUD_ASSET_GOVERNANCE_UI;
+import static io.harness.ccm.views.helper.RuleCostType.REALIZED;
+import static io.harness.ccm.views.helper.RuleExecutionStatusType.SUCCESS;
 import static io.harness.persistence.HQuery.excludeValidate;
 import static io.harness.timescaledb.Tables.CE_RECOMMENDATIONS;
 
+import static dev.morphia.aggregation.Accumulator.accumulator;
+import static dev.morphia.aggregation.Group.grouping;
+import static dev.morphia.aggregation.Projection.expression;
+import static dev.morphia.aggregation.Projection.projection;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
 
@@ -39,15 +45,22 @@ import io.harness.persistence.HPersistence;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.mongodb.AggregationOptions;
+import dev.morphia.aggregation.Projection;
 import dev.morphia.query.CriteriaContainer;
 import dev.morphia.query.Query;
 import dev.morphia.query.Sort;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -60,6 +73,18 @@ import org.springframework.data.mongodb.core.query.Criteria;
 @Slf4j
 @Singleton
 public class RuleExecutionDAO {
+  private static final String COUNT = "count";
+  private static final String MONGO_ID = "_id";
+  private static final String NULL_STRING = "null";
+  private static final String SUM_OPERATION = "$sum";
+  private static final String FORMATTED_DATE = "formattedDate";
+  private static final String DATE_TO_STRING_OPERATION = "$dateToString";
+  private static final String FORMAT_OPTION = "format";
+  private static final String DATE_FORMAT = "%Y-%m-%d";
+  private static final String DATE_OPTION = "date";
+  private static final String TO_DATE_OPERATION = "$toDate";
+  private static final String CREATED_AT_FIELD = "$createdAt";
+
   @Inject private HPersistence hPersistence;
   @Inject private MongoTemplate mongoTemplate;
   @Inject private RuleDAO ruleDAO;
@@ -103,7 +128,27 @@ public class RuleExecutionDAO {
     return ruleExecutionList;
   }
   public RuleExecutionList filterExecution(RuleExecutionFilter ruleExecutionFilter) {
-    RuleExecutionList ruleExecutionList = RuleExecutionList.builder().build();
+    Query<RuleExecution> query = getRuleExecutionFilterQuery(ruleExecutionFilter, RuleExecutionKeys.lastUpdatedAt);
+    List<RuleExecution> ruleExecutions = query.limit(ruleExecutionFilter.getLimit())
+                                             .offset(ruleExecutionFilter.getOffset())
+                                             .order(getRuleExecutionSortSort(ruleExecutionFilter))
+                                             .asList();
+    return RuleExecutionList.builder().totalItems((int) query.count()).ruleExecution(ruleExecutions).build();
+  }
+
+  @NotNull
+  private static Sort getRuleExecutionSortSort(RuleExecutionFilter ruleExecutionFilter) {
+    final RuleExecutionSortType modifiedSortType = Objects.isNull(ruleExecutionFilter.getRuleExecutionSortType())
+        ? RuleExecutionSortType.COST
+        : ruleExecutionFilter.getRuleExecutionSortType();
+    return (Objects.isNull(ruleExecutionFilter.getSortOrder())
+               || ruleExecutionFilter.getSortOrder() == CCMSortOrder.DESCENDING)
+        ? Sort.descending(modifiedSortType.getColumnName())
+        : Sort.ascending(modifiedSortType.getColumnName());
+  }
+
+  @NotNull
+  private Query<RuleExecution> getRuleExecutionFilterQuery(RuleExecutionFilter ruleExecutionFilter, String dateField) {
     Query<RuleExecution> query = hPersistence.createQuery(RuleExecution.class);
     CriteriaContainer criteria = query.or(query.criteria(RuleExecutionKeys.executionType).notEqual("INTERNAL"),
         query.criteria(RuleExecutionKeys.executionType).doesNotExist());
@@ -141,10 +186,10 @@ public class RuleExecutionDAO {
       for (CCMTimeFilter time : ruleExecutionFilter.getTime()) {
         switch (time.getOperator()) {
           case AFTER:
-            query.field(RuleExecutionKeys.lastUpdatedAt).greaterThanOrEq(time.getTimestamp());
+            query.field(dateField).greaterThanOrEq(time.getTimestamp());
             break;
           case BEFORE:
-            query.field(RuleExecutionKeys.lastUpdatedAt).lessThanOrEq(time.getTimestamp());
+            query.field(dateField).lessThanOrEq(time.getTimestamp());
             break;
           default:
             throw new InvalidRequestException("Operator not supported not supported for time fields");
@@ -155,17 +200,56 @@ public class RuleExecutionDAO {
             CCM_ENABLE_AZURE_CLOUD_ASSET_GOVERNANCE_UI, ruleExecutionFilter.getAccountId())) {
       query.field(RuleExecutionKeys.cloudProvider).notEqual(RuleCloudProviderType.AZURE);
     }
-    ruleExecutionList.setTotalItems((int) query.count());
-    final RuleExecutionSortType modifiedSortType = Objects.isNull(ruleExecutionFilter.getRuleExecutionSortType())
-        ? RuleExecutionSortType.COST
-        : ruleExecutionFilter.getRuleExecutionSortType();
-    final Sort sort = (Objects.isNull(ruleExecutionFilter.getSortOrder())
-                          || ruleExecutionFilter.getSortOrder() == CCMSortOrder.DESCENDING)
-        ? Sort.descending(modifiedSortType.getColumnName())
-        : Sort.ascending(modifiedSortType.getColumnName());
-    ruleExecutionList.setRuleExecution(
-        query.limit(ruleExecutionFilter.getLimit()).offset(ruleExecutionFilter.getOffset()).order(sort).asList());
-    return ruleExecutionList;
+    return query;
+  }
+
+  public Map<String, Integer> getResourceTypeCountMapping(RuleExecutionFilter ruleExecutionFilter) {
+    Map<String, Integer> resourceTypeCountMap = new HashMap<>();
+    Query<RuleExecution> query = getRuleExecutionFilterQuery(ruleExecutionFilter, RuleExecutionKeys.lastUpdatedAt);
+    query.filter(RuleExecutionKeys.executionStatus, SUCCESS);
+    // noinspection rawtypes
+    Iterator<Map> aggregationResult =
+        hPersistence.getDatastore(RuleExecution.class)
+            .createAggregation(RuleExecution.class)
+            .match(query)
+            .group(RuleExecutionKeys.resourceType, grouping(COUNT, accumulator(SUM_OPERATION, 1)))
+            .sort(Sort.descending(COUNT))
+            .aggregate(Map.class, AggregationOptions.builder().build());
+    while (aggregationResult.hasNext()) {
+      // noinspection rawtypes
+      Map resultEntry = aggregationResult.next();
+      resourceTypeCountMap.put((String) resultEntry.get(MONGO_ID), (int) resultEntry.get(COUNT));
+    }
+    if (resourceTypeCountMap.containsKey(null)) {
+      Integer value = resourceTypeCountMap.remove(null);
+      resourceTypeCountMap.put(NULL_STRING, value);
+    }
+    return resourceTypeCountMap;
+  }
+
+  public Map<String, Double> getRealisedSavings(RuleExecutionFilter ruleExecutionFilter) {
+    Map<String, Double> realisedSavingsMap = new HashMap<>();
+    Query<RuleExecution> query = getRuleExecutionFilterQuery(ruleExecutionFilter, RuleExecutionKeys.createdAt);
+    query.field(RuleExecutionKeys.cost).exists().filter(RuleExecutionKeys.costType, REALIZED);
+    Projection formattedDateProjection = expression(FORMATTED_DATE,
+        new Document(DATE_TO_STRING_OPERATION,
+            new Document(FORMAT_OPTION, DATE_FORMAT)
+                .append(DATE_OPTION, new Document(TO_DATE_OPERATION, CREATED_AT_FIELD))));
+    // noinspection rawtypes
+    Iterator<Map> aggregationResult =
+        hPersistence.getDatastore(RuleExecution.class)
+            .createAggregation(RuleExecution.class)
+            .match(query)
+            .project(formattedDateProjection, projection(RuleExecutionKeys.cost))
+            .group(FORMATTED_DATE, grouping(RuleExecutionKeys.cost, accumulator(SUM_OPERATION, RuleExecutionKeys.cost)))
+            .aggregate(Map.class, AggregationOptions.builder().build());
+    while (aggregationResult.hasNext()) {
+      // noinspection rawtypes
+      Map resultEntry = aggregationResult.next();
+      realisedSavingsMap.put(String.valueOf(resultEntry.get(MONGO_ID)),
+          Double.valueOf(String.valueOf(resultEntry.get(RuleExecutionKeys.cost))));
+    }
+    return realisedSavingsMap;
   }
 
   public List<RuleExecution> getRuleLastExecution(String accountId, List<String> ruleIds) {
@@ -192,8 +276,7 @@ public class RuleExecutionDAO {
         .getMappedResults();
   }
 
-  public OverviewExecutionDetails getOverviewExecutionDetails(
-      String accountId, RuleExecutionFilter ruleExecutionFilter) {
+  public OverviewExecutionDetails getOverviewExecutionDetails(String accountId) {
     OverviewExecutionDetails overviewExecutionDetails = OverviewExecutionDetails.builder().build();
     overviewExecutionDetails.setTotalRules(
         ruleDAO.list(GovernanceRuleFilter.builder().accountId(accountId).build()).getRules().size());
