@@ -10,7 +10,6 @@ package io.harness.iacm.plan.creator.stage;
 import static io.harness.beans.yaml.extended.infrastrucutre.VmPoolYaml.VmPoolYamlSpec;
 import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
-import static io.harness.pms.sdk.core.plan.PlanNode.PlanNodeBuilder;
 import static io.harness.yaml.extended.ci.codebase.Build.BuildBuilder;
 import static io.harness.yaml.extended.ci.codebase.Build.builder;
 import static io.harness.yaml.extended.ci.codebase.CodeBase.CodeBaseBuilder;
@@ -40,24 +39,20 @@ import io.harness.iacmserviceclient.IACMServiceUtils;
 import io.harness.plancreator.PlanCreatorUtilsV1;
 import io.harness.plancreator.stages.v1.AbstractStagePlanCreator;
 import io.harness.plancreator.steps.common.StageElementParameters;
-import io.harness.plancreator.strategy.StrategyUtilsV1;
-import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
-import io.harness.pms.contracts.facilitators.FacilitatorType;
 import io.harness.pms.contracts.plan.Dependency;
 import io.harness.pms.contracts.plan.HarnessStruct;
 import io.harness.pms.contracts.plan.HarnessValue;
-import io.harness.pms.execution.OrchestrationFacilitatorType;
+import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.sdk.core.plan.PlanNode;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
-import io.harness.pms.sdk.core.plan.creation.yaml.StepOutcomeGroup;
+import io.harness.pms.sdk.core.steps.io.StepParameters;
 import io.harness.pms.yaml.DependenciesUtils;
 import io.harness.pms.yaml.ParameterField;
 import io.harness.pms.yaml.YAMLFieldNameConstants;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlUtils;
 import io.harness.serializer.KryoSerializer;
-import io.harness.when.utils.v1.RunInfoUtilsV1;
 import io.harness.yaml.clone.Clone;
 import io.harness.yaml.extended.ci.codebase.Build;
 import io.harness.yaml.extended.ci.codebase.BuildType;
@@ -204,24 +199,24 @@ public class IACMStagePMSPlanCreatorV1 extends AbstractStagePlanCreator<IACMStag
     return true;
   }
 
-  /*
-   * This method creates a plan to follow for the Parent node, which is the stage. If I get this right, because the
-   * stage is treated as another step, this follows the same procedure where stages are defined in what order need to be
-   * executed and then for each step a Plan for the child nodes (steps?) will be executed
-   * */
-  public PlanNode createPlanForParentNode(
-      PlanCreationContext ctx, IACMStageNodeV1 stageNode, List<String> childrenNodeIds) {
-    YamlField field = ctx.getCurrentField();
-    IACMStageConfigImplV1 stageConfig = stageNode.getStageConfig();
-    Infrastructure infrastructure = getInfrastructure(stageConfig.getRuntime(), stageConfig.getPlatform());
-    YamlField specField = Preconditions.checkNotNull(field.getNode().getField(YAMLFieldNameConstants.SPEC));
-    String workspaceId = specField.getNode().getFieldOrThrow("workspace").getNode().getCurrJsonNode().asText();
+  @Override
+  public StepType getStepType() {
+    return IACMIntegrationStageStepPMS.STEP_TYPE;
+  }
 
-    CodeBase codeBase = getIACMCodebase(ctx, workspaceId);
+  @Override
+  public StepParameters getStageParameters(
+      PlanCreationContext ctx, IACMStageNodeV1 stageNodeV1, List<String> childrenNodeIds) {
+    YamlField field = ctx.getCurrentField();
+    IACMStageConfigImplV1 stageConfig = stageNodeV1.getStageConfig();
+    YamlField specField = Preconditions.checkNotNull(field.getNode().getField(YAMLFieldNameConstants.SPEC));
     Optional<Object> optionalOptions =
         getDeserializedObjectFromDependency(ctx.getMetadata().getGlobalDependency(), YAMLFieldNameConstants.OPTIONS);
+    String workspaceId = specField.getNode().getFieldOrThrow("workspace").getNode().getCurrJsonNode().asText();
     Options options = (Options) optionalOptions.orElse(Options.builder().build());
     Registry registry = options.getRegistry() == null ? Registry.builder().build() : options.getRegistry();
+    Infrastructure infrastructure = getInfrastructure(stageConfig.getRuntime(), stageConfig.getPlatform());
+    CodeBase codeBase = getIACMCodebase(ctx, workspaceId);
     IACMIntegrationStageStepParametersPMS params = IACMIntegrationStageStepParametersPMS.builder()
                                                        .infrastructure(infrastructure)
                                                        .childNodeID(childrenNodeIds.get(0))
@@ -230,30 +225,11 @@ public class IACMStagePMSPlanCreatorV1 extends AbstractStagePlanCreator<IACMStag
                                                        .registry(registry)
                                                        .cloneManually(shouldCloneManually(ctx, codeBase))
                                                        .build();
-    PlanNodeBuilder builder =
-        PlanNode.builder()
-            .uuid(StrategyUtilsV1.getSwappedPlanNodeId(ctx, stageNode.getUuid()))
-            .name(StrategyUtilsV1.getIdentifierWithExpression(ctx, stageNode.getName()))
-            .identifier(StrategyUtilsV1.getIdentifierWithExpression(ctx, stageNode.getId()))
-            .group(StepOutcomeGroup.STAGE.name())
-            .stepParameters(StageElementParameters.builder()
-                                .identifier(stageNode.getId())
-                                .name(stageNode.getName())
-                                .specConfig(params)
-                                .build())
-            .stepType(IACMIntegrationStageStepPMS.STEP_TYPE)
-            .whenCondition(RunInfoUtilsV1.getStageWhenCondition(stageNode.getWhen()))
-            .facilitatorObtainment(
-                FacilitatorObtainment.newBuilder()
-                    .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.CHILD).build())
-                    .build())
-            .skipExpressionChain(false);
-    // If strategy present then don't add advisers. Strategy node will take care of running the stage nodes.
-    if (field.getNode().getField(YAMLFieldNameConstants.SPEC).getNode().getField(YAMLFieldNameConstants.STRATEGY)
-        == null) {
-      builder.adviserObtainments(getAdviserObtainments(ctx.getDependency()));
-    }
-    return builder.build();
+    return StageElementParameters.builder()
+        .identifier(stageNodeV1.getId())
+        .name(stageNodeV1.getName())
+        .specConfig(params)
+        .build();
   }
 
   @Override

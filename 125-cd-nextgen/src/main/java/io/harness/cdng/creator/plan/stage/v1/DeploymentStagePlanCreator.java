@@ -67,24 +67,21 @@ import io.harness.ng.core.serviceoverride.services.ServiceOverrideService;
 import io.harness.plancreator.PlanCreatorUtilsV1;
 import io.harness.plancreator.stages.v1.AbstractStagePlanCreator;
 import io.harness.plancreator.steps.common.SpecParameters;
+import io.harness.plancreator.steps.common.v1.StageElementParametersV1;
 import io.harness.plancreator.steps.common.v1.StageElementParametersV1.StageElementParametersV1Builder;
 import io.harness.plancreator.steps.v1.FailureStrategiesUtilsV1;
 import io.harness.plancreator.strategy.StrategyType;
 import io.harness.plancreator.strategy.StrategyUtils;
-import io.harness.plancreator.strategy.StrategyUtilsV1;
 import io.harness.pms.contracts.advisers.AdviserObtainment;
-import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
-import io.harness.pms.contracts.facilitators.FacilitatorType;
 import io.harness.pms.contracts.plan.Dependencies;
 import io.harness.pms.contracts.plan.Dependency;
 import io.harness.pms.contracts.plan.EdgeLayoutList;
 import io.harness.pms.contracts.plan.GraphLayoutNode;
 import io.harness.pms.contracts.plan.HarnessStruct;
 import io.harness.pms.contracts.plan.HarnessValue;
-import io.harness.pms.execution.OrchestrationFacilitatorType;
+import io.harness.pms.contracts.steps.StepType;
 import io.harness.pms.plan.creation.PlanCreatorConstants;
 import io.harness.pms.sdk.core.plan.PlanNode;
-import io.harness.pms.sdk.core.plan.PlanNode.PlanNodeBuilder;
 import io.harness.pms.sdk.core.plan.creation.beans.GraphLayoutResponse;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
@@ -99,7 +96,6 @@ import io.harness.rbac.CDNGRbacUtility;
 import io.harness.strategy.StrategyValidationUtils;
 import io.harness.utils.NGFeatureFlagHelperService;
 import io.harness.utils.PlanCreatorUtilsCommon;
-import io.harness.when.utils.v1.RunInfoUtilsV1;
 import io.harness.yaml.core.failurestrategy.v1.FailureConfigV1;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -227,60 +223,37 @@ public class DeploymentStagePlanCreator extends AbstractStagePlanCreator<Deploym
   }
 
   @Override
-  public PlanNode createPlanForParentNode(
-      PlanCreationContext ctx, DeploymentStageNodeV1 stageNode, List<String> childrenNodeIds) {
-    if (stageNode.getStrategy() != null && MultiDeploymentSpawnerUtils.hasMultiDeploymentConfigured(stageNode)) {
+  public StageElementParametersV1 getStageParameters(
+      PlanCreationContext ctx, DeploymentStageNodeV1 stageNodeV1, List<String> childrenNodeIds) {
+    if (stageNodeV1.getStrategy() != null && MultiDeploymentSpawnerUtils.hasMultiDeploymentConfigured(stageNodeV1)) {
       throw new InvalidRequestException(
           "Looping Strategy and Multi Service/Environment configurations are not supported together in a single stage. Please use any one of these");
     }
-
     YamlField specField =
         Preconditions.checkNotNull(ctx.getCurrentField().getNode().getField(YAMLFieldNameConstants.SPEC));
 
-    //    DeploymentStageStepParametersV1 stepParameters = DeploymentStageStepParametersV1.builder().build();
     DeploymentStageStepParametersV1 stepParameters =
-        (DeploymentStageStepParametersV1) getSpecParameters(specField.getNode().getUuid(), ctx, stageNode);
+        (DeploymentStageStepParametersV1) getSpecParameters(specField.getNode().getUuid(), ctx, stageNodeV1);
 
-    StageElementParametersV1Builder stageParameters = StepParametersUtils.getStageParametersBuilder(stageNode);
-    stageParameters.type(YAMLFieldNameConstants.DEPLOYMENT_STAGE_V1);
+    StageElementParametersV1Builder stageParameters = StepParametersUtils.getStageParametersBuilder(stageNodeV1);
     stageParameters.spec(stepParameters);
-    String name = stageNode.getName();
     stageParameters.spec(stepParameters);
+    return stageParameters.build();
+  }
 
+  @Override
+  public StepType getStepType() {
+    return DeploymentStageStepV1.STEP_TYPE;
+  }
+
+  @Override
+  public List<AdviserObtainment> getAdviserObtainments(PlanCreationContext ctx, DeploymentStageNodeV1 stageNodeV1) {
     List<AdviserObtainment> adviserObtainments = new ArrayList<>();
-    if (!MultiDeploymentSpawnerUtils.hasMultiDeploymentConfigured(stageNode)) {
+    if (!MultiDeploymentSpawnerUtils.hasMultiDeploymentConfigured(stageNodeV1)) {
       adviserObtainments =
           StrategyUtils.getAdviserObtainments(ctx.getCurrentField(), kryoSerializer, true, ctx.getDependency());
     }
-
-    // We need to swap the ids if strategy is present
-    PlanNodeBuilder planNodeBuilder =
-        PlanNode.builder()
-            .uuid(StrategyUtilsV1.getSwappedPlanNodeId(ctx, stageNode.getUuid()))
-            .name(StrategyUtilsV1.getIdentifierWithExpression(ctx, name))
-            .identifier(StrategyUtilsV1.getIdentifierWithExpression(ctx, stageNode.getId()))
-            .stepType(DeploymentStageStepV1.STEP_TYPE)
-            .group(StepOutcomeGroup.STAGE.name())
-            .skipUnresolvedExpressionsCheck(true)
-            .whenCondition(RunInfoUtilsV1.getStageWhenCondition(stageNode.getWhen()))
-            .stepParameters(stageParameters.build())
-            .facilitatorObtainment(
-                FacilitatorObtainment.newBuilder()
-                    .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.CHILD).build())
-                    .build())
-            .skipExpressionChain(false)
-            .timeoutObtainment(PlanCreatorUtilsV1.getTimeoutObtainmentForStage(stageNode))
-            .adviserObtainments(adviserObtainments);
-
-    // If strategy present then don't add advisers. Strategy node will take care of running the stage nodes.
-    if (ctx.getCurrentField().getNode().getField(YAMLFieldNameConstants.SPEC).getNode().getField("strategy") == null) {
-      planNodeBuilder.adviserObtainments(getAdviserObtainments(ctx.getDependency()));
-    }
-
-    if (!EmptyPredicate.isEmpty(ctx.getExecutionInputTemplate())) {
-      planNodeBuilder.executionInputTemplate(ctx.getExecutionInputTemplate());
-    }
-    return planNodeBuilder.build();
+    return adviserObtainments;
   }
 
   public String getIdentifierWithExpression(PlanCreationContext ctx, DeploymentStageNodeV1 node, String identifier) {
