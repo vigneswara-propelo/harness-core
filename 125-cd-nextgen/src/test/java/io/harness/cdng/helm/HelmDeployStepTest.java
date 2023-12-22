@@ -26,7 +26,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.helm.beans.NativeHelmExecutionPassThroughData;
 import io.harness.cdng.instance.info.InstanceInfoService;
@@ -310,37 +309,6 @@ public class HelmDeployStepTest extends AbstractHelmStepExecutorTestBase {
         .consume(eq(ambiance), eq(OutcomeExpressionConstants.HELM_DEPLOY_RELEASE_OUTCOME),
             any(NativeHelmDeployOutcome.class), eq(StepOutcomeGroup.STEP.name()));
     assertThat(result).isNull();
-  }
-
-  @Test
-  @Owner(developers = MLUKIC)
-  @Category(UnitTests.class)
-  public void testHandleProgressWIthHelmDeployProgressDataWithFFDisabled() {
-    final HelmDeployStepParams stepParameters = HelmDeployStepParams.infoBuilder().build();
-    final StepElementParameters stepElementParameters = StepElementParameters.builder().spec(stepParameters).build();
-    ProgressData progressData =
-        HelmDeployProgressData.builder().progressDataVersion(HelmDeployProgressDataVersion.V1.getVersionName()).build();
-    doReturn(false).when(cdFeatureFlagHelper).isEnabled(any(), eq(FeatureName.CDS_HELM_SEND_TASK_PROGRESS_NG));
-
-    ProgressData result = helmDeployStep.handleProgressTaskChain(ambiance, stepElementParameters, progressData);
-
-    verify(executionSweepingOutputService, times(0)).consume(any(), any(), any(), any());
-
-    assertThat(result).isNull();
-  }
-
-  @Test
-  @Owner(developers = MLUKIC)
-  @Category(UnitTests.class)
-  public void testHandleProgressWithUnitProgressDataWhenFFDisabled() {
-    final HelmDeployStepParams stepParameters = HelmDeployStepParams.infoBuilder().build();
-    final StepElementParameters stepElementParameters = StepElementParameters.builder().spec(stepParameters).build();
-    ProgressData progressData = UnitProgressData.builder().build();
-    doReturn(false).when(cdFeatureFlagHelper).isEnabled(any(), eq(FeatureName.CDS_HELM_SEND_TASK_PROGRESS_NG));
-
-    helmDeployStep.handleProgressTaskChain(ambiance, stepElementParameters, progressData);
-
-    verify(executionSweepingOutputService, times(0)).consume(any(), any(), any(), any());
   }
 
   @Test

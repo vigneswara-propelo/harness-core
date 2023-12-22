@@ -299,16 +299,14 @@ public class HelmDeployServiceImplNG implements HelmDeployServiceNG {
       // list releases cmd passed
       isInstallUpgrade = true;
 
-      if (commandRequest.isSendTaskProgressEvents()) {
-        HelmDeployProgressData helmDeployProgressData =
-            HelmDeployProgressData.builder()
-                .progressDataVersion(HelmDeployProgressDataVersion.V1.getVersionName())
-                .prevReleaseVersion(prevVersion)
-                .hasInstallUpgradeStarted(isInstallUpgrade)
-                .build();
-        k8sTaskHelperBase.getTaskProgressCallback(taskProgressStreamingTaskClient, taskId)
-            .sendTaskProgressUpdate("Helm Install/Upgrade started", helmDeployProgressData);
-      }
+      HelmDeployProgressData helmDeployProgressData =
+          HelmDeployProgressData.builder()
+              .progressDataVersion(HelmDeployProgressDataVersion.V1.getVersionName())
+              .prevReleaseVersion(prevVersion)
+              .hasInstallUpgradeStarted(isInstallUpgrade)
+              .build();
+      k8sTaskHelperBase.getTaskProgressCallback(taskProgressStreamingTaskClient, taskId)
+          .sendTaskProgressUpdate("Helm Install/Upgrade started", helmDeployProgressData);
 
       if (checkNewHelmInstall(helmListReleaseResponseNG)) {
         // install

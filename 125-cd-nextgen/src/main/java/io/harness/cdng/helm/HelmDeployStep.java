@@ -122,22 +122,19 @@ public class HelmDeployStep extends CdTaskChainExecutable implements NativeHelmS
   public ProgressData handleProgressTaskChain(
       Ambiance ambiance, StepBaseParameters stepParameters, ProgressData progressData) {
     if (progressData instanceof HelmDeployProgressData) {
-      if (cdFeatureFlagHelper.isEnabled(
-              AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_HELM_SEND_TASK_PROGRESS_NG)) {
-        HelmDeployProgressData helmDeployProgressData = (HelmDeployProgressData) progressData;
-        if (HelmDeployProgressDataVersion.V1.getVersionName().equalsIgnoreCase(
-                helmDeployProgressData.getProgressDataVersion())) {
-          NativeHelmDeployOutcomeBuilder nativeHelmDeployOutcomeBuilder = NativeHelmDeployOutcome.builder();
-          nativeHelmDeployOutcomeBuilder.prevReleaseVersion(helmDeployProgressData.getPrevReleaseVersion());
-          nativeHelmDeployOutcomeBuilder.newReleaseVersion(helmDeployProgressData.getPrevReleaseVersion() + 1);
-          nativeHelmDeployOutcomeBuilder.hasInstallUpgradeStarted(helmDeployProgressData.isHasInstallUpgradeStarted());
+      HelmDeployProgressData helmDeployProgressData = (HelmDeployProgressData) progressData;
+      if (HelmDeployProgressDataVersion.V1.getVersionName().equalsIgnoreCase(
+              helmDeployProgressData.getProgressDataVersion())) {
+        NativeHelmDeployOutcomeBuilder nativeHelmDeployOutcomeBuilder = NativeHelmDeployOutcome.builder();
+        nativeHelmDeployOutcomeBuilder.prevReleaseVersion(helmDeployProgressData.getPrevReleaseVersion());
+        nativeHelmDeployOutcomeBuilder.newReleaseVersion(helmDeployProgressData.getPrevReleaseVersion() + 1);
+        nativeHelmDeployOutcomeBuilder.hasInstallUpgradeStarted(helmDeployProgressData.isHasInstallUpgradeStarted());
 
-          executionSweepingOutputService.consume(ambiance, OutcomeExpressionConstants.HELM_DEPLOY_RELEASE_OUTCOME,
-              nativeHelmDeployOutcomeBuilder.build(), StepOutcomeGroup.STEP.name());
-        } else {
-          log.error(
-              "Version {} of Helm Progress Data is not recognised", helmDeployProgressData.getProgressDataVersion());
-        }
+        executionSweepingOutputService.consume(ambiance, OutcomeExpressionConstants.HELM_DEPLOY_RELEASE_OUTCOME,
+            nativeHelmDeployOutcomeBuilder.build(), StepOutcomeGroup.STEP.name());
+      } else {
+        log.error(
+            "Version {} of Helm Progress Data is not recognised", helmDeployProgressData.getProgressDataVersion());
       }
       return null;
     }
@@ -290,8 +287,7 @@ public class HelmDeployStep extends CdTaskChainExecutable implements NativeHelmS
             .useRefactorSteadyStateCheck(cdFeatureFlagHelper.isEnabled(
                 AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_HELM_STEADY_STATE_CHECK_1_16_V2_NG))
             .skipSteadyStateCheck(skipSteadyStateCheck)
-            .sendTaskProgressEvents(cdFeatureFlagHelper.isEnabled(
-                AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_HELM_SEND_TASK_PROGRESS_NG))
+            .sendTaskProgressEvents(true)
             .disableFabric8(cdStepHelper.shouldDisableFabric8(AmbianceUtils.getAccountId(ambiance)))
             .improvedHelmTracking(cdFeatureFlagHelper.isEnabled(
                 AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_IMPROVED_HELM_DEPLOYMENT_TRACKING))

@@ -173,9 +173,7 @@ public class HelmRollbackStep extends CdTaskExecutable<HelmCmdExecResponseNG> {
       helmDeployOptionalOutput = executionSweepingOutputService.resolveOptional(ambiance,
           RefObjectUtils.getSweepingOutputRefObject(helmRollbackStepParams.getHelmRollbackFqn() + "."
               + OutcomeExpressionConstants.HELM_DEPLOY_RELEASE_OUTCOME));
-      if (!cdFeatureFlagHelper.isEnabled(
-              AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_HELM_SEND_TASK_PROGRESS_NG)
-          || !helmDeployOptionalOutput.isFound()) {
+      if (!helmDeployOptionalOutput.isFound()) {
         return TaskRequest.newBuilder()
             .setSkipTaskRequest(SkipTaskRequest.newBuilder()
                                     .setMessage("Helm Deploy step was not executed. Skipping rollback.")
@@ -226,8 +224,7 @@ public class HelmRollbackStep extends CdTaskExecutable<HelmCmdExecResponseNG> {
         .useRefactorSteadyStateCheck(cdFeatureFlagHelper.isEnabled(
             AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_HELM_STEADY_STATE_CHECK_1_16_V2_NG))
         .skipSteadyStateCheck(skipSteadyStateCheck)
-        .sendTaskProgressEvents(cdFeatureFlagHelper.isEnabled(
-            AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_HELM_SEND_TASK_PROGRESS_NG))
+        .sendTaskProgressEvents(true)
         .improvedHelmTracking(cdFeatureFlagHelper.isEnabled(
             AmbianceUtils.getAccountId(ambiance), FeatureName.CDS_IMPROVED_HELM_DEPLOYMENT_TRACKING))
         .useSteadyStateCheckForJobs(nativeHelmStepHelper.isSteadyStateForJobsEnabled(ambiance));
