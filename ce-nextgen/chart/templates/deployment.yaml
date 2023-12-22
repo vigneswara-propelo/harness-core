@@ -109,8 +109,12 @@ spec:
             {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "JWT_IDENTITY_SERVICE_SECRET" "defaultKubernetesSecretName" "nextgen-ce" "defaultKubernetesSecretKey" "JWT_IDENTITY_SERVICE_SECRET") | indent 12 }}
             {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "NOTIFICATION_CLIENT_SECRET" "defaultKubernetesSecretName" "nextgen-ce" "defaultKubernetesSecretKey" "NOTIFICATION_CLIENT_SECRET") | indent 12 }}
             {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "ACCESS_CONTROL_SECRET" "defaultKubernetesSecretName" "nextgen-ce" "defaultKubernetesSecretKey" "ACCESS_CONTROL_SECRET") | indent 12 }}
+            {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "AWS_ACCESS_KEY" "defaultKubernetesSecretName" "nextgen-ce" "defaultKubernetesSecretKey" "AWS_ACCESS_KEY") | indent 12 }}
+            {{- include "harnesscommon.secrets.manageAppEnv" (dict "ctx" $ "variableName" "AWS_SECRET_KEY" "defaultKubernetesSecretName" "nextgen-ce" "defaultKubernetesSecretKey" "AWS_SECRET_KEY") | indent 12 }}
             - name: TIMESCALEDB_URI
               value: {{ include "harnesscommon.dbconnectionv2.timescaleConnection" (dict "protocol" "jdbc:postgresql" "database" "harness" "context" $) }}
+            - name: FAKTORY_URL
+              value: "tcp://:@lwd-faktory.{{ .Release.Namespace }}.svc.cluster.local:7419"
             {{- include "harnesscommon.dbv3.mongoEnv" (dict "ctx" $ "database" "events") | indent 12 }}
             {{- include "harnesscommon.dbv3.mongoConnectionEnv" (dict "ctx" $ "database" "events" "connectionURIVariableName" "EVENTS_MONGO_DB_URL") | indent 12 }}
             {{- include "harnesscommon.dbv3.mongoEnv" (dict "ctx" $ "database" "notifications") | indent 12 }}
