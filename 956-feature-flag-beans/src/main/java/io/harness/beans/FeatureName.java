@@ -878,8 +878,6 @@ public enum FeatureName {
       "Follow delegate selector precedence in service/infra step", CDC),
   CDS_K8S_TRAFFIC_ROUTING_NG(
       "Providing Traffic Routing functionality for K8s - BG, Canary and TrafficRouting steps", HarnessTeam.CDP),
-  CDS_METHOD_INVOCATION_NEW_FLOW_EXPRESSION_ENGINE(
-      "Supports edge cases of method invocation in expression engine", PIPELINE),
 
   CDS_USE_AMBIANCE_IN_EXPRESSION_ENGINE(
       "Uses ambiance in expression engine. Should be enabled only if we see any issues", PIPELINE),
