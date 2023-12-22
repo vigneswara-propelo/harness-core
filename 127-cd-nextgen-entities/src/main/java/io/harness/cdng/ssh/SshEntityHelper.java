@@ -169,6 +169,8 @@ public class SshEntityHelper {
             .encryptionDataDetails(sshKeySpecDTOHelper.getSSHKeyEncryptionDetails(sshKeySpecDto, ngAccess))
             .region(awsInfrastructureOutcome.getRegion())
             .tags(filterInfraTags(awsInfrastructureOutcome.getHostTags()))
+            .vpcIds(awsInfrastructureOutcome.getVpcIds())
+            .autoScalingGroupName(awsInfrastructureOutcome.getAsgName())
             .build();
 
       case CUSTOM_DEPLOYMENT:
@@ -236,6 +238,8 @@ public class SshEntityHelper {
             .encryptionDataDetails(winRmCredentialsSpecDTOHelper.getWinRmEncryptionDetails(winRmCredentials, ngAccess))
             .region(awsInfrastructureOutcome.getRegion())
             .tags(filterInfraTags(awsInfrastructureOutcome.getHostTags()))
+            .vpcIds(awsInfrastructureOutcome.getVpcIds())
+            .autoScalingGroupName(awsInfrastructureOutcome.getAsgName())
             .build();
       default:
         throw new UnsupportedOperationException(

@@ -36,6 +36,7 @@ import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
 import com.amazonaws.services.autoscaling.model.Instance;
+import com.amazonaws.services.autoscaling.model.LifecycleState;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.ArrayList;
@@ -90,7 +91,11 @@ public class AwsASGDelegateTaskHelper {
 
       if (CollectionUtils.isNotEmpty(describeAutoScalingGroupsResult.getAutoScalingGroups())) {
         AutoScalingGroup autoScalingGroup = describeAutoScalingGroupsResult.getAutoScalingGroups().get(0);
-        result = autoScalingGroup.getInstances().stream().map(Instance::getInstanceId).collect(toList());
+        result = autoScalingGroup.getInstances()
+                     .stream()
+                     .filter(instance -> LifecycleState.InService.name().equalsIgnoreCase(instance.getLifecycleState()))
+                     .map(Instance::getInstanceId)
+                     .collect(toList());
       }
 
       return result;

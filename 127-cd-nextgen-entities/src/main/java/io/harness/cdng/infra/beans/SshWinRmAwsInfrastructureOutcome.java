@@ -15,6 +15,7 @@ import io.harness.steps.environment.EnvironmentOutcome;
 import io.harness.yaml.core.VariableExpression;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.List;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Value;
@@ -32,6 +33,8 @@ public class SshWinRmAwsInfrastructureOutcome extends InfrastructureOutcomeAbstr
   private String region;
   Map<String, String> hostTags;
   private String hostConnectionType;
+  private List<String> vpcIds;
+  private String asgName;
 
   @VariableExpression(skipVariableExpression = true) private EnvironmentOutcome environment;
   private String infrastructureKey;

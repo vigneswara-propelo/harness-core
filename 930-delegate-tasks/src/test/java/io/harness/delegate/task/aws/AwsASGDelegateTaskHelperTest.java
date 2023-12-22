@@ -44,6 +44,7 @@ import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
 import com.amazonaws.services.autoscaling.model.Instance;
+import com.amazonaws.services.autoscaling.model.LifecycleState;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -83,7 +84,7 @@ public class AwsASGDelegateTaskHelperTest extends CategoryTest {
   @Owner(developers = VITALIE)
   @Category(UnitTests.class)
   public void getInstanceIds() throws IOException {
-    Instance instance = (new Instance()).withInstanceId("id");
+    Instance instance = (new Instance()).withInstanceId("id").withLifecycleState(LifecycleState.InService);
     AutoScalingGroup autoScalingGroup = (new AutoScalingGroup()).withInstances(instance);
     DescribeAutoScalingGroupsResult describeAutoScalingGroupsResult =
         (new DescribeAutoScalingGroupsResult()).withAutoScalingGroups(autoScalingGroup);
