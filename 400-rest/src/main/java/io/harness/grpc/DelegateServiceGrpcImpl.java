@@ -27,6 +27,8 @@ import io.harness.delegate.ExecuteParkedTaskRequest;
 import io.harness.delegate.ExecuteParkedTaskResponse;
 import io.harness.delegate.FetchParkedTaskStatusRequest;
 import io.harness.delegate.FetchParkedTaskStatusResponse;
+import io.harness.delegate.PerpetualTaskInfoRequest;
+import io.harness.delegate.PerpetualTaskInfoResponse;
 import io.harness.delegate.RegisterCallbackRequest;
 import io.harness.delegate.RegisterCallbackResponse;
 import io.harness.delegate.ResetPerpetualTaskRequest;
@@ -62,6 +64,7 @@ import io.harness.perpetualtask.PerpetualTaskClientContext;
 import io.harness.perpetualtask.PerpetualTaskClientContext.PerpetualTaskClientContextBuilder;
 import io.harness.perpetualtask.PerpetualTaskId;
 import io.harness.perpetualtask.PerpetualTaskService;
+import io.harness.perpetualtask.internal.PerpetualTaskRecord;
 import io.harness.serializer.KryoSerializer;
 import io.harness.service.intfc.DelegateCallbackRegistry;
 import io.harness.service.intfc.DelegateTaskService;
@@ -440,6 +443,26 @@ public class DelegateServiceGrpcImpl extends DelegateServiceImplBase {
     } catch (Exception ex) {
       log.error("Unexpected error occurred while processing reset perpetual task request.", ex);
       responseObserver.onError(io.grpc.Status.INTERNAL.withDescription(ex.getMessage()).asRuntimeException());
+    }
+  }
+
+  public void getPerpetualTask(
+      PerpetualTaskInfoRequest taskRequest, StreamObserver<PerpetualTaskInfoResponse> responseObserver) {
+    try {
+      PerpetualTaskRecord record = perpetualTaskService.getTaskRecord(taskRequest.getTaskId());
+      responseObserver.onNext(
+          PerpetualTaskInfoResponse.newBuilder()
+              .setDelegateId(record.getDelegateId())
+              .setCreatedAt(record.getCreatedAt())
+              .setState(record.getState().name())
+              .setDelegateHostName(record.getDelegateHostName())
+              .setTaskDescription(record.getTaskDescription())
+              .setUnassignedReason(record.getUnassignedReason() != null ? record.getUnassignedReason().name() : "")
+              .build());
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      log.error("Unexpected error occurred while processing get perpetual task request.", e);
+      responseObserver.onError(io.grpc.Status.INTERNAL.withDescription(e.getMessage()).asRuntimeException());
     }
   }
 

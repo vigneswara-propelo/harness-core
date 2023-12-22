@@ -20,8 +20,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.harness.category.element.UnitTests;
+import io.harness.delegate.PerpetualTaskInfoResponse;
+import io.harness.dto.PerpetualTaskInfoForTriggers;
 import io.harness.dto.PolledResponse;
 import io.harness.dto.PollingInfoForTriggers;
+import io.harness.grpc.DelegateServiceGrpcClient;
 import io.harness.network.SafeHttpCall;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ngtriggers.beans.entity.TriggerEventHistory;
@@ -63,12 +66,14 @@ public class NGTriggerEventServiceImplTest {
   private final String NAME = "first trigger";
   private final String PIPELINE_IDENTIFIER = "myPipeline";
   Call<ResponseDTO<PollingInfoForTriggers>> request;
+  Call<ResponseDTO<PerpetualTaskInfoForTriggers>> responseDTOCall;
   private MockedStatic<SafeHttpCall> safeHttpCallMockedStatic;
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
   @InjectMocks NGTriggerEventServiceImpl ngTriggerEventService;
 
   @Mock TriggerEventHistoryRepository triggerEventHistoryRepository;
   @Mock PollingResourceClient pollingResourceClient;
+  @Mock private DelegateServiceGrpcClient delegateServiceGrpcClient;
   @Before
   public void setup() throws Exception {}
 
@@ -105,15 +110,22 @@ public class NGTriggerEventServiceImplTest {
   @Category(UnitTests.class)
   public void testGetPollingInfo() throws IOException {
     safeHttpCallMockedStatic = mockStatic(SafeHttpCall.class);
-    when(pollingResourceClient.getPollingInfoForTriggers(ACCOUNT_ID, "pollingDocId")).thenReturn(request);
+
     Set<String> allPolledKeys = new HashSet<>();
     allPolledKeys.add("key1");
     allPolledKeys.add("key2");
+
+    when(pollingResourceClient.getPollingInfoForTriggers(ACCOUNT_ID, "pollingDocId")).thenReturn(request);
+    when(delegateServiceGrpcClient.getPerpetualTask(any())).thenReturn(PerpetualTaskInfoResponse.newBuilder().build());
+
     ResponseDTO<PollingInfoForTriggers> pollingInfoForTriggersResponseDTO =
         ResponseDTO.newResponse(PollingInfoForTriggers.builder()
                                     .polledResponse(PolledResponse.builder().allPolledKeys(allPolledKeys).build())
+                                    .perpetualTaskId("perpetualTaskId")
                                     .build());
+
     when(SafeHttpCall.executeWithExceptions(request)).thenAnswer(invocationOnMock -> pollingInfoForTriggersResponseDTO);
+
     assertThat(ngTriggerEventService.getPollingInfo(ACCOUNT_ID, "pollingDocId")
                    .getData()
                    .getPolledResponse()

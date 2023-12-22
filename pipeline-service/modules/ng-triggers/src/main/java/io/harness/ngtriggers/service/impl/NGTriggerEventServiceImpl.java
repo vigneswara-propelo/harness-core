@@ -13,8 +13,12 @@ import io.harness.annotations.dev.CodePulse;
 import io.harness.annotations.dev.HarnessModuleComponent;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.data.structure.EmptyPredicate;
+import io.harness.delegate.PerpetualTaskInfoResponse;
+import io.harness.delegate.TaskId;
+import io.harness.dto.PerpetualTaskInfoForTriggers;
 import io.harness.dto.PollingInfoForTriggers;
 import io.harness.exception.InvalidRequestException;
+import io.harness.grpc.DelegateServiceGrpcClient;
 import io.harness.network.SafeHttpCall;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.ngtriggers.beans.entity.TriggerEventHistory;
@@ -42,6 +46,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 public class NGTriggerEventServiceImpl implements NGTriggerEventsService {
   private TriggerEventHistoryRepository triggerEventHistoryRepository;
   private PollingResourceClient pollingResourceClient;
+  private DelegateServiceGrpcClient delegateServiceGrpcClient;
 
   @Override
   public Criteria formEventCriteria(String accountId, String eventCorrelationId, List<ExecutionStatus> statusList) {
@@ -66,8 +71,25 @@ public class NGTriggerEventServiceImpl implements NGTriggerEventsService {
   @Override
   public ResponseDTO<PollingInfoForTriggers> getPollingInfo(String accountId, String pollingDocId) {
     try {
-      return SafeHttpCall.executeWithExceptions(
-          pollingResourceClient.getPollingInfoForTriggers(accountId, pollingDocId));
+      ResponseDTO<PollingInfoForTriggers> pollingInfoForTriggersResponseDTO =
+          SafeHttpCall.executeWithExceptions(pollingResourceClient.getPollingInfoForTriggers(accountId, pollingDocId));
+      PollingInfoForTriggers pollingInfoForTriggers = pollingInfoForTriggersResponseDTO.getData();
+      String perpetualTaskId = pollingInfoForTriggers.getPerpetualTaskId();
+
+      PerpetualTaskInfoResponse response =
+          delegateServiceGrpcClient.getPerpetualTask(TaskId.newBuilder().setId(perpetualTaskId).build());
+
+      PerpetualTaskInfoForTriggers perpetualTaskInfoForTriggers = PerpetualTaskInfoForTriggers.builder()
+                                                                      .delegateId(response.getDelegateId())
+                                                                      .createdAt(response.getCreatedAt())
+                                                                      .state(response.getState())
+                                                                      .unassignedReason(response.getUnassignedReason())
+                                                                      .taskDescription(response.getTaskDescription())
+                                                                      .delegateHostName(response.getDelegateHostName())
+                                                                      .build();
+
+      pollingInfoForTriggers.setPerpetualTaskInfoForTriggers(perpetualTaskInfoForTriggers);
+      return ResponseDTO.newResponse(pollingInfoForTriggers);
     } catch (Exception exception) {
       String msg = "Failed to get Polling Response" + exception;
       log.error(msg);

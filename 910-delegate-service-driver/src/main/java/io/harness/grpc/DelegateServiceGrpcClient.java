@@ -28,6 +28,8 @@ import io.harness.delegate.DelegateServiceGrpc.DelegateServiceBlockingStub;
 import io.harness.delegate.DeletePerpetualTaskRequest;
 import io.harness.delegate.ObtainDocumentRequest;
 import io.harness.delegate.ObtainDocumentResponse;
+import io.harness.delegate.PerpetualTaskInfoRequest;
+import io.harness.delegate.PerpetualTaskInfoResponse;
 import io.harness.delegate.RegisterCallbackRequest;
 import io.harness.delegate.RegisterCallbackResponse;
 import io.harness.delegate.ResetPerpetualTaskRequest;
@@ -342,6 +344,16 @@ public class DelegateServiceGrpcClient {
                                   .build());
     } catch (StatusRuntimeException ex) {
       throw new DelegateServiceDriverException("Unexpected error occurred while resetting perpetual task.", ex);
+    }
+  }
+
+  public PerpetualTaskInfoResponse getPerpetualTask(TaskId taskId) {
+    try {
+      return delegateServiceBlockingStub.getPerpetualTask(
+          PerpetualTaskInfoRequest.newBuilder().setTaskId(taskId.getId()).build());
+
+    } catch (StatusRuntimeException ex) {
+      throw new DelegateServiceDriverException("Unexpected error occurred while getting the perpetual task.", ex);
     }
   }
 

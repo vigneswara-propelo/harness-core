@@ -40,6 +40,7 @@ service DelegateService {
   rpc CreatePerpetualTask(CreatePerpetualTaskRequest) returns (CreatePerpetualTaskResponse);
   rpc DeletePerpetualTask(DeletePerpetualTaskRequest) returns (DeletePerpetualTaskResponse);
   rpc ResetPerpetualTask(ResetPerpetualTaskRequest) returns (ResetPerpetualTaskResponse);
+  rpc GetPerpetualTask(PerpetualTaskInfoRequest) returns (PerpetualTaskInfoResponse);
 
   // This API is temporary to allow for querying objects from collections to allow for integration
   // before the rest of the micro services are promoted
@@ -217,4 +218,16 @@ message SupportedTaskTypeResponse {
   bool isTaskTypeSupported = 1;
 }
 
+message PerpetualTaskInfoRequest {
+  string taskId = 1;
+}
+
+message PerpetualTaskInfoResponse {
+  string delegateId = 1;
+  string taskDescription = 2;
+  int64 createdAt = 3;
+  string state = 4;
+  string unassignedReason = 5;
+  string delegateHostName = 6;
+}
 // }}

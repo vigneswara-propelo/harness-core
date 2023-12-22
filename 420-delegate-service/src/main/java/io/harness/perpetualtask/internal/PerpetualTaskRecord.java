@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.ImmutableList;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Transient;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -110,6 +111,7 @@ public class PerpetualTaskRecord
   long failedExecutionCount;
 
   String exception;
+  @Transient String delegateHostName;
 
   @Override
   public Long obtainNextIteration(String fieldName) {

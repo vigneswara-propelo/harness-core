@@ -7,6 +7,7 @@
 
 package io.harness.perpetualtask;
 
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.message.ManagerMessageConstants.UPDATE_PERPETUAL_TASK;
 import static io.harness.logging.AutoLogContext.OverrideBehavior.OVERRIDE_ERROR;
 import static io.harness.metrics.impl.DelegateMetricsServiceImpl.PERPETUAL_TASK_ASSIGNED;
@@ -36,6 +37,7 @@ import io.harness.observer.Subject;
 import io.harness.perpetualtask.internal.PerpetualTaskRecord;
 import io.harness.perpetualtask.internal.PerpetualTaskRecordDao;
 import io.harness.reflection.ReflectionUtils;
+import io.harness.service.intfc.DelegateCache;
 import io.harness.service.intfc.PerpetualTaskStateObserver;
 
 import software.wings.app.MainConfiguration;
@@ -79,6 +81,7 @@ public class PerpetualTaskServiceImpl implements PerpetualTaskService, DelegateO
   @Inject private MainConfiguration mainConfiguration;
   @Inject private RemoteObserverInformer remoteObserverInformer;
   @Inject private DelegateMetricsService delegateMetricsService;
+  @Inject private DelegateCache delegateCache;
 
   @Inject
   public PerpetualTaskServiceImpl(PerpetualTaskRecordDao perpetualTaskRecordDao,
@@ -265,7 +268,15 @@ public class PerpetualTaskServiceImpl implements PerpetualTaskService, DelegateO
 
   @Override
   public PerpetualTaskRecord getTaskRecord(String taskId) {
-    return perpetualTaskRecordDao.getTask(taskId);
+    PerpetualTaskRecord perpetualTaskRecord = perpetualTaskRecordDao.getTask(taskId);
+    if (perpetualTaskRecord != null && isNotEmpty(perpetualTaskRecord.getDelegateId())) {
+      Delegate delegate =
+          delegateCache.get(perpetualTaskRecord.getAccountId(), perpetualTaskRecord.getDelegateId(), false);
+      if (delegate != null) {
+        perpetualTaskRecord.setDelegateHostName(delegate.getHostName());
+      }
+    }
+    return perpetualTaskRecord;
   }
 
   @Override
