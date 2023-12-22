@@ -71,6 +71,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -80,6 +81,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
+import net.jodah.failsafe.RetryPolicy;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.TransportConfigCallback;
@@ -122,6 +124,8 @@ public class GitClientHelper {
 
   private static final String AZURE_NEW_REPO_PREFIX_SSH = "git@ssh.dev.azure.com:v3/";
 
+  private static final Integer GIT_CLONE_COMMAND_RETRY = 2;
+
   public static final Integer GIT_AUTHENTICATION_VERIFY_TIMEOUT_SECONDS = 5;
   public static final HttpConnectionFactory connectionFactory = new HttpClientConnectionFactory();
 
@@ -145,6 +149,18 @@ public class GitClientHelper {
                                                                   return file;
                                                                 }
                                                               });
+  public static final RetryPolicy<Object> CLONE_RETRY_POLICY = getRetryPolicyForCloneCommand();
+
+  private static RetryPolicy<Object> getRetryPolicyForCloneCommand() {
+    return new RetryPolicy<>()
+        .handleIf(throwable -> shouldRetryGitCloneCommand(throwable))
+        .withMaxAttempts(GIT_CLONE_COMMAND_RETRY)
+        .withBackoff(5, 10, ChronoUnit.SECONDS)
+        .onFailedAttempt(event -> {
+          log.info("Retrying failed at git clone, attempt: {}", event.getAttemptCount(),
+              event.getLastFailure().getMessage());
+        });
+  }
 
   public static String getGitRepo(String url) {
     Matcher m = GIT_URL.matcher(url);
@@ -518,16 +534,22 @@ public class GitClientHelper {
     // RefNotFound is a subclass of GitAPIException, thrown when there's an invalid reference.
 
     // MissingObjectException is caused when some object(commit/ref) is missing in the git history
-    if ((ex instanceof GitAPIException && ex.getCause() instanceof TransportException) && ex.getMessage() != null
-        && (ex.getMessage().contains(NO_SUCH_FILE_ERROR_MESSAGE) || ex.getMessage().contains(GIT_OBJECTS_REPO))) {
+    if (shouldRetryGitCloneCommand(ex)) {
       throw new GitConnectionDelegateException(
           GIT_CONNECTION_ERROR, ex, GIT_REPO_CONNECTIVITY_EXCEPTION_MESSAGE, USER_ADMIN);
-    } else if ((ex instanceof GitAPIException && ex.getCause() instanceof TransportException)
+    }
+    if ((ex instanceof GitAPIException && ex.getCause() instanceof TransportException)
         || ex instanceof JGitInternalException || ex instanceof MissingObjectException
         || ex instanceof RefNotFoundException) {
       throw new GitConnectionDelegateException(GIT_CONNECTION_ERROR, ex.getCause() == null ? ex : ex.getCause(),
           ExceptionSanitizer.sanitizeTheMessage(ex.getMessage()), USER_ADMIN);
     }
+  }
+
+  public static boolean shouldRetryGitCloneCommand(Throwable throwable) {
+    return throwable instanceof GitAPIException && throwable.getCause() instanceof TransportException
+        && throwable.getMessage() != null && throwable.getMessage().contains(NO_SUCH_FILE_ERROR_MESSAGE)
+        && throwable.getMessage().contains(GIT_OBJECTS_REPO);
   }
 
   public void checkIfMissingCommitIdIssue(Exception ex, String commitId) {

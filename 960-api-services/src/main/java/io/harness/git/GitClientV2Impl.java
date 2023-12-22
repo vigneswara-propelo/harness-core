@@ -26,6 +26,7 @@ import static io.harness.git.Constants.GIT_YAML_LOG_PREFIX;
 import static io.harness.git.Constants.HARNESS_IO_KEY_;
 import static io.harness.git.Constants.HARNESS_SUPPORT_EMAIL_KEY;
 import static io.harness.git.Constants.PATH_DELIMITER;
+import static io.harness.git.GitClientHelper.CLONE_RETRY_POLICY;
 import static io.harness.git.model.PushResultGit.pushResultBuilder;
 import static io.harness.govern.Switch.unhandled;
 import static io.harness.validation.Validator.notEmptyCheck;
@@ -175,6 +176,8 @@ public class GitClientV2Impl implements GitClientV2 {
   private static final String INVALID_PRIVATE_KEY = "invalid privatekey";
 
   @Inject private GitClientHelper gitClientHelper;
+
+  private final RetryPolicy<Object> retryPolicyForGitClone = CLONE_RETRY_POLICY;
   /**
    * factory for creating HTTP connections. By default, JGit uses JDKHttpConnectionFactory which doesn't work well with
    * proxy. See:
@@ -309,11 +312,13 @@ public class GitClientV2Impl implements GitClientV2 {
       cloneCommand.setBranch(branchToClone);
       cloneCommand.setBranchesToClone(Collections.singleton(branchToClone));
     }
-    try (Git git = cloneCommand.call()) {
-    } catch (GitAPIException ex) {
-      log.error(GIT_YAML_LOG_PREFIX + "Error in cloning repo: " + ExceptionSanitizer.sanitizeForLogging(ex));
-      gitClientHelper.checkIfGitConnectivityIssue(ex);
-      throw new YamlException("Error in cloning repo", USER);
+    try (Git git = Failsafe.with(retryPolicyForGitClone).get(cloneCommand::call)) {
+    } catch (Exception exception) {
+      if (exception.getCause() instanceof GitAPIException) {
+        log.error(GIT_YAML_LOG_PREFIX + "Error in cloning repo: " + ExceptionSanitizer.sanitizeForLogging(exception));
+        gitClientHelper.checkIfGitConnectivityIssue((GitAPIException) exception.getCause());
+        throw new YamlException("Error in cloning repo", USER);
+      }
     }
   }
 

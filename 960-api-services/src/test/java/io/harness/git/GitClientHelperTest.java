@@ -102,14 +102,7 @@ public class GitClientHelperTest extends CategoryTest {
     assertThatThrownBy(
         ()
             -> gitClientHelper.checkIfGitConnectivityIssue(new GitAPIException(
-                "GIT_YAML_LOG_ENTRY: Error in cloning repo: repoUrl: ./repository/gitFileDownloads/.git/objects/incoming.idx",
-                new TransportException("Transport Exception")) {}))
-        .isInstanceOf(GitConnectionDelegateException.class)
-        .hasMessage(GIT_REPO_CONNECTIVITY_EXCEPTION_MESSAGE);
-    assertThatThrownBy(
-        ()
-            -> gitClientHelper.checkIfGitConnectivityIssue(new GitAPIException(
-                "GIT_YAML_LOG_ENTRY: Error in cloning repo: repoUrl: ./repository/gitFileDownloads/incoming.idx (No such file or directory)",
+                "GIT_YAML_LOG_ENTRY: Error in cloning repo: repoUrl: ./repository/gitFileDownloads/.git/objects/incoming.idx (No such file or directory)",
                 new TransportException("Transport Exception")) {}))
         .isInstanceOf(GitConnectionDelegateException.class)
         .hasMessage(GIT_REPO_CONNECTIVITY_EXCEPTION_MESSAGE);
