@@ -86,9 +86,8 @@ public class HelmChartManifestTaskHandler implements ManifestTaskHandler {
 
     if (!delegateGrpcClientWrapper.isTaskTypeSupported(AccountId.newBuilder().setId(accountId).build(), taskType)) {
       context.warn(String.format(
-          "Not all delegates support task [%s]. To use fetchHelmChartMetadata [manifest: %s] option all delegates should be up to date",
+          "Not all delegates support task [%s]. To use fetchHelmChartMetadata [manifest: %s] minimal delegate version is 800xx",
           TaskType.HELM_FETCH_CHART_MANIFEST_TASK.getDisplayName(), helmChartManifest.getIdentifier()));
-      return false;
     }
 
     return true;
@@ -118,6 +117,7 @@ public class HelmChartManifestTaskHandler implements ManifestTaskHandler {
                            .taskType(TaskType.HELM_FETCH_CHART_MANIFEST_TASK.name())
                            .parameters(new Object[] {createTaskParameters(
                                context.getAmbiance(), (HelmChartManifestDelegateConfig) manifestDelegateConfig)})
+                           .timeout(DEFAULT_FETCH_TIMEOUT_MILLIS)
                            .build());
   }
 

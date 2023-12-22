@@ -71,36 +71,29 @@ public class HelmChartManifestTaskHandlerTest extends CategoryTest {
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
   public void testIsSupported() {
-    testIsSupported(ParameterField.createValueField(true), true, true, true);
-  }
-
-  @Test
-  @Owner(developers = ABOSII)
-  @Category(UnitTests.class)
-  public void testIsSupportedTaskNotSupported() {
-    testIsSupported(ParameterField.createValueField(true), true, false, false);
+    testIsSupported(ParameterField.createValueField(true), true, true);
   }
 
   @Test
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
   public void testIsSupportedFFNotEnabled() {
-    testIsSupported(ParameterField.createValueField(true), false, true, false);
+    testIsSupported(ParameterField.createValueField(true), false, false);
   }
 
   @Test
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
   public void testIsSupportedNotEnabled() {
-    testIsSupported(ParameterField.createValueField(false), true, true, false);
+    testIsSupported(ParameterField.createValueField(false), true, false);
   }
 
   @Test
   @Owner(developers = ABOSII)
   @Category(UnitTests.class)
   public void testIsSupportedNullValue() {
-    testIsSupported(null, true, true, false);
-    testIsSupported(ParameterField.createValueField(null), true, true, false);
+    testIsSupported(null, true, false);
+    testIsSupported(ParameterField.createValueField(null), true, false);
   }
 
   @Test
@@ -169,6 +162,7 @@ public class HelmChartManifestTaskHandlerTest extends CategoryTest {
     assertThat(taskData.getTaskType()).isEqualTo(TaskType.HELM_FETCH_CHART_MANIFEST_TASK.name());
     assertThat(taskData.getParameters()).isNotEmpty();
     assertThat(taskData.getParameters()).hasSize(1);
+    assertThat(taskData.getTimeout()).isEqualTo(DEFAULT_FETCH_TIMEOUT_MILLIS);
 
     final Object taskParameters = taskData.getParameters()[0];
     assertThat(taskParameters).isInstanceOf(HelmFetchChartManifestTaskParameters.class);
@@ -306,11 +300,7 @@ public class HelmChartManifestTaskHandlerTest extends CategoryTest {
     assertThat(result).isEmpty();
   }
 
-  private void testIsSupported(
-      ParameterField<Boolean> fetchHelmChart, boolean ffEnabled, boolean taskSupported, boolean expectedResult) {
-    final io.harness.delegate.TaskType expectedTaskType =
-        io.harness.delegate.TaskType.newBuilder().setType(TaskType.HELM_FETCH_CHART_MANIFEST_TASK.name()).build();
-    final AccountId expectedAccountId = AccountId.newBuilder().setId(ACCOUNT_ID).build();
+  private void testIsSupported(ParameterField<Boolean> fetchHelmChart, boolean ffEnabled, boolean expectedResult) {
     final HelmChartManifestOutcome manifestOutcome =
         HelmChartManifestOutcome.builder().fetchHelmChartMetadata(fetchHelmChart).build();
 
@@ -323,8 +313,6 @@ public class HelmChartManifestTaskHandlerTest extends CategoryTest {
     doReturn(ffEnabled)
         .when(featureFlagHelperService)
         .isEnabled(ACCOUNT_ID, FeatureName.CDS_HELM_FETCH_CHART_METADATA_NG);
-
-    doReturn(taskSupported).when(delegateGrpcClientWrapper).isTaskTypeSupported(expectedAccountId, expectedTaskType);
 
     assertThat(helmChartManifestTaskHandler.isSupported(context)).isEqualTo(expectedResult);
   }
