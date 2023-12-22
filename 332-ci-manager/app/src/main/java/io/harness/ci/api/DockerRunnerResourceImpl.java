@@ -16,6 +16,7 @@ import io.harness.delegate.beans.DelegateType;
 import io.harness.remote.client.CGRestUtils;
 import io.harness.rest.RestResponse;
 import io.harness.security.annotations.NextGenManagerAuth;
+import io.harness.utils.system.SystemWrapper;
 
 import com.google.inject.Inject;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class DockerRunnerResourceImpl implements DockerRunnerResource {
         accountClient.getInstallationCommand(accountId, DelegateType.DOCKER, os, arch);
     Map<String, String> res = CGRestUtils.getResponse(req);
     String delegateCommand = res.get("command");
-    String env = System.getProperty("ENV");
+    String env = SystemWrapper.getenv("ENV_TYPE");
     String scriptUrl = getScriptUrl(env);
     String token = extractToken(delegateCommand, accountId);
     String delegateVersion = extractDelegateVersion(delegateCommand);

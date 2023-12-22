@@ -6,7 +6,6 @@
  */
 
 package io.harness.app.api;
-
 import static io.harness.rule.OwnerRule.DEV_MITTAL;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,6 +20,7 @@ import io.harness.category.element.UnitTests;
 import io.harness.remote.client.CGRestUtils;
 import io.harness.rest.RestResponse;
 import io.harness.rule.Owner;
+import io.harness.utils.system.SystemWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -74,13 +74,15 @@ public class DockerRunnerResourceTest extends CategoryTest {
   public void testGet_FREE() throws Exception {
     Map<String, String> map = new HashMap<>();
     map.put("command", free_command);
-    System.setProperty("ENV", "free");
-    when(CGRestUtils.getResponse(any())).thenReturn(map);
-    RestResponse<String> res = dockerRunnerResource.get("abcde", "os", "arch");
-    assertThat(res.getResource())
-        .isEqualTo(
-            "wget https://raw.githubusercontent.com/harness/harness-docker-runner/master/scripts/script-free.sh -O script.sh\n"
-            + "sh script.sh abcde mytoken= 23.12.81604");
+    try (MockedStatic<SystemWrapper> mockStatic = mockStatic(SystemWrapper.class)) {
+      mockStatic.when(() -> SystemWrapper.getenv(any())).thenReturn("free");
+      when(CGRestUtils.getResponse(any())).thenReturn(map);
+      RestResponse<String> res = dockerRunnerResource.get("abcde", "os", "arch");
+      assertThat(res.getResource())
+          .isEqualTo(
+              "wget https://raw.githubusercontent.com/harness/harness-docker-runner/master/scripts/script-free.sh -O script.sh\n"
+              + "sh script.sh abcde mytoken= 23.12.81604");
+    }
   }
 
   @Test
@@ -89,12 +91,14 @@ public class DockerRunnerResourceTest extends CategoryTest {
   public void testGet_QA() throws Exception {
     Map<String, String> map = new HashMap<>();
     map.put("command", qa_command);
-    System.setProperty("ENV", "qa");
-    when(CGRestUtils.getResponse(any())).thenReturn(map);
-    RestResponse<String> res = dockerRunnerResource.get("abcde", "os", "arch");
-    assertThat(res.getResource())
-        .isEqualTo(
-            "wget https://raw.githubusercontent.com/harness/harness-docker-runner/master/scripts/script-qa.sh -O script.sh\n"
-            + "sh script.sh abcde mytoken= 23.12.81806");
+    try (MockedStatic<SystemWrapper> mockStatic = mockStatic(SystemWrapper.class)) {
+      mockStatic.when(() -> SystemWrapper.getenv(any())).thenReturn("qa");
+      when(CGRestUtils.getResponse(any())).thenReturn(map);
+      RestResponse<String> res = dockerRunnerResource.get("abcde", "os", "arch");
+      assertThat(res.getResource())
+          .isEqualTo(
+              "wget https://raw.githubusercontent.com/harness/harness-docker-runner/master/scripts/script-qa.sh -O script.sh\n"
+              + "sh script.sh abcde mytoken= 23.12.81806");
+    }
   }
 }
