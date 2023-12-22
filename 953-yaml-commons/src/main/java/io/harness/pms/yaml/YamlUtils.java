@@ -333,6 +333,10 @@ public class YamlUtils {
     return false;
   }
 
+  public boolean isUUIDPresent(YamlField strategyField) {
+    return strategyField != null && strategyField.getNode() != null && strategyField.getNode().getUuid() != null;
+  }
+
   // TODO (prashant) : Re-evaluate can we do better
   public String injectUuidWithType(String content, String name) throws IOException {
     JsonNode rootJsonNode = mapper.readTree(content);

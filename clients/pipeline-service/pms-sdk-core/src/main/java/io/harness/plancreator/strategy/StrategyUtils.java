@@ -83,12 +83,12 @@ public class StrategyUtils {
 
   public boolean isWrappedUnderStrategy(YamlField yamlField) {
     YamlField strategyField = yamlField.getNode().getField(YAMLFieldNameConstants.STRATEGY);
-    return strategyField != null;
+    return YamlUtils.isUUIDPresent(strategyField);
   }
 
   public boolean isWrappedUnderStrategy(YamlNode yamlField) {
     YamlField strategyField = yamlField.getField(YAMLFieldNameConstants.STRATEGY);
-    return strategyField != null;
+    return YamlUtils.isUUIDPresent(strategyField);
   }
 
   public String getSwappedPlanNodeId(PlanCreationContext ctx, String originalPlanNodeId) {
@@ -96,7 +96,7 @@ public class StrategyUtils {
     // Since strategy is a child of stage but in execution we want to wrap stage around strategy,
     // we are swapping the uuid of stage and strategy node.
     String planNodeId = originalPlanNodeId;
-    if (strategyField != null) {
+    if (YamlUtils.isUUIDPresent(strategyField)) {
       planNodeId = strategyField.getNode().getUuid();
     }
     return planNodeId;
