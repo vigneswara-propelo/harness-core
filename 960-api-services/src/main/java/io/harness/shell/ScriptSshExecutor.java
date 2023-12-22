@@ -175,6 +175,10 @@ public class ScriptSshExecutor extends AbstractScriptExecutor {
       directoryPath = resolveEnvVarsInPath(sshSessionConfig.getWorkingDirectory() + "/");
     }
 
+    if (isNotEmpty(directoryPath) && directoryPath.charAt(directoryPath.length() - 1) != '/') {
+      directoryPath += "/";
+    }
+
     if (isNotEmpty(sshSessionConfig.getEnvVariables())) {
       String exportCommand = buildExportForEnvironmentVariables(sshSessionConfig.getEnvVariables());
       command = exportCommand + "\n" + command;

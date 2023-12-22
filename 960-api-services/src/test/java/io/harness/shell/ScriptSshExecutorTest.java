@@ -100,7 +100,7 @@ public class ScriptSshExecutorTest extends CategoryTest {
   public void testExecuteCommandString() {
     String workingDirectory = "$HOME/tmp";
     String command = "echo 1";
-    String commandWithWorkingDirectory = "cd \"$HOME/tmp\"\necho 1";
+    String commandWithWorkingDirectory = "cd \"$HOME/tmp/\"\necho 1";
 
     SshSessionConfig config = new SshSessionConfig();
     config.setAccountId(ACCOUNT_ID);
