@@ -58,7 +58,7 @@ public class ResourceFileAnnotationsTest extends CategoryTest {
           if (method.isAnnotationPresent(apiOperationClass)) {
             ApiOperation apiOperationAnnotation = (ApiOperation) method.getAnnotation(apiOperationClass);
             assertThat(apiOperationAnnotation.nickname()).isNotBlank();
-            assertThat(uniqueOperationName.contains(apiOperationAnnotation.nickname())).isFalse();
+            assertThat(uniqueOperationName).doesNotContain(apiOperationAnnotation.nickname());
             uniqueOperationName.add(apiOperationAnnotation.nickname());
           }
         });

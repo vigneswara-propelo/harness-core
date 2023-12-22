@@ -448,7 +448,8 @@ public interface PipelineResource {
 
   @POST
   @Path("/import")
-  @ApiOperation(value = "Get Pipeline YAML from Git Repository without pipelineIdentifier", nickname = "importPipeline")
+  @ApiOperation(
+      value = "Get Pipeline YAML from Git Repository without pipelineIdentifier", nickname = "importPipelineWithoutId")
   @Operation(operationId = "importPipeline", summary = "Import and Create Pipeline from Git Repository",
       responses =
       {
