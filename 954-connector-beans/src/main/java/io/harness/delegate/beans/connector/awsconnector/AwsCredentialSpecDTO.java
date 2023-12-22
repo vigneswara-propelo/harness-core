@@ -13,7 +13,10 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import io.swagger.annotations.ApiModel;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@JsonSubTypes({ @JsonSubTypes.Type(value = AwsManualConfigSpecDTO.class, name = AwsConstants.MANUAL_CONFIG) })
+@JsonSubTypes({
+  @JsonSubTypes.Type(value = AwsManualConfigSpecDTO.class, name = AwsConstants.MANUAL_CONFIG)
+  , @JsonSubTypes.Type(value = AwsOidcSpecDTO.class, name = AwsConstants.OIDC_AUTHENTICATION)
+})
 @ApiModel("AwsCredentialSpec")
 @Schema(name = "AwsCredentialSpec", description = "This contains AWS connector credential spec")
 public interface AwsCredentialSpecDTO extends DecryptableEntity {}

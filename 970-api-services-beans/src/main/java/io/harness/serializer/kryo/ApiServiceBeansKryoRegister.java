@@ -6,6 +6,7 @@
  */
 
 package io.harness.serializer.kryo;
+
 import static io.harness.annotations.dev.HarnessTeam.DEL;
 
 import io.harness.adfs.AdfsAccessTokenResponse;
@@ -19,6 +20,7 @@ import io.harness.artifactory.ArtifactoryImagePath;
 import io.harness.aws.AwsAccessKeyCredential;
 import io.harness.aws.AwsCFTemplatesType;
 import io.harness.aws.AwsConfig;
+import io.harness.aws.AwsOidcAttributes;
 import io.harness.aws.CrossAccountAccess;
 import io.harness.azure.AzureEnvironmentType;
 import io.harness.azure.model.ARMScopeType;
@@ -396,6 +398,7 @@ public class ApiServiceBeansKryoRegister implements KryoRegistrar {
     kryo.register(CustomSourceFile.class, 1450);
     kryo.register(ArtifactMetadata.class, 1451);
     kryo.register(ArtifactMetaInfo.class, 1452);
+    kryo.register(AwsOidcAttributes.class, 1453);
 
     kryo.register(AdditionalMetadata.class, 72101);
     kryo.register(AwsCrossAccountAttributes.class, 7203);

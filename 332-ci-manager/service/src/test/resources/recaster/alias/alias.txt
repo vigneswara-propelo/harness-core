@@ -424,6 +424,7 @@ io.harness.delegate.cdng.execution.K8sStepInstanceInfo
 io.harness.delegate.cdng.execution.TasStepInstanceInfo
 io.harness.ci.config.GitnessConfig
 io.harness.delegate.beans.connector.awsconnector.AwsManualConfigSpecDTO
+io.harness.delegate.beans.connector.awsconnector.AwsOidcSpecDTO
 io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO
 io.harness.ng.core.dto.secrets.TGTKeyTabFilePathSpecDTO
 io.harness.ng.core.dto.secrets.NTLMConfigDTO

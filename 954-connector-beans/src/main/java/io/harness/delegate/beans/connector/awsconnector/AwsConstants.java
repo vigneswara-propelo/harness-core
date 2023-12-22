@@ -18,4 +18,5 @@ public class AwsConstants {
   public static final String FIXED_DELAY_BACKOFF_STRATEGY = "FixedDelayBackoffStrategy";
   public static final String EQUAL_JITTER_BACKOFF_STRATEGY = "EqualJitterBackoffStrategy";
   public static final String FULL_JITTER_BACKOFF_STRATEGY = "FullJitterBackoffStrategy";
+  public static final String OIDC_AUTHENTICATION = "OidcAuthentication";
 }

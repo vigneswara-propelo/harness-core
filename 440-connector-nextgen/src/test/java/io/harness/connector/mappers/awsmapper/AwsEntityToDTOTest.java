@@ -9,6 +9,7 @@ package io.harness.connector.mappers.awsmapper;
 
 import static io.harness.rule.OwnerRule.ABHINAV;
 import static io.harness.rule.OwnerRule.ALLU_VAMSI;
+import static io.harness.rule.OwnerRule.PRAGYESH;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,6 +21,7 @@ import io.harness.connector.entities.embedded.awsconnector.AwsEqualJitterBackoff
 import io.harness.connector.entities.embedded.awsconnector.AwsFixedDelayBackoffStrategy;
 import io.harness.connector.entities.embedded.awsconnector.AwsFullJitterBackoffStrategy;
 import io.harness.connector.entities.embedded.awsconnector.AwsIamCredential;
+import io.harness.connector.entities.embedded.awsconnector.AwsOidcCredential;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsCredentialType;
 import io.harness.delegate.beans.connector.awsconnector.AwsEqualJitterBackoffStrategySpecDTO;
@@ -27,6 +29,7 @@ import io.harness.delegate.beans.connector.awsconnector.AwsFixedDelayBackoffStra
 import io.harness.delegate.beans.connector.awsconnector.AwsFullJitterBackoffStrategySpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsInheritFromDelegateSpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsManualConfigSpecDTO;
+import io.harness.delegate.beans.connector.awsconnector.AwsOidcSpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsSdkClientBackoffStrategyDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsSdkClientBackoffStrategyType;
 import io.harness.delegate.beans.connector.awsconnector.CrossAccountAccessDTO;
@@ -89,6 +92,23 @@ public class AwsEntityToDTOTest extends CategoryTest {
     assertThat(((AwsManualConfigSpecDTO) connectorDTO1.getCredential().getConfig()).getAccessKey())
         .isEqualTo(accessKey);
     assertThat(connectorDTO1.getCredential().getCrossAccountAccess()).isEqualTo(crossAccountAccess);
+  }
+
+  @Test
+  @Owner(developers = PRAGYESH)
+  @Category(UnitTests.class)
+  public void testCreateAwsOidcConnectorDTO() {
+    final String iamRoleArn = "iamrole";
+    final AwsConfig awsConfig = AwsConfig.builder()
+                                    .credentialType(AwsCredentialType.OIDC_AUTHENTICATION)
+                                    .credential(AwsOidcCredential.builder().iamRoleArn(iamRoleArn).build())
+                                    .build();
+    final AwsConnectorDTO connectorDTO = awsEntityToDTO.createConnectorDTO(awsConfig);
+
+    assertThat(connectorDTO).isNotNull();
+    assertThat(connectorDTO.getCredential()).isNotNull();
+    assertThat(connectorDTO.getCredential().getAwsCredentialType()).isEqualTo(AwsCredentialType.OIDC_AUTHENTICATION);
+    assertThat(((AwsOidcSpecDTO) connectorDTO.getCredential().getConfig()).getIamRoleArn()).isEqualTo(iamRoleArn);
   }
 
   @Test

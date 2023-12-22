@@ -6,9 +6,11 @@
  */
 
 package io.harness.delegate.task.aws;
+
 import static io.harness.delegate.beans.connector.awsconnector.AwsCredentialType.INHERIT_FROM_DELEGATE;
 import static io.harness.delegate.beans.connector.awsconnector.AwsCredentialType.IRSA;
 import static io.harness.delegate.beans.connector.awsconnector.AwsCredentialType.MANUAL_CREDENTIALS;
+import static io.harness.delegate.beans.connector.awsconnector.AwsCredentialType.OIDC_AUTHENTICATION;
 import static io.harness.delegate.beans.connector.scm.awscodecommit.AwsCodeCommitHttpsAuthType.ACCESS_KEY_AND_SECRET_KEY;
 import static io.harness.encryption.FieldWithPlainTextOrSecretValueHelper.getSecretAsStringFromPlainTextOrSecretRef;
 
@@ -19,6 +21,7 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.ProductModule;
 import io.harness.aws.AwsAccessKeyCredential;
 import io.harness.aws.AwsConfig;
+import io.harness.aws.AwsOidcAttributes;
 import io.harness.aws.AwsSdkClientBackoffStrategyOverride;
 import io.harness.aws.AwsSdkClientEqualJitterBackoffStrategy;
 import io.harness.aws.AwsSdkClientFixedDelayBackoffStrategy;
@@ -33,6 +36,7 @@ import io.harness.delegate.beans.connector.awsconnector.AwsEqualJitterBackoffStr
 import io.harness.delegate.beans.connector.awsconnector.AwsFixedDelayBackoffStrategySpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsFullJitterBackoffStrategySpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsManualConfigSpecDTO;
+import io.harness.delegate.beans.connector.awsconnector.AwsOidcSpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsSdkClientBackoffStrategyDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsSdkClientBackoffStrategySpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.CrossAccountAccessDTO;
@@ -53,6 +57,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_K8S})
@@ -104,6 +109,16 @@ public class AwsNgConfigMapper {
       awsInternalConfig.setUseEc2IamCredentials(true);
     } else if (IRSA == credential.getAwsCredentialType()) {
       awsInternalConfig.setUseIRSA(true);
+    } else if (OIDC_AUTHENTICATION == credential.getAwsCredentialType()) {
+      awsInternalConfig.setUseOidc(true);
+      AwsOidcSpecDTO oidcSpecDTO = (AwsOidcSpecDTO) credential.getConfig();
+      if (oidcSpecDTO != null) {
+        String iamRoleArn = oidcSpecDTO.getIamRoleArn();
+        if (StringUtils.isBlank(iamRoleArn)) {
+          throw new InvalidArgumentsException("Iam Role in OIDC Authentication is missing or empty");
+        }
+        awsInternalConfig.setOidcAttributes(AwsOidcAttributes.builder().iamRoleArn(iamRoleArn).build());
+      }
     }
 
     CrossAccountAccessDTO crossAccountAccess = credential.getCrossAccountAccess();
@@ -185,6 +200,13 @@ public class AwsNgConfigMapper {
         awsConfig = AwsConfig.builder()
                         .isIRSA(true)
                         .crossAccountAccess(mapCrossAccountAccess(credential.getCrossAccountAccess()))
+                        .build();
+        break;
+      case OIDC_AUTHENTICATION:
+        final AwsOidcSpecDTO oidcSpecDTO = (AwsOidcSpecDTO) credential.getConfig();
+        awsConfig = AwsConfig.builder()
+                        .isOidc(true)
+                        .oidcAttributes(AwsOidcAttributes.builder().iamRoleArn(oidcSpecDTO.getIamRoleArn()).build())
                         .build();
         break;
       default:

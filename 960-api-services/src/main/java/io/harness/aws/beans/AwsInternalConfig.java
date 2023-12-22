@@ -7,6 +7,7 @@
 
 package io.harness.aws.beans;
 
+import io.harness.aws.AwsOidcAttributes;
 import io.harness.aws.AwsSdkClientBackoffStrategyOverride;
 import io.harness.encryption.Encrypted;
 
@@ -36,6 +37,8 @@ public class AwsInternalConfig implements EncryptableSetting {
   private String defaultRegion;
   private boolean assumeCrossAccountRole;
   private boolean useIRSA;
+  private boolean useOidc;
+  private AwsOidcAttributes oidcAttributes;
   private AmazonClientSDKDefaultBackoffStrategy amazonClientSDKDefaultBackoffStrategy;
   private AwsSdkClientBackoffStrategyOverride awsSdkClientBackoffStrategyOverride;
 

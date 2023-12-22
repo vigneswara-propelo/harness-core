@@ -6,6 +6,7 @@
  */
 
 package io.harness.serializer.kryo;
+
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.connector.ConnectorDTO;
@@ -30,6 +31,7 @@ import io.harness.delegate.beans.connector.awsconnector.AwsFixedDelayBackoffStra
 import io.harness.delegate.beans.connector.awsconnector.AwsFullJitterBackoffStrategySpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsInheritFromDelegateSpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsManualConfigSpecDTO;
+import io.harness.delegate.beans.connector.awsconnector.AwsOidcSpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsSdkClientBackoffStrategyDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsSdkClientBackoffStrategySpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsSdkClientBackoffStrategyType;
@@ -548,6 +550,7 @@ public class ConnectorBeansKryoRegistrar implements KryoRegistrar {
     kryo.register(AwsSdkClientBackoffStrategyDTO.class, 10000458);
     kryo.register(AwsSdkClientBackoffStrategySpecDTO.class, 10000459);
     kryo.register(AwsSdkClientBackoffStrategyType.class, 10000460);
+    kryo.register(AwsOidcSpecDTO.class, 10000461);
     kryo.register(SignalFXConnectorDTO.class, 9145);
 
     kryo.register(RancherAuthType.class, 20000601);

@@ -15,12 +15,14 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.aws.AwsAccessKeyCredential;
 import io.harness.aws.AwsConfig;
+import io.harness.aws.AwsOidcAttributes;
 import io.harness.aws.CrossAccountAccess;
 import io.harness.connector.helper.DecryptionHelper;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsCredentialDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsCredentialType;
 import io.harness.delegate.beans.connector.awsconnector.AwsManualConfigSpecDTO;
+import io.harness.delegate.beans.connector.awsconnector.AwsOidcSpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.CrossAccountAccessDTO;
 import io.harness.encryption.SecretRefData;
 import io.harness.exception.InvalidRequestException;
@@ -85,6 +87,13 @@ public class AwsNgConfigMapper {
         awsConfig = AwsConfig.builder()
                         .isIRSA(true)
                         .crossAccountAccess(mapCrossAccountAccess(credential.getCrossAccountAccess()))
+                        .build();
+        break;
+      case OIDC_AUTHENTICATION:
+        AwsOidcSpecDTO oidcSpecDTO = (AwsOidcSpecDTO) credential.getConfig();
+        awsConfig = AwsConfig.builder()
+                        .isOidc(true)
+                        .oidcAttributes(AwsOidcAttributes.builder().iamRoleArn(oidcSpecDTO.getIamRoleArn()).build())
                         .build();
         break;
       default:

@@ -117,6 +117,7 @@ io.harness.ng.core.dto.secrets.NTLMConfigDTO
 io.harness.yaml.core.timeout.Timeout
 io.harness.delegate.task.localstore.ManifestFiles
 io.harness.delegate.beans.connector.awsconnector.AwsManualConfigSpecDTO
+io.harness.delegate.beans.connector.awsconnector.AwsOidcSpecDTO
 io.harness.ng.core.dto.secrets.WinRmCredentialsSpecDTO
 io.harness.delegate.task.ssh.AwsWinrmInfraDelegateConfig
 io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO

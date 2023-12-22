@@ -11,6 +11,7 @@ import static io.harness.annotations.dev.HarnessTeam.CDP;
 import static io.harness.delegate.beans.connector.awsconnector.AwsCredentialType.INHERIT_FROM_DELEGATE;
 import static io.harness.delegate.beans.connector.awsconnector.AwsCredentialType.IRSA;
 import static io.harness.delegate.beans.connector.awsconnector.AwsCredentialType.MANUAL_CREDENTIALS;
+import static io.harness.delegate.beans.connector.awsconnector.AwsCredentialType.OIDC_AUTHENTICATION;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.connector.ConnectorCapabilityBaseHelper;
@@ -36,8 +37,8 @@ public class AwsCapabilityHelper extends ConnectorCapabilityBaseHelper {
       final String AWS_URL = "https://aws.amazon.com/";
       capabilityList.add(
           HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability(AWS_URL, maskingEvaluator));
-    } else if (credential.getAwsCredentialType() != INHERIT_FROM_DELEGATE
-        && credential.getAwsCredentialType() != IRSA) {
+    } else if (credential.getAwsCredentialType() != INHERIT_FROM_DELEGATE && credential.getAwsCredentialType() != IRSA
+        && credential.getAwsCredentialType() != OIDC_AUTHENTICATION) {
       throw new UnknownEnumTypeException("AWS Credential Type", String.valueOf(credential.getAwsCredentialType()));
     }
     populateDelegateSelectorCapability(capabilityList, awsConnectorDTO.getDelegateSelectors());

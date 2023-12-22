@@ -50,6 +50,8 @@ public class AwsCredentialDTODeserializer extends StdDeserializer<AwsCredentialD
       if (authSpec != null && !authSpec.isNull()) {
         throw new InvalidRequestException("No spec should be provided with the inherit from delegate type");
       }
+    } else if (type == AwsCredentialType.OIDC_AUTHENTICATION) {
+      awsCredentialSpecDTO = mapper.readValue(authSpec.toString(), AwsOidcSpecDTO.class);
     }
     String region = null;
     if (regionNode != null && !regionNode.isNull()) {

@@ -8,6 +8,7 @@
 package io.harness.delegate.task.aws;
 
 import static io.harness.rule.OwnerRule.ABHINAV;
+import static io.harness.rule.OwnerRule.PRAGYESH;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -15,10 +16,14 @@ import static org.mockito.Mockito.doReturn;
 import io.harness.CategoryTest;
 import io.harness.aws.AwsAccessKeyCredential;
 import io.harness.aws.AwsConfig;
+import io.harness.aws.AwsOidcAttributes;
+import io.harness.aws.beans.AwsInternalConfig;
 import io.harness.category.element.UnitTests;
+import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsCredentialDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsCredentialType;
 import io.harness.delegate.beans.connector.awsconnector.AwsManualConfigSpecDTO;
+import io.harness.delegate.beans.connector.awsconnector.AwsOidcSpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.CrossAccountAccessDTO;
 import io.harness.delegate.beans.connector.scm.awscodecommit.AwsCodeCommitAuthType;
 import io.harness.delegate.beans.connector.scm.awscodecommit.AwsCodeCommitAuthenticationDTO;
@@ -30,6 +35,7 @@ import io.harness.encryption.SecretRefData;
 import io.harness.rule.Owner;
 import io.harness.security.encryption.SecretDecryptionService;
 
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -41,6 +47,7 @@ import org.mockito.Spy;
 public class AwsNgConfigMapperTest extends CategoryTest {
   @Mock SecretDecryptionService secretDecryptionService;
   @InjectMocks @Spy AwsNgConfigMapper awsNgConfigMapper;
+  final String delegateSelector = "delegateSelector";
 
   @Before
   public void setUp() throws Exception {
@@ -74,6 +81,43 @@ public class AwsNgConfigMapperTest extends CategoryTest {
                                                                     .secretKey(passwordRefIdentifier.toCharArray())
                                                                     .accessKey(accessKey)
                                                                     .build())
+                                        .build());
+  }
+
+  @Test
+  @Owner(developers = PRAGYESH)
+  @Category(UnitTests.class)
+  public void testCreateAwsOidcConfig() {
+    final String iamRoleArn = "iamrole";
+    final AwsOidcSpecDTO oidcSpecDTO = AwsOidcSpecDTO.builder().iamRoleArn(iamRoleArn).build();
+    final AwsCredentialDTO awsCredentialDTO =
+        AwsCredentialDTO.builder().awsCredentialType(AwsCredentialType.OIDC_AUTHENTICATION).config(oidcSpecDTO).build();
+    final AwsConnectorDTO connectorDTO = AwsConnectorDTO.builder()
+                                             .credential(awsCredentialDTO)
+                                             .delegateSelectors(Collections.singleton(delegateSelector))
+                                             .build();
+    final AwsInternalConfig awsConfig = awsNgConfigMapper.createAwsInternalConfig(connectorDTO);
+    assertThat(awsConfig).isNotNull();
+    assertThat(awsConfig).isEqualTo(AwsInternalConfig.builder()
+                                        .useOidc(true)
+                                        .oidcAttributes(AwsOidcAttributes.builder().iamRoleArn(iamRoleArn).build())
+                                        .build());
+  }
+
+  @Test
+  @Owner(developers = PRAGYESH)
+  @Category(UnitTests.class)
+  public void testMapAwsOidcConfig() {
+    final String iamRoleArn = "iamrole";
+    final AwsOidcSpecDTO oidcSpecDTO = AwsOidcSpecDTO.builder().iamRoleArn(iamRoleArn).build();
+    final AwsCredentialDTO awsCredentialDTO =
+        AwsCredentialDTO.builder().awsCredentialType(AwsCredentialType.OIDC_AUTHENTICATION).config(oidcSpecDTO).build();
+    final AwsConfig awsConfig =
+        awsNgConfigMapper.mapAwsConfigWithDecryption(awsCredentialDTO, AwsCredentialType.OIDC_AUTHENTICATION, null);
+    assertThat(awsConfig).isNotNull();
+    assertThat(awsConfig).isEqualTo(AwsConfig.builder()
+                                        .isOidc(true)
+                                        .oidcAttributes(AwsOidcAttributes.builder().iamRoleArn(iamRoleArn).build())
                                         .build());
   }
 

@@ -16,6 +16,7 @@ import io.harness.connector.entities.embedded.awsconnector.AwsFixedDelayBackoffS
 import io.harness.connector.entities.embedded.awsconnector.AwsFullJitterBackoffStrategy;
 import io.harness.connector.entities.embedded.awsconnector.AwsIRSACredential;
 import io.harness.connector.entities.embedded.awsconnector.AwsIamCredential;
+import io.harness.connector.entities.embedded.awsconnector.AwsOidcCredential;
 import io.harness.connector.entities.embedded.awsconnector.AwsSdkClientBackoffStrategy;
 import io.harness.connector.mappers.ConnectorEntityToDTOMapper;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
@@ -26,6 +27,7 @@ import io.harness.delegate.beans.connector.awsconnector.AwsEqualJitterBackoffStr
 import io.harness.delegate.beans.connector.awsconnector.AwsFixedDelayBackoffStrategySpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsFullJitterBackoffStrategySpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsManualConfigSpecDTO;
+import io.harness.delegate.beans.connector.awsconnector.AwsOidcSpecDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsSdkClientBackoffStrategyDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsSdkClientBackoffStrategyType;
 import io.harness.encryption.SecretRefData;
@@ -33,6 +35,7 @@ import io.harness.encryption.SecretRefHelper;
 import io.harness.exception.InvalidRequestException;
 
 import com.google.inject.Singleton;
+import javax.validation.constraints.NotNull;
 
 @OwnedBy(HarnessTeam.DX)
 @Singleton
@@ -50,6 +53,9 @@ public class AwsEntityToDTO implements ConnectorEntityToDTOMapper<AwsConnectorDT
         break;
       case IRSA:
         awsCredentialDTOBuilder = buildIRSA((AwsIRSACredential) connector.getCredential());
+        break;
+      case OIDC_AUTHENTICATION:
+        awsCredentialDTOBuilder = buildOidcCredential((AwsOidcCredential) connector.getCredential());
         break;
       default:
         throw new InvalidRequestException("Invalid Credential type.");
@@ -88,6 +94,11 @@ public class AwsEntityToDTO implements ConnectorEntityToDTOMapper<AwsConnectorDT
 
   private AwsCredentialDTOBuilder buildIRSA(AwsIRSACredential credential) {
     return AwsCredentialDTO.builder().awsCredentialType(AwsCredentialType.IRSA).config(null);
+  }
+
+  private AwsCredentialDTOBuilder buildOidcCredential(@NotNull AwsOidcCredential credential) {
+    final AwsOidcSpecDTO oidcSpecDTO = AwsOidcSpecDTO.builder().iamRoleArn(credential.getIamRoleArn()).build();
+    return AwsCredentialDTO.builder().awsCredentialType(AwsCredentialType.OIDC_AUTHENTICATION).config(oidcSpecDTO);
   }
 
   private AwsSdkClientBackoffStrategyDTO buildFixedDelayBackoffStrategyDTO(

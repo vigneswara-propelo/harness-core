@@ -6,6 +6,7 @@
  */
 
 package io.harness.serializer.morphia;
+
 import static io.harness.annotations.dev.HarnessTeam.DX;
 
 import io.harness.annotations.dev.OwnedBy;
@@ -23,6 +24,7 @@ import io.harness.connector.entities.embedded.awsconnector.AwsEqualJitterBackoff
 import io.harness.connector.entities.embedded.awsconnector.AwsFixedDelayBackoffStrategy;
 import io.harness.connector.entities.embedded.awsconnector.AwsFullJitterBackoffStrategy;
 import io.harness.connector.entities.embedded.awsconnector.AwsIamCredential;
+import io.harness.connector.entities.embedded.awsconnector.AwsOidcCredential;
 import io.harness.connector.entities.embedded.awskmsconnector.AwsKmsConnector;
 import io.harness.connector.entities.embedded.awskmsconnector.AwsKmsIamCredential;
 import io.harness.connector.entities.embedded.awskmsconnector.AwsKmsManualCredential;
@@ -194,6 +196,7 @@ public class ConnectorMorphiaClassesRegistrar implements MorphiaRegistrar {
     h.put("connector.entities.embedded.gcpconnector.GcpServiceAccountKey", GcpServiceAccountKey.class);
     h.put("connector.entities.embedded.awsconnector.AwsIamCredential", AwsIamCredential.class);
     h.put("connector.entities.embedded.awsconnector.AwsAccessKeyCredential", AwsAccessKeyCredential.class);
+    h.put("connector.entities.embedded.awsconnector.AwsOidcCredential", AwsOidcCredential.class);
     h.put("connector.entities.embedded.awskmsconnector.AwsKmsIamCredential", AwsKmsIamCredential.class);
     h.put("connector.entities.embedded.awskmsconnector.AwsKmsStsCredential", AwsKmsStsCredential.class);
     h.put("connector.entities.embedded.awskmsconnector.AwsKmsManualCredential", AwsKmsManualCredential.class);
