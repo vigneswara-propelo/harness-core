@@ -23,6 +23,7 @@ java_library(
         "//940-feature-flag:module",
         "//952-remote-observers:module",
         "//955-outbox-sdk:module",
+        "//980-commons/src/main/java/io/harness/mapstruct/protobuf:module",
         "//clients/audit:module",
         "//clients/queue-service/java-client:module",
         "@maven//:io_dropwizard_modules_dropwizard_protobuf",

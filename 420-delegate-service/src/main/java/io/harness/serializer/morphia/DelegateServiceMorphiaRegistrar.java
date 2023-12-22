@@ -21,6 +21,7 @@ import io.harness.morphia.MorphiaRegistrar;
 import io.harness.morphia.MorphiaRegistrarHelperPut;
 import io.harness.perpetualtask.internal.PerpetualTaskRecord;
 import io.harness.selection.log.DelegateSelectionLog;
+import io.harness.taskresponse.TaskResponse;
 
 import software.wings.beans.DelegateConnection;
 import software.wings.delegatetasks.validation.core.DelegateConnectionResult;
@@ -42,6 +43,7 @@ public class DelegateServiceMorphiaRegistrar implements MorphiaRegistrar {
     set.add(VersionOverride.class);
     set.add(DelegateConnectionResult.class);
     set.add(AgentMtlsEndpoint.class);
+    set.add(TaskResponse.class);
   }
 
   @Override

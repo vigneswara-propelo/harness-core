@@ -11,6 +11,8 @@ import static io.harness.rule.OwnerRule.MARKO;
 
 import static javax.ws.rs.client.Entity.entity;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -27,11 +29,14 @@ import io.harness.delegate.beans.scheduler.ExecutionStatus;
 import io.harness.delegate.beans.scheduler.InitializeExecutionInfraResponse;
 import io.harness.delegate.core.beans.CleanupInfraResponse;
 import io.harness.delegate.core.beans.ExecutionInfraInfo;
+import io.harness.delegate.core.beans.ExecutionStatusResponse;
 import io.harness.delegate.core.beans.ResponseCode;
 import io.harness.delegate.core.beans.SetupInfraResponse;
+import io.harness.delegate.core.beans.StatusCode;
 import io.harness.executionInfra.ExecutionInfrastructureService;
 import io.harness.rule.Owner;
 import io.harness.service.intfc.DelegateTaskService;
+import io.harness.taskresponse.TaskResponseService;
 
 import software.wings.jersey.KryoMessageBodyProvider;
 import software.wings.service.intfc.DelegateTaskServiceClassic;
@@ -65,6 +70,8 @@ public class CoreDelegateExecutionResourceTest extends JerseyTest {
   private static final String INFRA_ID = "infraId";
   private static final String INIT_INFRA_RESPONSE_URL =
       String.format("/executions/response/%s/infra-setup?accountId=%s&delegateId=%s", TASK_ID, ACCOUNT_ID, DELEGATE_ID);
+  private static final String EXECUTION_RESPONSE_URL =
+      String.format("/executions/%s/status?accountId=%s&delegateId=%s", TASK_ID, ACCOUNT_ID, DELEGATE_ID);
   private static final String CLEANUP_INFRA_RESPONSE_URL =
       String.format("/executions/response/%s/infra-cleanup/%s?accountId=%s&delegateId=%s", TASK_ID, INFRA_ID,
           ACCOUNT_ID, DELEGATE_ID);
@@ -72,6 +79,7 @@ public class CoreDelegateExecutionResourceTest extends JerseyTest {
   private static final String RUNNER_TYPE = "K8S";
   @Mock private HttpServletRequest httpServletRequest;
   @Mock private DelegateTaskServiceClassic taskServiceClassic;
+  @Mock private TaskResponseService taskResponseService;
   @Mock private ExecutionInfrastructureService infraService;
   @Mock private DelegateTaskService taskService;
 
@@ -81,7 +89,8 @@ public class CoreDelegateExecutionResourceTest extends JerseyTest {
     // test.
     initMocks(this);
     final ResourceConfig resourceConfig = new ResourceConfig();
-    resourceConfig.register(new CoreDelegateExecutionResource(taskServiceClassic, infraService, taskService));
+    resourceConfig.register(
+        new CoreDelegateExecutionResource(taskServiceClassic, infraService, taskResponseService, taskService));
     resourceConfig.register(new ProtocolBufferMessageBodyProvider());
     resourceConfig.register(new AbstractBinder() {
       @Override
@@ -214,6 +223,51 @@ public class CoreDelegateExecutionResourceTest extends JerseyTest {
   @Test
   @Owner(developers = MARKO)
   @Category(UnitTests.class)
+  public void whenExecuteAndNoRequestThen400() {
+    final Response actual =
+        client()
+            .target(EXECUTION_RESPONSE_URL)
+            .request()
+            .post(entity(null, ProtocolBufferMediaType.APPLICATION_PROTOBUF), new GenericType<>() {});
+    assertThat(actual.getStatus()).isEqualTo(400);
+  }
+
+  @Test
+  @Owner(developers = MARKO)
+  @Category(UnitTests.class)
+  public void whenExecuteOkThen200AndExecutionSucceededCallback() {
+    final var data = buildExecuteResponse();
+
+    final Response actual =
+        client()
+            .target(EXECUTION_RESPONSE_URL)
+            .request()
+            .post(entity(data, ProtocolBufferMediaType.APPLICATION_PROTOBUF), new GenericType<>() {});
+
+    verify(taskResponseService).handleResponse(ACCOUNT_ID, TASK_ID, data.getStatus(), DELEGATE_ID);
+    assertThat(actual.getStatus()).isEqualTo(200);
+  }
+
+  @Test
+  @Owner(developers = MARKO)
+  @Category(UnitTests.class)
+  public void whenExecuteAndGenericExceptionThen500() {
+    final var data = buildExecuteResponse();
+
+    doThrow(new NullPointerException()).when(taskResponseService).handleResponse(any(), any(), any(), any());
+
+    final Response actual =
+        client()
+            .target(EXECUTION_RESPONSE_URL)
+            .request()
+            .post(entity(data, ProtocolBufferMediaType.APPLICATION_PROTOBUF), new GenericType<>() {});
+
+    assertThat(actual.getStatus()).isEqualTo(500);
+  }
+
+  @Test
+  @Owner(developers = MARKO)
+  @Category(UnitTests.class)
   public void whenCleanupInfraAndNoRequestThen400() {
     final Response actual =
         client()
@@ -313,6 +367,12 @@ public class CoreDelegateExecutionResourceTest extends JerseyTest {
         .setResponseCode(code)
         .setLocation(ExecutionInfraInfo.newBuilder().setDelegateName(DELEGATE_NAME).setRunnerType(RUNNER_TYPE).build())
         .build();
+  }
+
+  private static ExecutionStatusResponse buildExecuteResponse() {
+    final io.harness.delegate.core.beans.ExecutionStatus status =
+        io.harness.delegate.core.beans.ExecutionStatus.newBuilder().setCode(StatusCode.CODE_SUCCESS).build();
+    return ExecutionStatusResponse.newBuilder().setStatus(status).build();
   }
 
   private static CleanupInfraResponse buildCleanupInfraResponse(final ResponseCode code) {

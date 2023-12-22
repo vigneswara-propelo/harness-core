@@ -32,6 +32,7 @@ import io.harness.delegate.beans.connector.ConnectorHeartbeatDelegateResponse;
 import io.harness.delegate.beans.instancesync.InstanceSyncPerpetualTaskResponse;
 import io.harness.delegate.core.beans.AcquireTasksResponse;
 import io.harness.delegate.core.beans.CleanupInfraResponse;
+import io.harness.delegate.core.beans.ExecutionStatusResponse;
 import io.harness.delegate.core.beans.SetupInfraResponse;
 import io.harness.delegate.task.validation.DelegateConnectionResultDetail;
 import io.harness.perpetualtask.HeartbeatRequest;
@@ -275,6 +276,11 @@ public interface DelegateAgentManagerClient {
   @POST("executions/response/{executionId}/infra-setup")
   Call<ResponseBody> sendSetupInfraResponse(@Path("executionId") String uuid, @Query("delegateId") String delegateId,
       @Query("accountId") String accountId, @Body SetupInfraResponse response);
+
+  @Consumes({"application/x-protobuf"})
+  @POST("executions/{executionId}/status")
+  Call<ResponseBody> sendExecutionResponse(@Path("executionId") String uuid, @Query("accountId") String accountId,
+      @Query("delegateId") String delegateId, @Body ExecutionStatusResponse response);
 
   @Consumes({"application/x-protobuf"})
   @POST("executions/response/{executionId}/infra-cleanup/{infraId}")

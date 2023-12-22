@@ -728,6 +728,7 @@ tagLinks {"name": "accountIdCreatedAt", "background": true} {"accountId": 1, "cr
 tagLinks {"name": "entityTagIdx", "unique": true} {"accountId": 1, "entityId": 1, "key": 1}
 tagLinks {"name": "tagValueIdx", "background": true} {"accountId": 1, "key": 1, "value": 1}
 tags {"name": "tagIdx", "unique": true} {"accountId": 1, "key": 1}
+taskResponse {"name": "validUntil_1", "background": true, "expireAfterSeconds": 0} {"validUntil": 1}
 taskSelectorMaps {"name": "createdAt_1", "background": true} {"createdAt": 1}
 taskSelectorMaps {"name": "uniqueGroup", "unique": true} {"accountId": 1, "taskGroup": 1}
 templateFolders {"name": "account_gallery_app_idx", "background": true} {"accountId": 1, "galleryId": 1, "appId": 1}
