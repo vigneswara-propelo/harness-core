@@ -102,6 +102,7 @@ import io.harness.k8s.releasehistory.K8SLegacyReleaseHistory;
 import io.harness.k8s.releasehistory.K8sLegacyRelease;
 import io.harness.k8s.releasehistory.K8sRelease;
 import io.harness.k8s.releasehistory.K8sReleaseSecretHelper;
+import io.harness.k8s.releasehistory.TrafficRoutingInfoDTO;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 
@@ -117,6 +118,7 @@ import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NoArgsConstructor;
@@ -585,8 +587,15 @@ public class K8sBGRequestHandler extends K8sRequestHandler {
       TrafficRoutingResourceCreator trafficRoutingResourceCreator =
           TrafficRoutingResourceCreatorFactory.create(trafficRoutingConfig);
 
-      resources.addAll(trafficRoutingResourceCreator.createTrafficRoutingResources(kubernetesConfig.getNamespace(),
-          releaseName, primaryService, stageService, availableApiVersions, logCallback));
+      List<KubernetesResource> trafficRoutingResources =
+          trafficRoutingResourceCreator.createTrafficRoutingResources(kubernetesConfig.getNamespace(), releaseName,
+              primaryService, stageService, availableApiVersions, logCallback);
+
+      Optional<TrafficRoutingInfoDTO> trafficRoutingInfo =
+          trafficRoutingResourceCreator.getTrafficRoutingInfo(trafficRoutingResources);
+      trafficRoutingInfo.ifPresent(s -> release.setTrafficRoutingInfo(s));
+
+      resources.addAll(trafficRoutingResources);
     }
   }
 }

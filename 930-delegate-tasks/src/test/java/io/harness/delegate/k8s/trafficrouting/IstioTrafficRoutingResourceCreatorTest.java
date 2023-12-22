@@ -257,6 +257,20 @@ public class IstioTrafficRoutingResourceCreatorTest extends CategoryTest {
     testK8sResourceCreation(istioProviderConfig, null);
   }
 
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testGetMainResourceKind() {
+    assertThat(new IstioTrafficRoutingResourceCreator().getMainResourceKind()).isEqualTo("VirtualService");
+  }
+
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testGetMainResourceKindPlural() {
+    assertThat(new IstioTrafficRoutingResourceCreator().getMainResourceKindPlural()).isEqualTo("virtualservices");
+  }
+
   private void testK8sResourceCreation(K8sTrafficRoutingConfig istioProviderConfig, String path) throws IOException {
     IstioTrafficRoutingResourceCreator istioTrafficRoutingResourceCreator =
         new IstioTrafficRoutingResourceCreator(istioProviderConfig);

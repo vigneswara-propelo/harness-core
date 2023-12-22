@@ -196,6 +196,20 @@ public class SMITrafficRoutingResourceCreatorTest extends CategoryTest {
     testK8sResourceCreation(k8sTrafficRoutingConfig, path1, path2, path3);
   }
 
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testGetMainResourceKind() {
+    assertThat(new SMITrafficRoutingResourceCreator().getMainResourceKind()).isEqualTo("TrafficSplit");
+  }
+
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testGetMainResourceKindPlural() {
+    assertThat(new SMITrafficRoutingResourceCreator().getMainResourceKindPlural()).isEqualTo("trafficsplits");
+  }
+
   private void testK8sResourceCreation(K8sTrafficRoutingConfig k8sTrafficRoutingConfig, String... paths)
       throws IOException {
     SMITrafficRoutingResourceCreator smiTrafficRoutingResourceCreator =

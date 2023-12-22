@@ -35,7 +35,7 @@ public class K8sReleaseConstants {
   public static final String RELEASE_SECRET_RELEASE_COLOR_KEY = "color";
   public static final String RELEASE_SECRET_RELEASE_BG_ENVIRONMENT_KEY = "harness.io/bg-environment";
   public static final String RELEASE_SECRET_RELEASE_MANIFEST_HASH_KEY = "harness.io/manifest-hash";
-
+  public static final String RELEASE_SECRET_TRAFFIC_ROUTING_INFO = "harness.io/traffic-routing-info";
   public static final String RELEASE_SECRET_HELM_CHART_NAME_KEY = "metadata.helm.harness.io/chart-name";
   public static final String RELEASE_SECRET_HELM_CHART_VERSION_KEY = "metadata.helm.harness.io/chart-version";
   public static final String RELEASE_SECRET_HELM_CHART_REPO_URL_KEY = "metadata.helm.harness.io/chart-repo-url";

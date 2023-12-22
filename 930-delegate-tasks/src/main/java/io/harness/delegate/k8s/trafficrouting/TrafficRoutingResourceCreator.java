@@ -17,6 +17,7 @@ import io.harness.delegate.task.k8s.trafficrouting.K8sTrafficRoutingConfig;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.k8s.manifest.ManifestHelper;
 import io.harness.k8s.model.KubernetesResource;
+import io.harness.k8s.releasehistory.TrafficRoutingInfoDTO;
 import io.harness.logging.CommandExecutionStatus;
 import io.harness.logging.LogCallback;
 import io.harness.logging.LogLevel;
@@ -25,10 +26,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
+@NoArgsConstructor
 @AllArgsConstructor
 public abstract class TrafficRoutingResourceCreator {
   private static final int K8S_RESOURCE_NAME_MAX = 253;
@@ -36,7 +40,7 @@ public abstract class TrafficRoutingResourceCreator {
   private static final String STAGE_PLACE_HOLDER = "stage";
   private static final String CANARY_PLACE_HOLDER = "canary";
 
-  protected final K8sTrafficRoutingConfig k8sTrafficRoutingConfig;
+  protected K8sTrafficRoutingConfig k8sTrafficRoutingConfig;
 
   public List<KubernetesResource> createTrafficRoutingResources(String namespace, String releaseName,
       KubernetesResource primaryService, KubernetesResource secondaryService, Set<String> availableApiVersions,
@@ -103,4 +107,20 @@ public abstract class TrafficRoutingResourceCreator {
                     })));
     return apiVersions;
   }
+
+  public Optional<TrafficRoutingInfoDTO> getTrafficRoutingInfo(List<KubernetesResource> kubernetesResources) {
+    return kubernetesResources.stream()
+        .filter(resource -> resource.getResourceId().getKind().equals(getMainResourceKind()))
+        .findFirst()
+        .map(resource
+            -> TrafficRoutingInfoDTO.builder()
+                   .name(resource.getResourceId().getName())
+                   .version(resource.getApiVersion())
+                   .plural(getMainResourceKindPlural())
+                   .build());
+  }
+
+  protected abstract String getMainResourceKind();
+
+  protected abstract String getMainResourceKindPlural();
 }

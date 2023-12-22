@@ -16,11 +16,15 @@ import io.harness.CategoryTest;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.task.k8s.trafficrouting.K8sTrafficRoutingConfig;
 import io.harness.exception.InvalidArgumentsException;
+import io.harness.k8s.model.KubernetesResource;
+import io.harness.k8s.model.KubernetesResourceId;
+import io.harness.k8s.releasehistory.TrafficRoutingInfoDTO;
 import io.harness.logging.LogCallback;
 import io.harness.rule.Owner;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
@@ -142,6 +146,55 @@ public class TrafficRoutingResourceCreatorTest extends CategoryTest {
     assertThat(result).contains(entry("key1", "api3")).contains(entry("key2", "api5"));
   }
 
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testGetTrafficRoutingInfo() {
+    List<KubernetesResource> k8sResources =
+        List.of(KubernetesResource.builder()
+                    .resourceId(KubernetesResourceId.builder().name("resourceName").kind("kind").build())
+                    .value(Map.of("apiVersion", "api1"))
+                    .build(),
+            KubernetesResource.builder()
+                .resourceId(KubernetesResourceId.builder().name("resourceName2").kind("kind2").build())
+                .value(Map.of("apiVersion", "api2"))
+                .build(),
+            KubernetesResource.builder()
+                .resourceId(KubernetesResourceId.builder().name("resourceName3").kind("kind3").build())
+                .value(Map.of("apiVersion", "api3"))
+                .build());
+
+    Optional<TrafficRoutingInfoDTO> trafficRoutingInfo = getTrafficRoutingCreator().getTrafficRoutingInfo(k8sResources);
+
+    assertThat(trafficRoutingInfo).isPresent();
+    assertThat(trafficRoutingInfo.get().getName()).isEqualTo("resourceName");
+    assertThat(trafficRoutingInfo.get().getVersion()).isEqualTo("api1");
+    assertThat(trafficRoutingInfo.get().getPlural()).isEqualTo("kinds");
+  }
+
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testGetTrafficRoutingInfoIsEmpty() {
+    List<KubernetesResource> k8sResources =
+        List.of(KubernetesResource.builder()
+                    .resourceId(KubernetesResourceId.builder().name("resourceName1").kind("kind1").build())
+                    .value(Map.of("apiVersion", "api1"))
+                    .build(),
+            KubernetesResource.builder()
+                .resourceId(KubernetesResourceId.builder().name("resourceName2").kind("kind2").build())
+                .value(Map.of("apiVersion", "api2"))
+                .build(),
+            KubernetesResource.builder()
+                .resourceId(KubernetesResourceId.builder().name("resourceName3").kind("kind3").build())
+                .value(Map.of("apiVersion", "api3"))
+                .build());
+
+    Optional<TrafficRoutingInfoDTO> trafficRoutingInfo = getTrafficRoutingCreator().getTrafficRoutingInfo(k8sResources);
+
+    assertThat(trafficRoutingInfo).isNotPresent();
+  }
+
   public TrafficRoutingResourceCreator getTrafficRoutingCreator() {
     return new TrafficRoutingResourceCreator(K8sTrafficRoutingConfig.builder().build()) {
       @Override
@@ -153,6 +206,16 @@ public class TrafficRoutingResourceCreatorTest extends CategoryTest {
       @Override
       protected Map<String, List<String>> getProviderVersionMap() {
         return Map.of("key1", List.of("api1", "api2", "api3"), "key2", List.of("api4", "api5"));
+      }
+
+      @Override
+      protected String getMainResourceKind() {
+        return "kind";
+      }
+
+      @Override
+      protected String getMainResourceKindPlural() {
+        return "kinds";
       }
     };
   }

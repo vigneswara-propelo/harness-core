@@ -43,12 +43,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 
+@NoArgsConstructor
 @Slf4j
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_K8S})
 public class SMITrafficRoutingResourceCreator extends TrafficRoutingResourceCreator {
+  public static final String PLURAL = "trafficsplits";
+
   private static final String TRAFFIC_SPLIT_SUFFIX = "-traffic-split";
   private static final String HTTP_ROUTE_GROUP_SUFFIX = "-http-route-group";
   // toDo this needs to be revisited, should not be hardcoded
@@ -86,6 +90,16 @@ public class SMITrafficRoutingResourceCreator extends TrafficRoutingResourceCrea
   @Override
   protected Map<String, List<String>> getProviderVersionMap() {
     return SUPPORTED_API_MAP;
+  }
+
+  @Override
+  protected String getMainResourceKind() {
+    return "TrafficSplit";
+  }
+
+  @Override
+  protected String getMainResourceKindPlural() {
+    return PLURAL;
   }
 
   private TrafficSplit getTrafficSplit(

@@ -43,4 +43,6 @@ public interface IK8sRelease {
   void setManifestHash(@NotNull String manifestHash);
   void setHelmChartInfo(@NotNull HelmChartInfoDTO helmChartInfo);
   HelmChartInfoDTO getHelmChartInfo();
+  void setTrafficRoutingInfo(TrafficRoutingInfoDTO trafficRoutingInfo);
+  TrafficRoutingInfoDTO getTrafficRoutingInfo();
 }

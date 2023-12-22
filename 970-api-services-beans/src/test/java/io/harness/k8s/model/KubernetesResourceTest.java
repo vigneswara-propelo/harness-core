@@ -1125,4 +1125,26 @@ public class KubernetesResourceTest extends CategoryTest {
       }
     });
   }
+
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testGetApiVersion() throws Exception {
+    URL url = this.getClass().getResource("/deploy.yaml");
+    String fileContents = Resources.toString(url, Charsets.UTF_8);
+    KubernetesResource resource = processYaml(fileContents).get(0);
+
+    assertThat(resource.getApiVersion()).isEqualTo("apps/v1");
+  }
+
+  @Test
+  @Owner(developers = BUHA)
+  @Category(UnitTests.class)
+  public void testGetApiVersionEmpty() throws Exception {
+    URL url = this.getClass().getResource("/deploy-missing-version.yaml");
+    String fileContents = Resources.toString(url, Charsets.UTF_8);
+    KubernetesResource resource = processYaml(fileContents).get(0);
+
+    assertThat(resource.getApiVersion()).isEmpty();
+  }
 }

@@ -1026,4 +1026,9 @@ public class KubernetesResource {
     return format(MATCH_EXPRESSION_FORMAT, expression.getKey(), expression.getOperator().toLowerCase(),
         expression.getValues() != null ? String.join(", ", expression.getValues()) : "");
   }
+
+  public String getApiVersion() {
+    String apiVersion = (String) ObjectYamlUtils.getField(value, "apiVersion");
+    return apiVersion != null ? apiVersion : "";
+  }
 }

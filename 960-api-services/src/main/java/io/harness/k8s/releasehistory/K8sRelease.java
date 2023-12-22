@@ -19,6 +19,7 @@ import static io.harness.k8s.releasehistory.K8sReleaseConstants.RELEASE_SECRET_H
 import static io.harness.k8s.releasehistory.K8sReleaseConstants.RELEASE_SECRET_HELM_CHART_VERSION_KEY;
 import static io.harness.k8s.releasehistory.K8sReleaseConstants.RELEASE_SECRET_RELEASE_BG_ENVIRONMENT_KEY;
 import static io.harness.k8s.releasehistory.K8sReleaseConstants.RELEASE_SECRET_RELEASE_MANIFEST_HASH_KEY;
+import static io.harness.k8s.releasehistory.K8sReleaseConstants.RELEASE_SECRET_TRAFFIC_ROUTING_INFO;
 import static io.harness.k8s.releasehistory.K8sReleaseConstants.RELEASE_STATUS_LABEL_KEY;
 
 import static java.util.Collections.emptyList;
@@ -35,6 +36,8 @@ import io.harness.k8s.manifest.ManifestHelper;
 import io.harness.k8s.model.KubernetesResource;
 import io.harness.k8s.model.KubernetesResourceId;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1Secret;
 import java.io.IOException;
@@ -185,6 +188,33 @@ public class K8sRelease implements IK8sRelease {
   @Override
   public HelmChartInfoDTO getHelmChartInfo() {
     return K8sReleaseSecretHelper.getHelmChartInfo(releaseSecret);
+  }
+
+  @Override
+  public void setTrafficRoutingInfo(TrafficRoutingInfoDTO trafficRoutingInfo) {
+    if (trafficRoutingInfo != null) {
+      try {
+        String trafficRoutingInfoJson = new ObjectMapper().writeValueAsString(trafficRoutingInfo);
+        K8sReleaseSecretHelper.putAnnotationsItem(
+            releaseSecret, RELEASE_SECRET_TRAFFIC_ROUTING_INFO, trafficRoutingInfoJson);
+      } catch (JsonProcessingException e) {
+        log.warn("Unable to map TrafficRoutingInfo into JSON", e);
+      }
+    }
+  }
+
+  @Override
+  public TrafficRoutingInfoDTO getTrafficRoutingInfo() {
+    String trafficRoutingInfoJson =
+        K8sReleaseSecretHelper.getReleaseAnnotationValue(releaseSecret, RELEASE_SECRET_TRAFFIC_ROUTING_INFO);
+    if (trafficRoutingInfoJson != null) {
+      try {
+        return new ObjectMapper().readValue(trafficRoutingInfoJson, TrafficRoutingInfoDTO.class);
+      } catch (JsonProcessingException e) {
+        log.warn(String.format("Unable to map %s into TrafficRoutingInfoDTO object", trafficRoutingInfoJson), e);
+      }
+    }
+    return null;
   }
 
   private byte[] getCompressedYaml(List<KubernetesResource> resources) throws IOException {

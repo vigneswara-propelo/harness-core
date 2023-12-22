@@ -39,12 +39,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
+@NoArgsConstructor
 @Slf4j
 @CodePulse(module = ProductModule.CDS, unitCoverageRequired = true, components = {HarnessModuleComponent.CDS_K8S})
 public class IstioTrafficRoutingResourceCreator extends TrafficRoutingResourceCreator {
+  public static final String PLURAL = "virtualservices";
+
   private static final String VS_SUFFIX = "-virtual-service";
   // toDo this needs to be revisited, should not be hardcoded
   private static final String TRAFFIC_ROUTING_STEP_VIRTUAL_SERVICE = "harness-traffic-routing-virtual-service";
@@ -76,6 +80,16 @@ public class IstioTrafficRoutingResourceCreator extends TrafficRoutingResourceCr
   @Override
   protected Map<String, List<String>> getProviderVersionMap() {
     return SUPPORTED_API_MAP;
+  }
+
+  @Override
+  protected String getMainResourceKind() {
+    return "VirtualService";
+  }
+
+  @Override
+  protected String getMainResourceKindPlural() {
+    return PLURAL;
   }
 
   private VirtualServiceSpec getVirtualServiceSpec(String stableName, String stageName) {
