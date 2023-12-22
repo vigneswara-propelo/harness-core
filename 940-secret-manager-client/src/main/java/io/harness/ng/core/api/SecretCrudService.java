@@ -31,6 +31,8 @@ public interface SecretCrudService {
 
   SecretResponseWrapper create(String accountIdentifier, SecretDTOV2 dto);
 
+  SecretResponseWrapper create(String accountIdentifier, SecretDTOV2 dto, String encryptionKey, String encryptedValue);
+
   SecretResponseWrapper createViaYaml(String accountIdentifier, SecretDTOV2 dto);
 
   Optional<SecretResponseWrapper> get(

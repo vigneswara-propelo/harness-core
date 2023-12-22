@@ -211,6 +211,36 @@ public class NGEncryptedDataServiceImpl implements NGEncryptedDataService {
     }
     return encryptedDataDao.save(encryptedData);
   }
+
+  @Override
+  public NGEncryptedData createSecretText(
+      String accountIdentifier, SecretDTOV2 dto, String encryptionKey, String encryptedValue) {
+    validateSecretDoesNotExist(
+        accountIdentifier, dto.getOrgIdentifier(), dto.getProjectIdentifier(), dto.getIdentifier());
+    SecretTextSpecDTO secret = (SecretTextSpecDTO) dto.getSpec();
+    SecretManagerConfigDTO secretManager = getSecretManagerOrThrow(accountIdentifier, dto.getOrgIdentifier(),
+        dto.getProjectIdentifier(), secret.getSecretManagerIdentifier(), false);
+
+    validateAdditionalMetadata(secretManager, secret);
+    NGEncryptedData encryptedData = buildNGEncryptedData(accountIdentifier, dto, secretManager);
+
+    switch (secret.getValueType()) {
+      case Inline:
+        if (isReadOnlySecretManager(secretManager)) {
+          throw new SecretManagementException(SECRET_MANAGEMENT_ERROR, READ_ONLY_SECRET_MANAGER_ERROR, USER);
+        }
+        encryptedData.setEncryptionKey(encryptionKey);
+        encryptedData.setEncryptedValue(encryptedValue.toCharArray());
+        break;
+      case Reference:
+        break;
+      default:
+        throw new RuntimeException("Secret value type is unknown");
+    }
+    encryptedData.setBase64Encoded(false);
+    return encryptedDataDao.save(encryptedData);
+  }
+
   private void validateCustomSecrets(SecretManagerConfigDTO secretManager, SecretDTOV2 dto) throws Exception {
     CustomSecretManagerConfigDTO customSecretManagerConfigDTO = (CustomSecretManagerConfigDTO) secretManager;
     Map<String, List<NameValuePairWithDefault>> connectorTemplateInputs =

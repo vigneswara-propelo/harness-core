@@ -24,6 +24,8 @@ import java.util.List;
 public interface NGEncryptedDataService {
   NGEncryptedData createSecretText(String accountIdentifier, SecretDTOV2 dto);
 
+  NGEncryptedData createSecretText(
+      String accountIdentifier, SecretDTOV2 dto, String encryptionKey, String encryptedValue);
   NGEncryptedData createSecretFile(String accountIdentifier, SecretDTOV2 dto, InputStream inputStream);
 
   NGEncryptedData createSecretFile(
