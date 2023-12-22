@@ -18,15 +18,19 @@ import io.netty.channel.kqueue.KQueueDomainSocketChannel;
 import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.unix.DomainSocketAddress;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 @OwnedBy(HarnessTeam.DX)
 public class ScmMacOSManager extends ScmUnixManager {
+  private final ExecutorService scmServerExecutor;
   KQueueEventLoopGroup klg;
 
-  public ScmMacOSManager() throws IOException {}
+  public ScmMacOSManager(ExecutorService scmServerExecutor) throws IOException {
+    this.scmServerExecutor = scmServerExecutor;
+  }
 
   public ManagedChannel getChannel() {
-    klg = new KQueueEventLoopGroup();
+    klg = new KQueueEventLoopGroup(1, scmServerExecutor);
     return NettyChannelBuilder.forAddress(new DomainSocketAddress(socketAddress))
         .eventLoopGroup(klg)
         .channelType(KQueueDomainSocketChannel.class)

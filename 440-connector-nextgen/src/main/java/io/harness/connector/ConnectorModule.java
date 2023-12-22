@@ -9,6 +9,13 @@ package io.harness.connector;
 
 import static io.harness.annotations.dev.HarnessTeam.DX;
 import static io.harness.authorization.AuthorizationServiceHeader.CE_NEXT_GEN;
+import static io.harness.delegate.task.scm.ScmDelegateClientConstants.DEFAULT_SCM_SERVER_CORE_POOL_SIZE;
+import static io.harness.delegate.task.scm.ScmDelegateClientConstants.DEFAULT_SCM_SERVER_MAX_POOL_SIZE;
+import static io.harness.delegate.task.scm.ScmDelegateClientConstants.DEFAULT_SCM_SERVER_POOL_IDLE_TIME_UNIT;
+import static io.harness.delegate.task.scm.ScmDelegateClientConstants.DEFAULT_SCM_SERVER_POOL_IDLE_TIME_VALUE;
+import static io.harness.delegate.task.scm.ScmDelegateClientConstants.SCM_SERVER_CORE_POOL_SIZE_ENV_VAR;
+import static io.harness.delegate.task.scm.ScmDelegateClientConstants.SCM_SERVER_MAX_POOL_SIZE_ENV_VAR;
+import static io.harness.delegate.task.scm.ScmDelegateClientConstants.SCM_SERVER_POOL_IDLE_TIME_IN_SECONDS_ENV_VAR;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.artifacts.docker.client.DockerRestClientFactory;
@@ -72,10 +79,17 @@ import io.harness.spotinst.SpotInstHelperServiceDelegate;
 import io.harness.spotinst.SpotInstHelperServiceDelegateImpl;
 import io.harness.terraformcloud.TerraformCloudClient;
 import io.harness.terraformcloud.TerraformCloudClientImpl;
+import io.harness.threading.ThreadPool;
+import io.harness.utils.system.SystemWrapper;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import java.util.concurrent.ExecutorService;
 
 @OwnedBy(DX)
 public class ConnectorModule extends AbstractModule {
@@ -99,6 +113,21 @@ public class ConnectorModule extends AbstractModule {
     }
 
     return instance;
+  }
+
+  @Provides
+  @Singleton
+  @Named("scmServerExecutor")
+  public ExecutorService scmServerExecutor() {
+    int scmExecutorCorePoolSize =
+        SystemWrapper.getOrDefaultInt(SCM_SERVER_CORE_POOL_SIZE_ENV_VAR, DEFAULT_SCM_SERVER_CORE_POOL_SIZE);
+    int scmExecutorMaxPoolSize =
+        SystemWrapper.getOrDefaultInt(SCM_SERVER_MAX_POOL_SIZE_ENV_VAR, DEFAULT_SCM_SERVER_MAX_POOL_SIZE);
+    int poolIdleTimeInSeconds = SystemWrapper.getOrDefaultInt(
+        SCM_SERVER_POOL_IDLE_TIME_IN_SECONDS_ENV_VAR, DEFAULT_SCM_SERVER_POOL_IDLE_TIME_VALUE);
+    return ThreadPool.create(scmExecutorCorePoolSize, scmExecutorMaxPoolSize, poolIdleTimeInSeconds,
+        DEFAULT_SCM_SERVER_POOL_IDLE_TIME_UNIT,
+        new ThreadFactoryBuilder().setNameFormat("scm-server-executor-%d").setPriority(Thread.MIN_PRIORITY).build());
   }
 
   @Override

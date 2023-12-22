@@ -10,11 +10,15 @@ package io.harness.utils.system;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * A wrapper for {@link System} operations to help when writing unit test using Mockito.
  *
  * When we do {@code Mockito.mockStatic(System.class)} the JVM freezes, the class was created to solve/workaround that.
  */
+@Slf4j
 @OwnedBy(HarnessTeam.PIPELINE)
 public class SystemWrapper {
   private static final String DEPLOY_MODE = System.getenv("DEPLOY_MODE");
@@ -31,5 +35,18 @@ public class SystemWrapper {
   public static boolean checkIfEnvOnPremOrCommunity() {
     return (DEPLOY_MODE != null && (DEPLOY_MODE.equals("ONPREM") || DEPLOY_MODE.equals("KUBERNETES_ONPREM")))
         || (DEPLOY_VERSION != null && DEPLOY_VERSION.equals("COMMUNITY"));
+  }
+
+  public static int getOrDefaultInt(String envVariableName, int defaultValue) {
+    String envVariableValue = getenv(envVariableName);
+    if (StringUtils.isNotBlank(envVariableValue)) {
+      try {
+        return Integer.parseInt(envVariableValue);
+      } catch (NumberFormatException e) {
+        log.warn("Invalid value provided {}, defaulting to value {}", envVariableValue, defaultValue, e);
+        return defaultValue;
+      }
+    }
+    return defaultValue;
   }
 }

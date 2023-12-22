@@ -17,15 +17,19 @@ import io.netty.channel.epoll.EpollDomainSocketChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.unix.DomainSocketAddress;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 @OwnedBy(HarnessTeam.DX)
 public class ScmLinuxManager extends ScmUnixManager {
+  private final ExecutorService scmServerExecutor;
   EpollEventLoopGroup epollEventLoopGroup;
 
-  public ScmLinuxManager() throws IOException {}
+  public ScmLinuxManager(ExecutorService scmServerExecutor) throws IOException {
+    this.scmServerExecutor = scmServerExecutor;
+  }
 
   public ManagedChannel getChannel() {
-    epollEventLoopGroup = new EpollEventLoopGroup();
+    epollEventLoopGroup = new EpollEventLoopGroup(1, scmServerExecutor);
     return NettyChannelBuilder.forAddress(new DomainSocketAddress(socketAddress))
         .eventLoopGroup(epollEventLoopGroup)
         .channelType(EpollDomainSocketChannel.class)

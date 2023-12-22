@@ -19,11 +19,14 @@ import io.harness.exception.ScmInternalServerErrorException;
 import io.harness.exception.UnexpectedException;
 import io.harness.exception.runtime.SCMRuntimeException;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import lombok.SneakyThrows;
@@ -36,6 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @OwnedBy(DX)
 public class ScmDelegateClientImpl implements ScmDelegateClient {
+  @Inject @Named("scmServerExecutor") ExecutorService scmServerExecutor;
+
   // Caller code eg:
   //    processScmRequest( c->scmServiceClient.listFiles(connector,xyz,abc,SCMGrpc.newBlockingStub(c)));
 
@@ -91,9 +96,9 @@ public class ScmDelegateClientImpl implements ScmDelegateClient {
     log.info("Name of OS is {}", OS);
     try {
       if (OS.contains("mac")) {
-        return new ScmMacOSManager();
+        return new ScmMacOSManager(scmServerExecutor);
       } else if (OS.contains("nux") || OS.contains("nix")) {
-        return new ScmLinuxManager();
+        return new ScmLinuxManager(scmServerExecutor);
       }
     } catch (Exception e) {
       log.error(
