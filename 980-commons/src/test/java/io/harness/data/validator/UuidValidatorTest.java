@@ -105,18 +105,17 @@ public class UuidValidatorTest extends CategoryTest {
     assertEquals("abc_test", UuidAndIdentifierUtils.generateHarnessUIFormatIdentifier("abc.test"));
   }
 
-  //  Commented out because of https://harness.atlassian.net/browse/PL-43512
-  //  @Test
-  //  @Owner(developers = PIYUSH)
-  //  public void testGenerateHarnessUIFormatIdentifier_startWithHyphen() {
-  //    assertEquals("_test", UuidAndIdentifierUtils.generateHarnessUIFormatIdentifier("-test"));
-  //  }
-  //
-  //  @Test
-  //  @Owner(developers = PIYUSH)
-  //  public void testGenerateHarnessUIFormatIdentifier_HyphenInTheMiddle() {
-  //    assertEquals("abc_test", UuidAndIdentifierUtils.generateHarnessUIFormatIdentifier("abc-test"));
-  //  }
+  @Test
+  @Owner(developers = BHAVYA)
+  public void testGenerateHarnessUIFormatIdentifier_startWithHyphen() {
+    assertEquals("_test", UuidAndIdentifierUtils.generateHarnessUIFormatIdentifier("-test"));
+  }
+
+  @Test
+  @Owner(developers = BHAVYA)
+  public void testGenerateHarnessUIFormatIdentifier_HyphenInTheMiddle() {
+    assertEquals("abc_test", UuidAndIdentifierUtils.generateHarnessUIFormatIdentifier("abc-test"));
+  }
 
   @Test
   @Owner(developers = PIYUSH)

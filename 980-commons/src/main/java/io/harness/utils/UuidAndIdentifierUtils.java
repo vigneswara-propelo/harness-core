@@ -68,10 +68,7 @@ public final class UuidAndIdentifierUtils {
    * @return
    */
   private static String generateFormattedIdentifier(String name) {
-    return StringUtils.isBlank(name) ? name : name.trim().replaceAll("\\.", "_"); // replace dot with _
-    // Not making this change for Hyphens as United airlines has already
-    // updated their validations and it might break them again.
-    // Context: https://harness.atlassian.net/browse/PL-43512
-    //.replaceAll("-", "_"); // replace - with _
+    return StringUtils.isBlank(name) ? name : name.trim().replaceAll("\\.", "_").replaceAll("-", "_");
+    // replace dot and hyphen with underscore
   }
 }
