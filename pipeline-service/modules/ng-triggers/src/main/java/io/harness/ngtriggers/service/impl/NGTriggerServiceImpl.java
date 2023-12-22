@@ -96,7 +96,6 @@ import io.harness.ngtriggers.mapper.NGTriggerElementMapper;
 import io.harness.ngtriggers.mapper.TriggerFilterHelper;
 import io.harness.ngtriggers.service.NGTriggerService;
 import io.harness.ngtriggers.service.NGTriggerWebhookRegistrationService;
-import io.harness.ngtriggers.service.NGTriggerYamlSchemaService;
 import io.harness.ngtriggers.utils.MaxMultiArtifactTriggerSourcesProvider;
 import io.harness.ngtriggers.utils.PollingSubscriptionHelper;
 import io.harness.ngtriggers.utils.TriggerReferenceHelper;
@@ -195,7 +194,6 @@ public class NGTriggerServiceImpl implements NGTriggerService {
   private final OutboxService outboxService;
   private final PmsFeatureFlagService pmsFeatureFlagService;
   private final BuildTriggerHelper validationHelper;
-  private final NGTriggerYamlSchemaService ngTriggerYamlSchemaService;
   private final TriggerReferenceHelper triggerReferenceHelper;
   private final TriggerSetupUsageHelper triggerSetupUsageHelper;
   private final MaxMultiArtifactTriggerSourcesProvider maxMultiArtifactTriggerSourcesProvider;
@@ -206,11 +204,6 @@ public class NGTriggerServiceImpl implements NGTriggerService {
 
   @Override
   public NGTriggerEntity create(NGTriggerEntity ngTriggerEntity) {
-    if (pmsFeatureFlagService.isEnabled(
-            ngTriggerEntity.getAccountId(), FeatureName.CDS_ENABLE_TRIGGER_YAML_VALIDATION)) {
-      ngTriggerYamlSchemaService.validateTriggerYaml(ngTriggerEntity.getYaml(), ngTriggerEntity.getProjectIdentifier(),
-          ngTriggerEntity.getOrgIdentifier(), ngTriggerEntity.getIdentifier());
-    }
     try {
       // Enabling the FF disables custom webhook authentication
       if (!pmsFeatureFlagService.isEnabled(
@@ -561,11 +554,6 @@ public class NGTriggerServiceImpl implements NGTriggerService {
   @Override
   public NGTriggerEntity update(NGTriggerEntity ngTriggerEntity, NGTriggerEntity oldNgTriggerEntity) {
     ngTriggerEntity.setYmlVersion(TRIGGER_CURRENT_YML_VERSION);
-    if (pmsFeatureFlagService.isEnabled(
-            ngTriggerEntity.getAccountId(), FeatureName.CDS_ENABLE_TRIGGER_YAML_VALIDATION)) {
-      ngTriggerYamlSchemaService.validateTriggerYaml(ngTriggerEntity.getYaml(), ngTriggerEntity.getProjectIdentifier(),
-          ngTriggerEntity.getOrgIdentifier(), ngTriggerEntity.getIdentifier());
-    }
     Criteria criteria = getTriggerEqualityCriteria(ngTriggerEntity, false);
     checkForAccessForHarnessScm(ngTriggerEntity);
     NGTriggerEntity updatedTriggerEntity = updateTriggerEntity(ngTriggerEntity, criteria);
