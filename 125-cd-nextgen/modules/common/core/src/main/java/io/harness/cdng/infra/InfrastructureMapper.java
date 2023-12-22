@@ -251,14 +251,8 @@ public class InfrastructureMapper {
 
         String asgName = getParameterFieldValue(sshWinRmAwsInfrastructure.getAsgName());
 
-        if (isEmpty(asgName) && sshWinRmAwsInfrastructure.getAwsInstanceFilter() == null) {
-          throw new InvalidArgumentsException(
-              format("Either asgName or awsInstanceFilter should be provided for Infrastructure Kind : [%s]",
-                  infrastructure.getKind()));
-        }
-
         List<String> vpcIds = null;
-        if (isEmpty(asgName)) {
+        if (isEmpty(asgName) && sshWinRmAwsInfrastructure.getAwsInstanceFilter() != null) {
           hostTags = getHostTags(
               sshWinRmAwsInfrastructure.getAwsInstanceFilter().getTags(), accountIdentifier, expressionEvaluator);
           vpcIds = getParameterFieldValue(sshWinRmAwsInfrastructure.getAwsInstanceFilter().getVpcs());

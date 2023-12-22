@@ -142,6 +142,8 @@ public class AwsSshWinrmInstanceSyncPerpetualTaskHandler extends InstanceSyncPer
           .region(awsInfrastructureOutcome.getRegion())
           .connectorEncryptionDataDetails(encryptedData)
           .tags(sshEntityHelper.filterInfraTags(awsInfrastructureOutcome.getHostTags()))
+          .vpcIds(awsInfrastructureOutcome.getVpcIds())
+          .autoScalingGroupName(awsInfrastructureOutcome.getAsgName())
           .build();
     } else if (secretSpecDTO instanceof WinRmCredentialsSpecDTO) {
       return AwsWinrmInfraDelegateConfig.winrmAwsBuilder()
@@ -150,6 +152,8 @@ public class AwsSshWinrmInstanceSyncPerpetualTaskHandler extends InstanceSyncPer
           .connectorEncryptionDataDetails(encryptedData)
           .region(awsInfrastructureOutcome.getRegion())
           .tags(sshEntityHelper.filterInfraTags(awsInfrastructureOutcome.getHostTags()))
+          .vpcIds(awsInfrastructureOutcome.getVpcIds())
+          .autoScalingGroupName(awsInfrastructureOutcome.getAsgName())
           .build();
     }
     throw new InvalidArgumentsException(format("Invalid subclass %s provided for %s",

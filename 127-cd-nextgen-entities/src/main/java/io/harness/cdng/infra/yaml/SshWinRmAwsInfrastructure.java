@@ -93,6 +93,7 @@ public class SshWinRmAwsInfrastructure extends InfrastructureDetailsAbstract imp
     if (connectorRef != null) {
       builder.connectorRef(connectorRef.getValue());
     }
+
     if (region != null) {
       builder.region(region.getValue());
     }

@@ -269,7 +269,13 @@ public class AwsHelperResource {
     }
 
     if (isEmpty(region) && spec != null) {
-      region = ((AwsBaseInfrastructure) spec).getRegion().getValue();
+      if (spec instanceof AwsBaseInfrastructure) {
+        region = ((AwsBaseInfrastructure) spec).getRegion().getValue();
+      }
+
+      if (spec instanceof SshWinRmAwsInfrastructure) {
+        region = ((SshWinRmAwsInfrastructure) spec).getRegion().getValue();
+      }
     }
 
     IdentifierRef connectorRef =

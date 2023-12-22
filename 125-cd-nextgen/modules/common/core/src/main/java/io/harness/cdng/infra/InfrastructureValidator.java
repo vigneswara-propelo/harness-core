@@ -306,10 +306,6 @@ public class InfrastructureValidator {
     if (!hasValueOrExpression(infrastructure.getHostConnectionType())) {
       throw new InvalidArgumentsException(Pair.of("hostConnectionType", CANNOT_BE_EMPTY_ERROR_MSG));
     }
-
-    if (infrastructure.getAwsInstanceFilter() == null) {
-      throw new InvalidArgumentsException(Pair.of("awsInstanceFilter", "cannot be null"));
-    }
   }
 
   private void validateEcsInfrastructure(EcsInfrastructure infrastructure) {
