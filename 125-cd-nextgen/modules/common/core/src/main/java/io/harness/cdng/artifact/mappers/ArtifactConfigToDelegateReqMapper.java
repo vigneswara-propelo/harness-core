@@ -631,6 +631,9 @@ public class ArtifactConfigToDelegateReqMapper {
       versionRegex = garArtifactConfig.getVersion().getInputSetValidator().getParameters();
     }
 
+    String accountId = AmbianceUtils.getAccountId(ambiance);
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(accountId, gcpConnectorDTO);
     return ArtifactDelegateRequestUtils.getGoogleArtifactDelegateRequest(
         (String) garArtifactConfig.getRegion().fetchFinalValue(),
         (String) garArtifactConfig.getRepositoryName().fetchFinalValue(),

@@ -39,6 +39,7 @@ import io.harness.cdng.infra.beans.K8sAzureInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sDirectInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sGcpInfrastructureOutcome;
 import io.harness.cdng.infra.beans.K8sRancherInfrastructureOutcome;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.services.ConnectorService;
@@ -62,6 +63,7 @@ import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.k8s.KubernetesHelperService;
 import io.harness.ng.core.NGAccess;
+import io.harness.oidc.gcp.delegate.GcpOidcTokenExchangeDetailsForDelegate;
 import io.harness.remote.client.CGRestUtils;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.security.encryption.EncryptedDataDetail;
@@ -87,6 +89,7 @@ public class K8sEntityHelper {
   @Named(DEFAULT_CONNECTOR_SERVICE) @Inject private ConnectorService connectorService;
   @Inject private AccountClient accountClient;
   @Inject protected CDFeatureFlagHelper cdFeatureFlagHelper;
+  @Inject OidcHelperUtility oidcHelperUtility;
 
   public static final String CLASS_CAST_EXCEPTION_ERROR =
       "Unsupported Connector for Infrastructure type: [%s]. Connector provided is of type: [%s]. Configure connector of type: [%s] to resolve the issue";
@@ -179,6 +182,10 @@ public class K8sEntityHelper {
           KubernetesHelperService.validateNamespace(k8sGcpInfrastructure.getNamespace());
           KubernetesHelperService.validateCluster(k8sGcpInfrastructure.getCluster());
 
+          GcpConnectorDTO gcpConnectorDTO = (GcpConnectorDTO) connectorDTO.getConnectorConfig();
+          GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+              oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(
+                  ngAccess.getAccountIdentifier(), gcpConnectorDTO);
           return GcpK8sInfraDelegateConfig.builder()
               .namespace(k8sGcpInfrastructure.getNamespace())
               .cluster(k8sGcpInfrastructure.getCluster())

@@ -14,6 +14,7 @@ import static io.harness.rule.OwnerRule.vivekveman;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +30,7 @@ import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARReposit
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARResponseDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRequestDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.service.GARResourceServiceImpl;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.services.ConnectorService;
@@ -102,10 +104,12 @@ public class GarResourceServiceImplTest extends CategoryTest {
   @Mock DelegateGrpcClientWrapper delegateGrpcClientWrapper;
   @Spy @InjectMocks GARResourceServiceImpl garResourceService;
   @Mock ExceptionManager exceptionManager;
+  @Mock OidcHelperUtility oidcHelperUtility;
 
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
+    when(oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(anyString(), any())).thenReturn(null);
   }
 
   private ConnectorResponseDTO getConnector() {

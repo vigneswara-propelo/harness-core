@@ -15,16 +15,19 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.IdentifierRef;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.gcp.GcpHelperService;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorCredentialDTO;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorDTO;
 import io.harness.delegate.beans.connector.gcpconnector.GcpManualDetailsDTO;
@@ -50,6 +53,7 @@ import org.mockito.MockitoAnnotations;
 @OwnedBy(CDP)
 public class GcsResourceServiceImplTest extends CategoryTest {
   @Mock private GcpHelperService gcpHelperService;
+  @Mock OidcHelperUtility oidcHelperUtility;
 
   @InjectMocks private GcsResourceServiceImpl gcsResourceService;
 
@@ -60,7 +64,7 @@ public class GcsResourceServiceImplTest extends CategoryTest {
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
-
+    when(oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(anyString(), any())).thenReturn(null);
     GcpConnectorDTO gcpConnectorDTO =
         GcpConnectorDTO.builder()
             .credential(GcpConnectorCredentialDTO.builder().gcpCredentialType(INHERIT_FROM_DELEGATE).build())

@@ -27,6 +27,7 @@ import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARReposit
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GARResponseDTO;
 import io.harness.cdng.artifact.resources.googleartifactregistry.dtos.GarRequestDTO;
 import io.harness.cdng.artifact.utils.ArtifactUtils;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.common.NGTaskType;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
@@ -55,6 +56,7 @@ import io.harness.exception.exceptionmanager.ExceptionManager;
 import io.harness.exception.exceptionmanager.exceptionhandler.DocumentLinksConstants;
 import io.harness.ng.core.BaseNGAccess;
 import io.harness.ng.core.NGAccess;
+import io.harness.oidc.gcp.delegate.GcpOidcTokenExchangeDetailsForDelegate;
 import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.service.DelegateGrpcClientWrapper;
@@ -85,6 +87,8 @@ public class GARResourceServiceImpl implements GARResourceService {
   private static final int MAXBUILDS = -1;
   @Inject private DelegateGrpcClientWrapper delegateGrpcClientWrapper;
   @Inject ExceptionManager exceptionManager;
+  @Inject OidcHelperUtility oidcHelperUtility;
+
   public static final List<RegionGar> GAR_REGIONS =
       Arrays
           .asList("asia", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3",
@@ -114,6 +118,8 @@ public class GARResourceServiceImpl implements GARResourceService {
     BaseNGAccess baseNGAccess =
         getBaseNGAccess(googleArtifactRegistryRef.getAccountIdentifier(), orgIdentifier, projectIdentifier);
     List<EncryptedDataDetail> encryptionDetails = getEncryptionDetails(connector, baseNGAccess);
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(baseNGAccess.getAccountIdentifier(), connector);
     GarDelegateRequest googleArtifactDelegateRequest =
         ArtifactDelegateRequestUtils.getGoogleArtifactDelegateRequest(region, null, project, null, null, null,
             connector, encryptionDetails, ArtifactSourceType.GOOGLE_ARTIFACT_REGISTRY, MAXBUILDS);
@@ -141,6 +147,8 @@ public class GARResourceServiceImpl implements GARResourceService {
     BaseNGAccess baseNGAccess =
         getBaseNGAccess(googleArtifactRegistryRef.getAccountIdentifier(), orgIdentifier, projectIdentifier);
     List<EncryptedDataDetail> encryptionDetails = getEncryptionDetails(connector, baseNGAccess);
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(baseNGAccess.getAccountIdentifier(), connector);
     GarDelegateRequest googleArtifactDelegateRequest =
         ArtifactDelegateRequestUtils.getGoogleArtifactDelegateRequest(region, repositoryName, project, pkg, version,
             versionRegex, connector, encryptionDetails, ArtifactSourceType.GOOGLE_ARTIFACT_REGISTRY, MAXBUILDS);
@@ -168,6 +176,8 @@ public class GARResourceServiceImpl implements GARResourceService {
     BaseNGAccess baseNGAccess =
         getBaseNGAccess(googleArtifactRegistryRef.getAccountIdentifier(), orgIdentifier, projectIdentifier);
     List<EncryptedDataDetail> encryptionDetails = getEncryptionDetails(connector, baseNGAccess);
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(baseNGAccess.getAccountIdentifier(), connector);
     GarDelegateRequest googleArtifactDelegateRequest =
         ArtifactDelegateRequestUtils.getGoogleArtifactDelegateRequest(region, repositoryName, project, null, null, null,
             connector, encryptionDetails, ArtifactSourceType.GOOGLE_ARTIFACT_REGISTRY, MAXBUILDS);
@@ -200,6 +210,8 @@ public class GARResourceServiceImpl implements GARResourceService {
     BaseNGAccess baseNGAccess =
         getBaseNGAccess(googleArtifactRegistryRef.getAccountIdentifier(), orgIdentifier, projectIdentifier);
     List<EncryptedDataDetail> encryptionDetails = getEncryptionDetails(connector, baseNGAccess);
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(baseNGAccess.getAccountIdentifier(), connector);
     GarDelegateRequest googleArtifactDelegateRequest = ArtifactDelegateRequestUtils.getGoogleArtifactDelegateRequest(
         region, repositoryName, project, pkg, garRequestDTO.getVersion(), garRequestDTO.getVersionRegex(), connector,
         encryptionDetails, ArtifactSourceType.GOOGLE_ARTIFACT_REGISTRY, MAXBUILDS);

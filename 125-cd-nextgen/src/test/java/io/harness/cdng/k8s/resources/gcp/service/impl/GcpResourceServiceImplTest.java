@@ -13,6 +13,7 @@ import static io.harness.rule.OwnerRule.JELENA;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,6 +25,7 @@ import io.harness.beans.IdentifierRef;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.gcp.GcpHelperService;
 import io.harness.cdng.k8s.resources.gcp.GcpResponseDTO;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorCredentialDTO;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorDTO;
 import io.harness.delegate.beans.connector.gcpconnector.GcpCredentialType;
@@ -57,12 +59,13 @@ public class GcpResourceServiceImplTest extends CategoryTest {
   private static String PROJECT_IDENTIFIER = "projectIdentifier";
 
   @Mock private GcpHelperService gcpHelperService;
-
+  @Mock OidcHelperUtility oidcHelperUtility;
   @InjectMocks GcpResourceServiceImpl gcpResourceService;
 
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
+    when(oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(anyString(), any())).thenReturn(null);
   }
 
   @Test

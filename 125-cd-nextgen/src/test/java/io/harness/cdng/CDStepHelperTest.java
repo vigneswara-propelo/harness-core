@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -63,6 +64,7 @@ import io.harness.cdng.manifest.yaml.KustomizePatchesManifestOutcome;
 import io.harness.cdng.manifest.yaml.ManifestOutcome;
 import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
 import io.harness.cdng.manifest.yaml.oci.OciHelmChartStoreConfigType;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.cdng.service.steps.ServiceStepOutcome;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
@@ -168,6 +170,8 @@ public class CDStepHelperTest extends CategoryTest {
   @Mock private LogStreamingStepClientFactory logStreamingStepClientFactory;
   @Mock OutcomeService outcomeService;
 
+  @Mock OidcHelperUtility oidcHelperUtility;
+
   @Spy @InjectMocks private K8sManifestDelegateMapper manifestDelegateMapper;
   @Spy @InjectMocks private K8sEntityHelper k8sEntityHelper;
   @Spy @InjectMocks private CDStepHelper cdStepHelper;
@@ -195,6 +199,7 @@ public class CDStepHelperTest extends CategoryTest {
   @Before
   public void setup() {
     initMocks(this);
+    when(oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(anyString(), any())).thenReturn(null);
   }
 
   @Test

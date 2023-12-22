@@ -35,7 +35,8 @@ public class GcpCapabilityHelper extends ConnectorCapabilityBaseHelper {
     GcpConnectorCredentialDTO credential = gcpConnectorDTO.getCredential();
     List<ExecutionCapability> capabilityList = new ArrayList<>();
     if (credential.getGcpCredentialType() == GcpCredentialType.MANUAL_CREDENTIALS
-        || credential.getGcpCredentialType() == GcpCredentialType.INHERIT_FROM_DELEGATE) {
+        || credential.getGcpCredentialType() == GcpCredentialType.INHERIT_FROM_DELEGATE
+        || credential.getGcpCredentialType() == GcpCredentialType.OIDC_AUTHENTICATION) {
       capabilityList.add(
           HttpConnectionExecutionCapabilityGenerator.buildHttpConnectionExecutionCapability(GCS_URL, maskingEvaluator));
     } else {

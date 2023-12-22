@@ -13,12 +13,14 @@ import static io.harness.delegate.beans.connector.gcpconnector.GcpCredentialType
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.IdentifierRef;
 import io.harness.cdng.gcp.GcpHelperService;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorDTO;
 import io.harness.delegate.task.gcp.GcpTaskType;
 import io.harness.delegate.task.gcp.request.GcpListBucketsRequest;
 import io.harness.delegate.task.gcp.response.GcpBucketDetails;
 import io.harness.delegate.task.gcp.response.GcpListBucketsResponse;
 import io.harness.ng.core.BaseNGAccess;
+import io.harness.oidc.gcp.delegate.GcpOidcTokenExchangeDetailsForDelegate;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import com.google.inject.Inject;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 @OwnedBy(CDP)
 public class GcsResourceServiceImpl implements GcsResourceService {
   @Inject private GcpHelperService gcpHelperService;
+  @Inject OidcHelperUtility oidcHelperUtility;
 
   @Override
   public Map<String, String> listBuckets(
@@ -41,6 +44,10 @@ public class GcsResourceServiceImpl implements GcsResourceService {
                                     .build();
 
     List<EncryptedDataDetail> encryptionDetails = gcpHelperService.getEncryptionDetails(gcpConnectorDTO, baseNGAccess);
+
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(accountId, gcpConnectorDTO);
+
     GcpListBucketsRequest request =
         GcpListBucketsRequest.builder()
             .gcpManualDetailsDTO(gcpHelperService.getManualDetailsDTO(gcpConnectorDTO))

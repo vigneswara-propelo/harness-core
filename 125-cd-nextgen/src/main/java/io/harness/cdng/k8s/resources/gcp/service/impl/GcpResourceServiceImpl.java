@@ -18,6 +18,7 @@ import io.harness.cdng.gcp.GcpHelperService;
 import io.harness.cdng.k8s.resources.gcp.GcpResponseDTO;
 import io.harness.cdng.k8s.resources.gcp.dtos.GcpProjectDetails;
 import io.harness.cdng.k8s.resources.gcp.service.GcpResourceService;
+import io.harness.cdng.oidc.OidcHelperUtility;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorDTO;
 import io.harness.delegate.task.gcp.GcpTaskType;
 import io.harness.delegate.task.gcp.request.GcpListClustersRequest;
@@ -26,6 +27,7 @@ import io.harness.delegate.task.gcp.request.GcpTaskParameters;
 import io.harness.delegate.task.gcp.response.GcpClusterListTaskResponse;
 import io.harness.delegate.task.gcp.response.GcpProjectListTaskResponse;
 import io.harness.ng.core.BaseNGAccess;
+import io.harness.oidc.gcp.delegate.GcpOidcTokenExchangeDetailsForDelegate;
 import io.harness.security.encryption.EncryptedDataDetail;
 
 import software.wings.beans.TaskType;
@@ -40,6 +42,7 @@ import java.util.Map;
 @OwnedBy(CDP)
 public class GcpResourceServiceImpl implements GcpResourceService {
   @Inject GcpHelperService gcpHelperService;
+  @Inject OidcHelperUtility oidcHelperUtility;
 
   @Override
   public GcpResponseDTO getClusterNames(
@@ -52,6 +55,10 @@ public class GcpResourceServiceImpl implements GcpResourceService {
                                     .build();
 
     List<EncryptedDataDetail> encryptionDetails = gcpHelperService.getEncryptionDetails(connector, baseNGAccess);
+
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(accountId, connector);
+
     GcpListClustersRequest request =
         GcpListClustersRequest.builder()
             .gcpManualDetailsDTO(gcpHelperService.getManualDetailsDTO(connector))
@@ -76,6 +83,8 @@ public class GcpResourceServiceImpl implements GcpResourceService {
                                     .build();
 
     List<EncryptedDataDetail> encryptionDetails = gcpHelperService.getEncryptionDetails(connector, baseNGAccess);
+    GcpOidcTokenExchangeDetailsForDelegate gcpOidcTokenExchangeDetailsForDelegate =
+        oidcHelperUtility.getOidcTokenExchangeDetailsForDelegate(accountId, connector);
     GcpListProjectsRequest request =
         GcpListProjectsRequest.builder()
             .gcpManualDetailsDTO(gcpHelperService.getManualDetailsDTO(connector))
