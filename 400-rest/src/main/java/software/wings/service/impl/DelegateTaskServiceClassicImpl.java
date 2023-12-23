@@ -1813,7 +1813,7 @@ public class DelegateTaskServiceClassicImpl implements DelegateTaskServiceClassi
 
   @Override
   public boolean checkDelegateConnected(String accountId, String delegateId) {
-    return delegateDao.checkDelegateConnected(accountId, delegateId, versionInfoManager.getVersionInfo().getVersion());
+    return delegateDao.checkDelegateConnected(accountId, delegateId);
   }
 
   @Override

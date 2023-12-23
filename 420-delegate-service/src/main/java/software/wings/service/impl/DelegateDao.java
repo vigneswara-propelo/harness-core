@@ -8,7 +8,6 @@
 package software.wings.service.impl;
 
 import static io.harness.annotations.dev.HarnessTeam.DEL;
-import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.delegate.utils.DelegateServiceConstants.HEARTBEAT_EXPIRY_TIME_FIVE_MINS;
 import static io.harness.persistence.HPersistence.upToOne;
 import static io.harness.persistence.HQuery.excludeAuthority;
@@ -54,14 +53,12 @@ public class DelegateDao {
     persistence.update(query, updateOperations);
   }
 
-  public boolean checkDelegateConnected(String accountId, String delegateId, String version) {
+  public boolean checkDelegateConnected(String accountId, String delegateId) {
     Query<Delegate> query = persistence.createQuery(Delegate.class)
                                 .filter(DelegateKeys.accountId, accountId)
                                 .filter(DelegateKeys.uuid, delegateId)
                                 .filter(DelegateKeys.disconnected, Boolean.FALSE);
-    if (isNotEmpty(version)) {
-      query.filter(DelegateKeys.version, version);
-    }
+
     if (enableRedisForDelegateService) {
       Delegate delegateFromCache = delegateCache.get(accountId, delegateId);
       return delegateFromCache != null

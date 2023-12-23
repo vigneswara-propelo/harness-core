@@ -9,11 +9,17 @@ package io.harness.perpetualtask.internal;
 
 import static io.harness.data.structure.UUIDGenerator.generateUuid;
 import static io.harness.perpetualtask.PerpetualTaskServiceImpl.MAX_FIBONACCI_INDEX_FOR_TASK_ASSIGNMENT;
+import static io.harness.rule.OwnerRule.JENNY;
 import static io.harness.rule.OwnerRule.RAGHU;
 
+import static java.time.Duration.ofMinutes;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import io.harness.category.element.UnitTests;
+import io.harness.delegate.beans.Delegate;
+import io.harness.delegate.beans.DelegateInstanceStatus;
 import io.harness.delegate.beans.DelegateMetaInfo;
 import io.harness.delegate.beans.DelegateTaskNotifyResponseData;
 import io.harness.delegate.beans.ErrorNotifyResponseData;
@@ -28,22 +34,28 @@ import io.harness.tasks.ResponseData;
 
 import software.wings.WingsBaseTest;
 import software.wings.service.impl.PerpetualTaskCapabilityCheckResponse;
+import software.wings.service.intfc.DelegateService;
 
 import com.google.inject.Inject;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mock;
 
 public class PerpetualTaskValidationCallbackTest extends WingsBaseTest {
   private String perpetualTaskId = generateUuid();
   private String accountId = generateUuid();
+  private String delegateId = generateUuid();
+  public static final Duration TEST_EXPIRY_TIME = ofMinutes(6);
   private PerpetualTaskValidationCallback callback;
   @Inject private HPersistence hPersistence;
   @Inject private PerpetualTaskService perpetualTaskService;
   @Inject private PerpetualTaskRecordDao perpetualTaskRecordDao;
+  @Mock private DelegateService delegateService;
 
   @Before
   public void setUp() throws IllegalAccessException {
@@ -52,10 +64,18 @@ public class PerpetualTaskValidationCallbackTest extends WingsBaseTest {
                           .accountId(accountId)
                           .state(PerpetualTaskState.TASK_UNASSIGNED)
                           .build());
+    hPersistence.save(Delegate.builder()
+                          .accountId(accountId)
+                          .uuid(delegateId)
+                          .hostName("localhost")
+                          .status(DelegateInstanceStatus.ENABLED)
+                          .lastHeartBeat(System.currentTimeMillis() + TEST_EXPIRY_TIME.toMillis())
+                          .build());
     callback = new PerpetualTaskValidationCallback(accountId, perpetualTaskId, generateUuid());
     FieldUtils.writeField(callback, "hPersistence", hPersistence, true);
     FieldUtils.writeField(callback, "perpetualTaskService", perpetualTaskService, true);
     FieldUtils.writeField(callback, "perpetualTaskRecordDao", perpetualTaskRecordDao, true);
+    FieldUtils.writeField(callback, "delegateService", delegateService, true);
   }
 
   @Test
@@ -135,9 +155,27 @@ public class PerpetualTaskValidationCallbackTest extends WingsBaseTest {
                                                             .build();
     Map<String, ResponseData> response = new HashMap<>();
     response.put(generateUuid(), notifyResponseData);
+    when(delegateService.checkDelegateConnected(any(), any())).thenReturn(true);
     callback.notifyError(response);
     PerpetualTaskRecord perpetualTaskRecord = hPersistence.get(PerpetualTaskRecord.class, perpetualTaskId);
     assertThat(perpetualTaskRecord.getState()).isEqualTo(PerpetualTaskState.TASK_ASSIGNED);
     assertThat(perpetualTaskRecord.getDelegateId()).isEqualTo(metaInfo.getId());
+  }
+
+  @Test
+  @Owner(developers = JENNY)
+  @Category(UnitTests.class)
+  public void testNotifyAssignWithDelegateDisconnected() {
+    DelegateMetaInfo metaInfo = DelegateMetaInfo.builder().id(generateUuid()).build();
+    DelegateTaskNotifyResponseData notifyResponseData = PerpetualTaskCapabilityCheckResponse.builder()
+                                                            .ableToExecutePerpetualTask(true)
+                                                            .delegateMetaInfo(metaInfo)
+                                                            .build();
+    Map<String, ResponseData> response = new HashMap<>();
+    response.put(generateUuid(), notifyResponseData);
+    when(delegateService.checkDelegateConnected(any(), any())).thenReturn(false);
+    callback.notifyError(response);
+    PerpetualTaskRecord perpetualTaskRecord = hPersistence.get(PerpetualTaskRecord.class, perpetualTaskId);
+    assertThat(perpetualTaskRecord.getState()).isEqualTo(PerpetualTaskState.TASK_UNASSIGNED);
   }
 }

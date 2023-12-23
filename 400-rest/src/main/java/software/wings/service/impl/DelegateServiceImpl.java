@@ -3939,12 +3939,7 @@ public class DelegateServiceImpl implements DelegateService {
   @Override
   public List<Delegate> getConnectedDelegates(String accountId, List<Delegate> delegates) {
     return delegates.stream()
-        .filter(delegate -> {
-          // Ignore version from ring while checking heartbeat for immutable delegate because client can use any version
-          // which might be different from immutable delegate version in ring.
-          String version = delegate.isImmutable() ? null : getVersion(accountId);
-          return delegateDao.checkDelegateConnected(accountId, delegate.getUuid(), version);
-        })
+        .filter(delegate -> { return delegateDao.checkDelegateConnected(accountId, delegate.getUuid()); })
         .collect(toList());
   }
 
@@ -4086,7 +4081,7 @@ public class DelegateServiceImpl implements DelegateService {
 
   @Override
   public boolean checkDelegateConnected(String accountId, String delegateId) {
-    return delegateDao.checkDelegateConnected(accountId, delegateId, getVersion(accountId));
+    return delegateDao.checkDelegateConnected(accountId, delegateId);
   }
 
   private String getVersion(String accountId) {

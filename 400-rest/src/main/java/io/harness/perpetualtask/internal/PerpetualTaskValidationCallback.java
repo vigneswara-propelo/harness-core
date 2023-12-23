@@ -25,6 +25,7 @@ import io.harness.tasks.ResponseData;
 import io.harness.waiter.OldNotifyCallback;
 
 import software.wings.service.impl.PerpetualTaskCapabilityCheckResponse;
+import software.wings.service.intfc.DelegateService;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
@@ -47,6 +48,7 @@ public class PerpetualTaskValidationCallback implements OldNotifyCallback {
   @Inject private PerpetualTaskService perpetualTaskService;
   @Inject private HPersistence hPersistence;
   @Inject private PerpetualTaskRecordDao perpetualTaskRecordDao;
+  @Inject private DelegateService delegateService;
 
   @Override
   public void notify(Map<String, ResponseData> response) {
@@ -107,8 +109,11 @@ public class PerpetualTaskValidationCallback implements OldNotifyCallback {
         String delegateId = ((DelegateTaskNotifyResponseData) response).getDelegateMetaInfo().getId();
         log.info("Delegate {} is assigned to the inactive {} perpetual task with id={}.", delegateId,
             taskRecord.getPerpetualTaskType(), perpetualTaskId);
-        perpetualTaskService.appointDelegate(
-            taskRecord.getAccountId(), perpetualTaskId, delegateId, System.currentTimeMillis());
+        if (delegateService.checkDelegateConnected(taskRecord.getAccountId(), delegateId)) {
+          perpetualTaskService.appointDelegate(
+              taskRecord.getAccountId(), perpetualTaskId, delegateId, System.currentTimeMillis());
+        }
+
       } else {
         log.info(
             "Perpetual validation task {} unable to assign delegate due to missing DelegateMetaInfo.", delegateTaskId);
