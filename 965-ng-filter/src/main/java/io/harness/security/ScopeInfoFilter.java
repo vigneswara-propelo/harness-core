@@ -18,14 +18,17 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.ScopeInfo;
 import io.harness.beans.ScopeInfo.ScopeInfoBuilder;
 import io.harness.beans.ScopeInfoContext;
+import io.harness.beans.ScopeInfoResolutionExemptedApi;
 import io.harness.beans.ScopeLevel;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.remote.client.NGRestUtils;
 import io.harness.scopeinfoclient.remote.ScopeInfoClient;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -38,6 +41,7 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.ext.Provider;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -93,7 +97,8 @@ public class ScopeInfoFilter implements ContainerRequestFilter, ContainerRespons
       if (!isScopeInfoResolutionExemptedRequest(resourceInfo, requestContext)) {
         String accountIdentifier = accountIdentifierOptional.get();
         String orgIdentifier = getOrgIdentifierFrom(requestContext).orElse(null);
-        String projectIdentifier = getProjectIdentifierFrom(requestContext).orElse(null);
+        String projectIdentifier =
+            EmptyPredicate.isNotEmpty(orgIdentifier) ? getProjectIdentifierFrom(requestContext).orElse(null) : null;
 
         if (Objects.equals(accountIdentifier, existingScopeInfo.getAccountIdentifier())
             && Objects.equals(orgIdentifier, existingScopeInfo.getOrgIdentifier())
@@ -155,24 +160,48 @@ public class ScopeInfoFilter implements ContainerRequestFilter, ContainerRespons
     return StringUtils.isEmpty(accountIdentifier) ? Optional.empty() : Optional.of(accountIdentifier);
   }
 
-  private Optional<String> getOrgIdentifierFrom(ContainerRequestContext containerRequestContext) {
+  @VisibleForTesting
+  protected Optional<String> getOrgIdentifierFrom(ContainerRequestContext containerRequestContext) {
     String orgIdentifier =
-        containerRequestContext.getUriInfo().getQueryParameters().getFirst(NGCommonEntityConstants.ORG_KEY);
+        containerRequestContext.getUriInfo().getPathParameters().getFirst(NGCommonEntityConstants.ORG);
 
-    if (StringUtils.isEmpty(orgIdentifier)) {
+    List<PathSegment> pathSegments = containerRequestContext.getUriInfo().getPathSegments();
+    if (!pathSegments.isEmpty()) {
+      int segmentSize = pathSegments.size();
+      String lastSegment = (segmentSize > 0) ? pathSegments.get(segmentSize - 1).getPath() : null;
+      String secondLastSegment = (segmentSize > 1) ? pathSegments.get(segmentSize - 2).getPath() : null;
+      if (Objects.equals(lastSegment, NGCommonEntityConstants.ORGS)
+          || Objects.equals(secondLastSegment, NGCommonEntityConstants.ORGS)
+          || Objects.equals(lastSegment, NGCommonEntityConstants.ORGANIZATIONS)
+          || Objects.equals(secondLastSegment, NGCommonEntityConstants.ORGANIZATIONS)) {
+        return Optional.empty();
+      }
+    }
+    if (EmptyPredicate.isEmpty(orgIdentifier)) {
       orgIdentifier =
-          containerRequestContext.getUriInfo().getPathParameters().getFirst(NGCommonEntityConstants.ORG_KEY);
+          containerRequestContext.getUriInfo().getQueryParameters().getFirst(NGCommonEntityConstants.ORG_KEY);
     }
     return StringUtils.isEmpty(orgIdentifier) ? Optional.empty() : Optional.of(orgIdentifier);
   }
 
-  private Optional<String> getProjectIdentifierFrom(ContainerRequestContext containerRequestContext) {
+  @VisibleForTesting
+  protected Optional<String> getProjectIdentifierFrom(ContainerRequestContext containerRequestContext) {
     String projectIdentifier =
-        containerRequestContext.getUriInfo().getQueryParameters().getFirst(NGCommonEntityConstants.PROJECT_KEY);
+        containerRequestContext.getUriInfo().getPathParameters().getFirst(NGCommonEntityConstants.PROJECT);
 
-    if (StringUtils.isEmpty(projectIdentifier)) {
+    List<PathSegment> pathSegments = containerRequestContext.getUriInfo().getPathSegments();
+    if (!pathSegments.isEmpty()) {
+      int segmentSize = pathSegments.size();
+      String lastSegment = (segmentSize > 0) ? pathSegments.get(segmentSize - 1).getPath() : null;
+      String secondLastSegment = (segmentSize > 1) ? pathSegments.get(segmentSize - 2).getPath() : null;
+      if (Objects.equals(lastSegment, NGCommonEntityConstants.PROJECTS)
+          || Objects.equals(secondLastSegment, NGCommonEntityConstants.PROJECTS)) {
+        return Optional.empty();
+      }
+    }
+    if (EmptyPredicate.isEmpty(projectIdentifier)) {
       projectIdentifier =
-          containerRequestContext.getUriInfo().getPathParameters().getFirst(NGCommonEntityConstants.PROJECT_KEY);
+          containerRequestContext.getUriInfo().getQueryParameters().getFirst(NGCommonEntityConstants.PROJECT_KEY);
     }
     return StringUtils.isEmpty(projectIdentifier) ? Optional.empty() : Optional.of(projectIdentifier);
   }
@@ -192,6 +221,7 @@ public class ScopeInfoFilter implements ContainerRequestFilter, ContainerRespons
     return requestContext != null && requestContext.getUriInfo() != null
         && requestContext.getUriInfo().getRequestUri() != null
         && requestContext.getUriInfo().getRequestUri().getPath() != null
+        && !resourceInfo.getResourceMethod().isAnnotationPresent(ScopeInfoResolutionExemptedApi.class)
         && matchingPathRequests.stream().anyMatch(requestContext.getUriInfo().getRequestUri().getPath()::startsWith);
   }
 }

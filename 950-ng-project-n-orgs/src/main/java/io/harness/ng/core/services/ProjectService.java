@@ -71,6 +71,8 @@ public interface ProjectService {
    */
   List<Project> list(Criteria criteria);
 
+  boolean delete(String accountIdentifier, String orgIdentifier, String identifier, Long version);
+
   boolean delete(String accountIdentifier, ScopeInfo scopeInfo, String orgIdentifier, String identifier, Long version);
 
   boolean restore(String accountIdentifier, ScopeInfo scopeInfo, String orgIdentifier, String identifier);

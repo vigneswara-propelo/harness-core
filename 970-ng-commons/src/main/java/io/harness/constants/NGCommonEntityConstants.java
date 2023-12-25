@@ -29,6 +29,12 @@ public class NGCommonEntityConstants {
   public static final String ORGS_KEY = "orgIdentifiers";
   public static final String PROJECT_KEY = "projectIdentifier";
 
+  public static final String ORG = "org";
+  public static final String PROJECT = "project";
+  public static final String ORGANIZATIONS = "organizations";
+  public static final String ORGS = "orgs";
+  public static final String PROJECTS = "projects";
+
   public static final String UUID = "uuid";
   public static final String SEARCH_KEY = "searchKey";
   public static final String SORT_TYPE = "sortType";

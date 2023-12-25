@@ -716,6 +716,37 @@ public class ProjectServiceImpl implements ProjectService {
 
   @Override
   @DefaultOrganization
+  public boolean delete(String accountIdentifier, @OrgIdentifier String orgIdentifier,
+      @ProjectIdentifier String projectIdentifier, Long version) {
+    try (AutoLogContext ignore1 =
+             new NgAutoLogContext(projectIdentifier, orgIdentifier, accountIdentifier, OVERRIDE_ERROR)) {
+      return Failsafe.with(DEFAULT_RETRY_POLICY).get(() -> transactionTemplate.execute(status -> {
+        Project deletedProject =
+            projectRepository.hardDelete(accountIdentifier, orgIdentifier, projectIdentifier, version);
+        scopeInfoCache.remove(
+            scopeInfoHelper.getScopeInfoCacheKey(accountIdentifier, orgIdentifier, projectIdentifier));
+        if (isNull(deletedProject)) {
+          log.error(String.format("Project with identifier [%s] could not be deleted as it does not exist",
+              projectIdentifier, orgIdentifier));
+          throw new EntityNotFoundException(
+              String.format("Project with identifier [%s] does not exist in the specified scope", projectIdentifier));
+        }
+
+        log.info(String.format("Project with identifier [%s] and orgIdentifier [%s] was successfully deleted",
+            projectIdentifier, orgIdentifier));
+        yamlGitConfigService.deleteAll(accountIdentifier, orgIdentifier, projectIdentifier);
+        outboxService.save(
+            new ProjectDeleteEvent(deletedProject.getAccountIdentifier(), ProjectMapper.writeDTO(deletedProject)));
+        instrumentationHelper.sendProjectDeleteEvent(deletedProject, accountIdentifier);
+        favoritesService.deleteFavorites(
+            accountIdentifier, orgIdentifier, null, ResourceType.PROJECT.toString(), projectIdentifier);
+        return true;
+      }));
+    }
+  }
+
+  @Override
+  @DefaultOrganization
   public boolean delete(String accountIdentifier, ScopeInfo scopeInfo, @OrgIdentifier String orgIdentifier,
       @ProjectIdentifier String projectIdentifier, Long version) {
     try (AutoLogContext ignore1 =

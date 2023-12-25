@@ -211,18 +211,17 @@ public class ProjectEntityCRUDStreamListener implements MessageListener {
   private boolean processOrganizationDeleteEvent(OrganizationEntityChangeDTO organizationEntityChangeDTO) {
     String accountIdentifier = organizationEntityChangeDTO.getAccountIdentifier();
     String orgIdentifier = organizationEntityChangeDTO.getIdentifier();
-    Optional<ScopeInfo> scopeInfo = scopeResolverService.getScopeInfo(accountIdentifier, orgIdentifier, null);
     Criteria criteria = Criteria.where(ProjectKeys.accountIdentifier)
                             .is(accountIdentifier)
-                            .and(ProjectKeys.parentUniqueId)
-                            .is(scopeInfo.orElseThrow().getUniqueId())
+                            .and(ProjectKeys.orgIdentifier)
+                            .is(orgIdentifier)
                             .and(ProjectKeys.deleted)
                             .ne(Boolean.TRUE);
     List<Project> projects = projectService.list(criteria);
     AtomicBoolean success = new AtomicBoolean(true);
     projects.forEach(project -> {
-      if (!projectService.delete(project.getAccountIdentifier(), scopeInfo.orElseThrow(), project.getOrgIdentifier(),
-              project.getIdentifier(), null)) {
+      if (!projectService.delete(
+              project.getAccountIdentifier(), project.getOrgIdentifier(), project.getIdentifier(), null)) {
         log.error(String.format(
             "Delete operation failed for project with accountIdentifier %s, orgIdentifier %s and identifier %s",
             project.getAccountIdentifier(), project.getOrgIdentifier(), project.getIdentifier()));
