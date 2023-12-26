@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: harness-core
+  annotations:
+    github.com/project-slug: vigneswara-propelo/harness-core
+spec:
+  type: other
+  lifecycle: unknown
+  owner: harness_account_all_users
